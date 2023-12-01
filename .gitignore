@@ -1,5 +1,5 @@
 #BACKEND
-back/node_modules
+src/back/node_modules
 
 #FRONTEND
-front/node_modules
+src/front/node_modules
