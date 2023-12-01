@@ -1,5 +1,5 @@
 #BACKEND
-src/back/node_modules
+src/backend/node_modules
 
 #FRONTEND
-src/front/node_modules
+src/frontend/node_modules
