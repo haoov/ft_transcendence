@@ -1,5 +1,2 @@
 #BACKEND
-src/backend/node_modules
-
-#FRONTEND
-src/frontend/node_modules
+src/backend/nestjs/api/node_modules
