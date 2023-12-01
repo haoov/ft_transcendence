@@ -1,8 +1,8 @@
 FROM node:lts
 
-RUN	mkdir -p /app
+RUN	mkdir -p /api
 
-WORKDIR /app
+WORKDIR /api
 
 COPY ./api/package*.json ./
 
@@ -10,4 +10,5 @@ RUN npm install
 
 COPY ./api/* ./
 
-CMD [ "npm", "run", "start:dev" ]
+CMD npm run start:dev 2> errlogs
+#CMD [ "npm", "run", "start:dev" ]
