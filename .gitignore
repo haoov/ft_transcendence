@@ -1,0 +1,5 @@
+#BACKEND
+back/node_modules
+
+#FRONTEND
+front/node_modules
