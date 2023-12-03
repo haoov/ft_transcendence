@@ -1,0 +1,14 @@
+/* COLORS*/
+:root {
+	--c-black: rgb(0, 0, 0);
+	--c-grey: rgb(146, 146, 146);
+	--c-grey-light: rgb(211, 211, 211);
+	--c-white: rgb(255, 255, 255);
+	--c-blue-dark : rgb(19, 27, 41);
+}
+
+/*CUSTUM FONTS*/
+@font-face {
+	font-family: Avenir;
+	src: url(./fonts/AvenirLTStd-Roman.otf);
+}
