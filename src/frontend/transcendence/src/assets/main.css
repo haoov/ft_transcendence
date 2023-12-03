@@ -1,0 +1,25 @@
+@import './base.css';
+
+*,
+*::before,
+*::after { 
+    margin: 0;
+    padding: 0;
+}
+
+*, a {
+	font-family: Avenir, Arial;
+	color: var(--c-white);
+	text-decoration: none;
+}
+
+body {
+	background: linear-gradient(	to right,
+									var(--c-black),
+									var(--c-blue-dark),
+									var(--c-black)	);
+}
+
+div {
+	display: block;
+}

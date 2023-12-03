@@ -2,3 +2,6 @@ src/.env
 
 #BACKEND
 src/backend/nestjs/api/node_modules
+
+#FRONTEND
+src/frontend/transcendence/node_modules

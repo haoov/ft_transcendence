@@ -1,6 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
-import { generate } from 'rxjs';
 
 export const databaseConfig: TypeOrmModuleOptions = {
 	type: "postgres",
