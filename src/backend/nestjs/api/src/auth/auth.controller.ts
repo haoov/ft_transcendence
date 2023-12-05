@@ -5,7 +5,7 @@ import { Request, Response } from "express";
 import { AuthentificatedGuard } from "./guards/auth.AuthentificatedGuard";
 
 @Controller("auth")
-export class AuthCoontroller {
+export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
 	@UseGuards(Intra42Guard)

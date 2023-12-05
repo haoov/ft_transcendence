@@ -1,7 +1,7 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from 'typeorm';
-import { UserEntity } from "src/typeOrm/entities/user.entity";
+import { UserEntity } from "src/postgreSQL/entities/user.entity";
 import { User } from "./user.interface";
 import { PG_UNIQUE_VIOLATION } from "@drdgvhbh/postgres-error-codes";
 
@@ -28,4 +28,12 @@ export class UserService {
 		}
 		return null;
 	}
+
+	async deleteUser(username: string) {
+		const user: User = await this.usersRepository.findOneBy({ username: username }) as User;
+		if (!user)
+			throw new NotFoundException("User not found in database");
+		this.usersRepository.remove(user as UserEntity);
+	}
+
 }
