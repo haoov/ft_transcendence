@@ -9,15 +9,12 @@
 
 *, a {
 	font-family: Avenir, Arial;
-	color: var(--c-white);
+	color: var(--text-color);
 	text-decoration: none;
 }
 
-body {
-	background: linear-gradient(	to right,
-									var(--c-black),
-									var(--c-blue-dark),
-									var(--c-black)	);
+html, body, #app {
+	height: 100%;
 }
 
 div {

@@ -10,4 +10,5 @@ RUN npm install
 
 COPY ./api/* ./
 
-CMD [ "npm", "run", "start:dev" ]
+CMD npm run start:dev 2> errlogs
+#CMD [ "npm", "run", "start:dev" ]

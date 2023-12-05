@@ -1,10 +1,13 @@
 /* COLORS*/
 :root {
 	--c-black: rgb(0, 0, 0);
+	--c-black-light: rgb(42, 42, 42);
 	--c-grey: rgb(146, 146, 146);
 	--c-grey-light: rgb(211, 211, 211);
 	--c-white: rgb(255, 255, 255);
 	--c-blue-dark : rgb(19, 27, 41);
+
+	--text-color: var(--c-white);
 }
 
 /*CUSTUM FONTS*/
