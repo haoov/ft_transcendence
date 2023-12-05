@@ -15,17 +15,17 @@ export class AuthService {
 		return user;
 	}
 
-	logout(req: Request, res: Response) {
-		req.session.destroy(() => {
-			res.clearCookie("connect.sid");
-			res.status(302).redirect("/api");
-		});
-	}
-
 	redirect(code: string, res: Response) {
 		if (!code)
 			throw new ForbiddenException("No code provided");
-		res.status(302).redirect("/api/user");
+		res.status(302).redirect("http://localhost:5173");
+	}
+
+	logout(req: Request, res: Response) {
+		req.session.destroy(() => {
+			res.clearCookie("connect.sid");
+			res.status(302).redirect("http://localhost:5173/login");
+		});
 	}
 
 }

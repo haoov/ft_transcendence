@@ -1,9 +1,13 @@
+<script setup lang="ts">
+	const uri: string = "http://localhost:3000/api/auth/login";
+</script>
+
 <template>
 	<div class="auth">
-		<RouterLink to="/">
+		<a v-bind:href="uri">
 			<img id="logo_42" src="@/assets/images/42_logo.svg">
 			<p class="auth text">Sign in</p>
-		</RouterLink>
+		</a>
 	</div>
 </template>
 
