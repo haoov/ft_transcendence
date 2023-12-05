@@ -7,13 +7,6 @@ networks:
 #              Volumes               #
 #------------------------------------#
 volumes:
-  # vuejs_app:
-  #   name: vuejs_app
-  #   driver: local
-  #   driver_opts:
-  #     device: ./frontend/vuejs/todo-app
-  #     o: bind
-  #     type: none
 
   nestjs_api:
     name: nestjs_api
@@ -35,18 +28,6 @@ volumes:
 #              Services              #
 #------------------------------------#
 services:
-  # vuejs:
-  #   container_name: vuejs
-  #   build:
-  #     context: ./frontend/vuejs
-  #     dockerfile: Dockerfile
-  #   image: vuejs
-  #   volumes:
-  #     - vuejs_app:/app
-  #   networks:
-  #     - todo-app
-  #   ports:
-  #     - 4000:80
 
   nestjs:
     container_name: nestjs
@@ -60,8 +41,17 @@ services:
       - nestjs_api:/api
     networks:
       - ft_transcendence
-    env_file:
-      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      
+      - INTRA_CLIENT_ID=${INTRA_CLIENT_ID}
+      - INTRA_CLIENT_SECRET=${INTRA_CLIENT_SECRET}
+      - INTRA_CLIENT_STAT=${INTRA_CLIENT_STAT}
+
+      - LOCAL_ENDPOINT=http://${LOCAL_ADDRESS}:${LOCAL_PORT}
+      - LOCAL_CALLBACK=http://${LOCAL_ADDRESS}:${LOCAL_PORT}/${LOCAL_CALLBACK_ENDPOINT}
     depends_on:
       postgresql:
         condition: service_healthy

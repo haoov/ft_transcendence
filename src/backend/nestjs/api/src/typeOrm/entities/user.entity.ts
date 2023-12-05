@@ -5,7 +5,9 @@ export class UserEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 	@Column({ unique: true })
-	userName: string;
+	username: string;
+	@Column()
+	avatar: string;
 	@Column()
 	email: string;
 }

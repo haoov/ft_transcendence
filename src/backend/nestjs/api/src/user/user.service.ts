@@ -1,18 +1,31 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from 'typeorm';
 import { UserEntity } from "src/typeOrm/entities/user.entity";
 import { User } from "./user.interface";
+import { PG_UNIQUE_VIOLATION } from "@drdgvhbh/postgres-error-codes";
 
 @Injectable()
 export class UserService {
 	constructor(@InjectRepository(UserEntity) private usersRepository: Repository<UserEntity>) {}
 
+	getUser(email: string) {
+		return this.usersRepository.findOneBy({ email: email });
+	}
+
 	getAllUsers(): Promise<User[]> {
 		return this.usersRepository.find() as Promise<User[]>;
 	}
 
-	createUser(userData: User): Promise<User> {
-		return this.usersRepository.save(userData as UserEntity) as Promise<User>;
+	async createUser(user: User): Promise<User> {
+		try {
+			this.usersRepository.create(user as UserEntity);
+			return this.usersRepository.save(user as UserEntity) as Promise<User>;
+		}
+		catch (err) {
+			if (err.code == PG_UNIQUE_VIOLATION)
+				throw new ForbiddenException("User already exists");
+		}
+		return null;
 	}
 }
