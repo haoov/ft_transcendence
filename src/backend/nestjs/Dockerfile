@@ -8,6 +8,6 @@ COPY ./api/package*.json ./
 
 RUN npm install
 
-COPY ./api/* ./
+COPY ./api .
 
 CMD [ "npm", "run", "start:dev" ]

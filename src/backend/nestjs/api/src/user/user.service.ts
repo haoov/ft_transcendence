@@ -9,8 +9,8 @@ import { PG_UNIQUE_VIOLATION } from "@drdgvhbh/postgres-error-codes";
 export class UserService {
 	constructor(@InjectRepository(UserEntity) private usersRepository: Repository<UserEntity>) {}
 
-	getUser(email: string) {
-		return this.usersRepository.findOneBy({ email: email });
+	getUser(email: string): Promise<User> {
+		return this.usersRepository.findOneBy({ email: email }) as Promise<User>;
 	}
 
 	getAllUsers(): Promise<User[]> {
