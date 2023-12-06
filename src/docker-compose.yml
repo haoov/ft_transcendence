@@ -35,8 +35,8 @@ services:
       context: ./backend/nestjs
       dockerfile: Dockerfile
     image: nestjs
-    ports:
-      - 3000:3000
+    expose:
+      - 3000
     volumes:
       - nestjs_api:/api
     networks:
@@ -83,6 +83,6 @@ services:
       dockerfile: ./Dockerfile
     image: vuejs
     ports:
-      - 8080:80
+      - 3000:80
     networks:
       - ft_transcendence

@@ -18,13 +18,13 @@ export class AuthService {
 	redirect(code: string, res: Response) {
 		if (!code)
 			throw new ForbiddenException("No code provided");
-		res.status(302).redirect("http://localhost:8080");
+		res.status(302).redirect("/");
 	}
 
 	logout(req: Request, res: Response) {
 		req.session.destroy(() => {
 			res.clearCookie("connect.sid");
-			res.status(302).redirect("http://localhost:8080/login");
+			res.status(302).redirect("/login");
 		});
 	}
 
