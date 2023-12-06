@@ -4,4 +4,4 @@ src/.env
 src/backend/nestjs/api/node_modules
 
 #FRONTEND
-src/frontend/transcendence/node_modules
+src/frontend/vuejs/app/node_modules

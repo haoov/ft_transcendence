@@ -75,3 +75,14 @@ services:
       timeout: 10s
       retries: 10
       start_period: 1s
+
+  vuejs:
+    container_name: vuejs
+    build:
+      context: ./frontend/vuejs
+      dockerfile: ./Dockerfile
+    image: vuejs
+    ports:
+      - 8080:80
+    networks:
+      - ft_transcendence
