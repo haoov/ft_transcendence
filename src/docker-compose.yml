@@ -18,12 +18,12 @@ volumes:
   
   postgresql_data:
   #!comment this when using at 42
-    name: postgresql_data
-    driver: local
-    driver_opts:
-      device: ./backend/postgresql/data
-      o: bind
-      type: none
+    # name: postgresql_data
+    # driver: local
+    # driver_opts:
+    #   device: ./backend/postgresql/data
+    #   o: bind
+    #   type: none
   #!comment end
 
 #------------------------------------#
