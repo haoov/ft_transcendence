@@ -17,12 +17,14 @@ volumes:
       type: none
   
   postgresql_data:
+  #!comment this when using at 42
     name: postgresql_data
     driver: local
     driver_opts:
       device: ./backend/postgresql/data
       o: bind
       type: none
+  #!comment end
 
 #------------------------------------#
 #              Services              #
@@ -55,6 +57,12 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "localhost:3000/api/health"]
+      interval: 1s
+      timeout: 10s
+      retries: 10
+      start_period: 1s
 
   postgresql:
     image: postgres
@@ -86,3 +94,6 @@ services:
       - 3000:80
     networks:
       - ft_transcendence
+    depends_on:
+      nestjs:
+        condition: service_healthy

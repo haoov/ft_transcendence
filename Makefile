@@ -3,7 +3,7 @@ SRC			=	$(CURDIR)/src
 
 SUDO		=	/usr/bin/sudo
 
-all :
+all : build run
 
 build :
 	@cd $(SRC) && $(SUDO) docker compose build

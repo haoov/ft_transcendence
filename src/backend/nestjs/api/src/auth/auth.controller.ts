@@ -8,20 +8,24 @@ import { AuthentificatedGuard } from "./guards/auth.AuthentificatedGuard";
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
-	@UseGuards(Intra42Guard)
+	@Get()
+	@UseGuards(AuthentificatedGuard)
+	checkAuth() {}
+
 	@Get("login")
+	@UseGuards(Intra42Guard)
 	async login(@Res() response: Response): Promise<Response> {
 		return response;
 	}
 
-	@UseGuards(Intra42Guard)
 	@Get("42-redirect")
+	@UseGuards(Intra42Guard)
 	async redirect(@Query("code") code: string, @Res({ passthrough: true }) res: Response) {
 		this.authService.redirect(code, res);
 	}
 
-	@UseGuards(AuthentificatedGuard)
 	@Get("logout")
+	@UseGuards(AuthentificatedGuard)
 	logout(@Req() req: Request, @Res() res: Response) {
 		this.authService.logout(req, res);
 	}
