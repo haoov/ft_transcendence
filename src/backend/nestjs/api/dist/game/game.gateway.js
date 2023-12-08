@@ -8,26 +8,44 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 const socket_io_1 = require("socket.io");
 let GameGateway = class GameGateway {
+    constructor() {
+        this.position = {
+            x: 200,
+            y: 200,
+        };
+    }
     onModuleInit() {
         this.server.on('connection', (socket) => {
             console.log(socket.id);
             console.log("Connection established");
         });
     }
-    onNewMessage(body) {
-        console.log(body);
-        this.server.emit('onMessage', {
-            msg: 'newMessage',
-            content: body,
-        });
+    moveDot(client, data) {
+        console.log("Mouvement du client");
+        client.emit("position", this.position);
+        switch (data) {
+            case "left":
+                this.position.x -= 5;
+                this.server.emit("position", this.position);
+                break;
+            case "right":
+                this.position.x += 5;
+                this.server.emit("position", this.position);
+                break;
+            case "up":
+                this.position.y -= 5;
+                this.server.emit("position", this.position);
+                break;
+            case "down":
+                this.position.y += 5;
+                this.server.emit("position", this.position);
+                break;
+        }
     }
 };
 exports.GameGateway = GameGateway;
@@ -36,12 +54,11 @@ __decorate([
     __metadata("design:type", socket_io_1.Server)
 ], GameGateway.prototype, "server", void 0);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('newMessage'),
-    __param(0, (0, websockets_1.MessageBody)()),
+    (0, websockets_1.SubscribeMessage)('move'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", void 0)
-], GameGateway.prototype, "onNewMessage", null);
+], GameGateway.prototype, "moveDot", null);
 exports.GameGateway = GameGateway = __decorate([
     (0, websockets_1.WebSocketGateway)()
 ], GameGateway);
