@@ -1,10 +1,12 @@
-import { OnModuleInit } from '@nestjs/common';
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io'
+import { UserEntity } from 'src/postgreSQL/entities/user.entity';
 
 // Outil de gestion des web socket events
 @WebSocketGateway({ namespace: 'game' })
-export class GameGateway implements OnModuleInit {
+export class GameGateway {
+
+    player: number;
 
     position = {
         p1: {
@@ -21,37 +23,40 @@ export class GameGateway implements OnModuleInit {
   @WebSocketServer()
   server: Server;
 
-  onModuleInit() {
-      this.server.on('connection', (socket) => {
-          console.log(socket.id);
-          console.log("Connection established");
-      })
+  handleConnection(client: Socket) {
+    console.log(client.id);
+    console.log("Connection established");
+	client.on("connected", (data) => {client.data.user = data});
+  }
+
+  handleDisconnect(client: Socket) {
+
   }
 
   // les messages (events) qu'on recoit du client
   @SubscribeMessage('move')
   moveDot(client: Socket, data: string){
-    console.log("Mouvement du client");
+    console.log(client.data);
     // on envoie la position au client
     client.emit("position", this.position)
-    switch(data) {
-      case "left":
-          this.position.p1.x -= 5;
-          // on envoie la position au server
-          this.server.emit("position", this.position);
-          break;
-      case "right":
-          this.position.p1.x += 5;
-          this.server.emit("position", this.position);
-          break;
-      case "up":
-          this.position.p1.y -= 5;
-          this.server.emit("position", this.position);
-          break;
-      case "down":
-          this.position.p1.y += 5;
-          this.server.emit("position", this.position);
-          break;
+	switch(data) {
+	case "left":
+		(client.data.user.id % 2) ? this.position.p1.x -= 5 : this.position.p2.x -= 5;
+		// on envoie la position au server
+		this.server.emit("position", this.position);
+		break;
+	case "right":
+		(client.data.user.id % 2) ? this.position.p1.x += 5 : this.position.p2.x += 5;
+		this.server.emit("position", this.position);
+		break;
+	case "up":
+		(client.data.user.id % 2) ? this.position.p1.y -= 5 : this.position.p2.y -= 5;
+		this.server.emit("position", this.position);
+		break;
+	case "down":
+		(client.data.user.id % 2) ? this.position.p1.x += 5 : this.position.p2.x += 5;
+		this.server.emit("position", this.position);
+		break;
   }
   }
 }
