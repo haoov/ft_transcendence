@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
     port: 587,
     auth: {
         user: "postmaster@42.hololive.fr",
-        pass: "97b8427ee2308cff00119feb5f389b51-07f37fca-d3cbaaab",
+        pass: process.env.MAILGUN_KEY,
     },
 });
 let AuthService = class AuthService {
@@ -32,9 +32,13 @@ let AuthService = class AuthService {
             return await this.userService.createUser(dto);
         return user;
     }
-    redirect(code, res) {
+    redirect(code, req, res) {
         if (!code)
             throw new common_1.ForbiddenException("No code provided");
+        const userInfo = req.user;
+        if (userInfo.twofa_enabled == true) {
+            res.status(302).redirect("/api/auth/2fa");
+        }
         res.status(302).redirect("/");
     }
     logout(req, res) {
@@ -48,7 +52,7 @@ let AuthService = class AuthService {
             "jsonrpc": "2.0",
             "method": "generateStrings",
             "params": {
-                "apiKey": "9f00fa84-d677-4b1b-a21e-4a02ed3c094f",
+                "apiKey": process.env.RANDOM_ORG_KEY,
                 "n": 8,
                 "length": 6,
                 "characters": "0123456789",
@@ -68,13 +72,7 @@ let AuthService = class AuthService {
         try {
             const code = await this.getRandomCode();
             await this.userService.add2FACode(email, code);
-            const info = await transporter.sendMail({
-                from: '"Transcendence Authentification Process" <2fa@42.hololive.fr>',
-                to: "jopadova@student.42.fr ",
-                subject: `${code} is your login passcode`,
-                text: `${code} is your login passcode`,
-                html: `<b>${code} is your login passcode</b>`,
-            });
+            console.log(`${code} was sent to ${email}`);
         }
         catch (err) {
             throw err;

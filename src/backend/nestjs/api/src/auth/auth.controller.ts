@@ -20,8 +20,12 @@ export class AuthController {
 
 	@Get("42-redirect")
 	@UseGuards(Intra42Guard)
-	async redirect(@Query("code") code: string, @Res({ passthrough: true }) res: Response) {
-		this.authService.redirect(code, res);
+	async redirect(
+		@Query("code") code: string, 
+		@Res({ passthrough: true }) res: Response,
+		@Req() req: Request
+	) {
+		this.authService.redirect(code, req, res);
 	}
 
 	@Get("2fa")

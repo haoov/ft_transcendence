@@ -6,5 +6,4 @@ src/backend/nestjs/api/node_modules
 #FRONTEND
 src/frontend/vuejs/app/node_modules
 
-exp.txt
-git-filter-repo
+dist/

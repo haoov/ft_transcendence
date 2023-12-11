@@ -18,12 +18,12 @@ volumes:
   
   postgresql_data:
   #!comment this when using at 42
-    name: postgresql_data
-    driver: local
-    driver_opts:
-      device: ./backend/postgresql/data
-      o: bind
-      type: none
+    # name: postgresql_data
+    # driver: local
+    # driver_opts:
+    #   device: ./backend/postgresql/data
+    #   o: bind
+    #   type: none
   #!comment end
 
 #------------------------------------#
@@ -54,6 +54,9 @@ services:
 
       - LOCAL_ENDPOINT=http://${LOCAL_ADDRESS}:${LOCAL_PORT}
       - LOCAL_CALLBACK=http://${LOCAL_ADDRESS}:${LOCAL_PORT}/${LOCAL_CALLBACK_ENDPOINT}
+    
+      - MAILGUN_KEY=${MAILGUN_KEY}
+      - RANDOM_ORG_KEY=${RANDOM_ORG_KEY}
     depends_on:
       postgresql:
         condition: service_healthy

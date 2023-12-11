@@ -5,7 +5,7 @@ export declare class AuthController {
     constructor(authService: AuthService);
     checkAuth(): void;
     login(response: Response): Promise<Response>;
-    redirect(code: string, res: Response): Promise<void>;
+    redirect(code: string, res: Response, req: Request): Promise<void>;
     get2FA(response: Response): Promise<Response>;
     logout(req: Request, res: Response): void;
     random(req: Request): Promise<{

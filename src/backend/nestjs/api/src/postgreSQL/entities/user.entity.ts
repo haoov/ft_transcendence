@@ -10,6 +10,8 @@ export class UserEntity {
 	avatar: string;
 	@Column({ default: null })
 	twofa_code: string;
+	@Column({ default: false })
+	twofa_enabled: boolean;
 	@Column()
 	email: string;
 }

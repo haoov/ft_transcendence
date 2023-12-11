@@ -6,7 +6,7 @@ export declare class AuthService {
     private userService;
     constructor(userService: UserService);
     validateUser(dto: UserAuthDTO): Promise<User>;
-    redirect(code: string, res: Response): void;
+    redirect(code: string, req: Request, res: Response): void;
     logout(req: Request, res: Response): void;
     getRandomCode(): Promise<string>;
     sendEmail(email: string): Promise<void>;

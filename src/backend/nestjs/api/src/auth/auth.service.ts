@@ -27,9 +27,13 @@ export class AuthService {
 		return user;
 	}
 
-	redirect(code: string, res: Response) {
+	redirect(code: string, req: Request, res: Response) {
 		if (!code)
 			throw new ForbiddenException("No code provided");
+		const userInfo: any = req.user;
+		if (userInfo.twofa_enabled == true) {
+			res.status(302).redirect("/api/auth/2fa");
+		}
 		res.status(302).redirect("/");
 	}
 
@@ -68,13 +72,15 @@ export class AuthService {
 		try {
 			const code: string = await this.getRandomCode();
 			await this.userService.add2FACode(email, code)
-			const info: any = await transporter.sendMail({
-				from: '"Transcendence Authentification Process" <2fa@42.hololive.fr>', // sender address
-				to: "jopadova@student.42.fr ", // list of receivers
-				subject: `${code} is your login passcode`, // Subject line
-				text: `${code} is your login passcode`, // plain text body
-				html: `<b>${code} is your login passcode</b>`, // html body
-			});
+			
+			console.log(`${code} was sent to ${email}`);
+			// const info: any = await transporter.sendMail({
+			// 	from: '"Transcendence Authentification Process" <2fa@42.hololive.fr>', // sender address
+			// 	to: "jopadova@student.42.fr ", // list of receivers
+			// 	subject: `${code} is your login passcode`, // Subject line
+			// 	text: `${code} is your login passcode`, // plain text body
+			// 	html: `<b>${code} is your login passcode</b>`, // html body
+			// });
 		} catch (err) {
 			throw err;
 		}

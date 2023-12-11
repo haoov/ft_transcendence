@@ -25,8 +25,8 @@ let AuthController = class AuthController {
     async login(response) {
         return response;
     }
-    async redirect(code, res) {
-        this.authService.redirect(code, res);
+    async redirect(code, res, req) {
+        this.authService.redirect(code, req, res);
     }
     async get2FA(response) {
         return response;
@@ -61,8 +61,9 @@ __decorate([
     (0, common_1.UseGuards)(auth_Intra42Guard_1.Intra42Guard),
     __param(0, (0, common_1.Query)("code")),
     __param(1, (0, common_1.Res)({ passthrough: true })),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "redirect", null);
 __decorate([
