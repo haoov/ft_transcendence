@@ -11,6 +11,7 @@
 </template>
 
 <script lang="ts">
+    import axios from "axios";
     import io from "socket.io-client";
     import { Socket} from "socket.io-client";
     export default {
@@ -33,6 +34,10 @@
         },
         created() { 
 			this.socket = io("http://localhost:3000/game")
+            axios.get("http://localhost:3000/api/user/me").then((response) => {
+                console.log(response.data);
+                this.socket.emit("connected", response.data)
+            })
 		},
         mounted() {
             let canva = this.$refs.game as HTMLCanvasElement;
