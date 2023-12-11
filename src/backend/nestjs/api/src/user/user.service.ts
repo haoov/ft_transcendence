@@ -13,6 +13,10 @@ export class UserService {
 		return this.usersRepository.findOneBy({ email: email }) as Promise<User>;
 	}
 
+	getUserById(id: number): Promise<User> {
+		return this.usersRepository.findOneBy({ id: id }) as Promise<User>;
+	}
+	
 	getAllUsers(): Promise<User[]> {
 		return this.usersRepository.find() as Promise<User[]>;
 	}
