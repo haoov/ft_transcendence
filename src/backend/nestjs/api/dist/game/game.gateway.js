@@ -15,8 +15,14 @@ const socket_io_1 = require("socket.io");
 let GameGateway = class GameGateway {
     constructor() {
         this.position = {
-            x: 200,
-            y: 200,
+            p1: {
+                x: 300,
+                y: 200
+            },
+            p2: {
+                x: 100,
+                y: 200
+            },
         };
     }
     onModuleInit() {
@@ -30,19 +36,19 @@ let GameGateway = class GameGateway {
         client.emit("position", this.position);
         switch (data) {
             case "left":
-                this.position.x -= 5;
+                this.position.p1.x -= 5;
                 this.server.emit("position", this.position);
                 break;
             case "right":
-                this.position.x += 5;
+                this.position.p1.x += 5;
                 this.server.emit("position", this.position);
                 break;
             case "up":
-                this.position.y -= 5;
+                this.position.p1.y -= 5;
                 this.server.emit("position", this.position);
                 break;
             case "down":
-                this.position.y += 5;
+                this.position.p1.y += 5;
                 this.server.emit("position", this.position);
                 break;
         }
@@ -56,10 +62,10 @@ __decorate([
 __decorate([
     (0, websockets_1.SubscribeMessage)('move'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:paramtypes", [socket_io_1.Socket, String]),
     __metadata("design:returntype", void 0)
 ], GameGateway.prototype, "moveDot", null);
 exports.GameGateway = GameGateway = __decorate([
-    (0, websockets_1.WebSocketGateway)()
+    (0, websockets_1.WebSocketGateway)({ namespace: 'game' })
 ], GameGateway);
 //# sourceMappingURL=game.gateway.js.map
