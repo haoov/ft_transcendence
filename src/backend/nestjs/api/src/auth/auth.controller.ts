@@ -24,9 +24,23 @@ export class AuthController {
 		this.authService.redirect(code, res);
 	}
 
+	@Get("2fa")
+	@UseGuards(Intra42Guard)
+	async get2FA(@Res() response: Response): Promise<Response> {
+		return response;
+	}
+
 	@Get("logout")
 	@UseGuards(AuthentificatedGuard)
 	logout(@Req() req: Request, @Res() res: Response) {
 		this.authService.logout(req, res);
+	}
+
+	@Get("test")
+	@UseGuards(AuthentificatedGuard)
+	async random(@Req() req: Request) {
+		const user: any = req.user;
+		await this.authService.sendEmail(user.email);
+		return { 'message': `email sent to ${user.email}` }; 
 	}
 }
