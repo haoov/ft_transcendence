@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 	port: 587,
 	auth: {
 	  user: "postmaster@42.hololive.fr",
-	  pass: "97b8427ee2308cff00119feb5f389b51-07f37fca-d3cbaaab",
+	  pass: process.env.MAILGUN_KEY,
 	},
 });
 
@@ -46,7 +46,7 @@ export class AuthService {
 			"jsonrpc": "2.0",
 			"method": "generateStrings",
 			"params": {
-				"apiKey": "",
+				"apiKey": process.env.RANDOM_ORG_KEY,
 				"n": 8,
 				"length": 6,
 				"characters": "0123456789",
