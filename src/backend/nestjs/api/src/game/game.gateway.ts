@@ -3,13 +3,19 @@ import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/web
 import { Server, Socket } from 'socket.io'
 
 // Outil de gestion des web socket events
-@WebSocketGateway()
+@WebSocketGateway({ namespace: 'game' })
 export class GameGateway implements OnModuleInit {
 
-  position = {
-      x: 200,
-      y: 200,
-  };
+    position = {
+        p1: {
+            x: 300,
+            y: 200
+        },
+        p2: {
+            x: 100,
+            y: 200
+        },
+    }
 
   // On declare le serveur
   @WebSocketServer()
@@ -24,26 +30,26 @@ export class GameGateway implements OnModuleInit {
 
   // les messages (events) qu'on recoit du client
   @SubscribeMessage('move')
-  moveDot(client: Socket, data: any) {
+  moveDot(client: Socket, data: string){
     console.log("Mouvement du client");
     // on envoie la position au client
     client.emit("position", this.position)
     switch(data) {
       case "left":
-          this.position.x -= 5;
+          this.position.p1.x -= 5;
           // on envoie la position au server
           this.server.emit("position", this.position);
           break;
       case "right":
-          this.position.x += 5;
+          this.position.p1.x += 5;
           this.server.emit("position", this.position);
           break;
       case "up":
-          this.position.y -= 5;
+          this.position.p1.y -= 5;
           this.server.emit("position", this.position);
           break;
       case "down":
-          this.position.y += 5;
+          this.position.p1.y += 5;
           this.server.emit("position", this.position);
           break;
   }

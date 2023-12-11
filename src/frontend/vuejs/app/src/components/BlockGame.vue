@@ -5,7 +5,7 @@
 		<button class="move" @click="move('right')">Right</button>
 		<button class="move" @click="move('left')">Left</button>
 		<button class="move" @click="move('up')">Up</button>
-		<button class="move" @click="move('Bottom')">Bottom</button>
+		<button class="move" @click="move('down')">Bottom</button>
 	</p>
     </div>
 </template>
@@ -20,24 +20,31 @@
                 socket: {} as Socket,
                 context: {} as CanvasRenderingContext2D,
                 position: {
-                    x: 0,
-                    y: 0
+                    p1: {
+                        x: 0,
+                        y: 0
+                    },
+                    p2: {
+                        x: 0,
+                        y: 0
+                    },
                 }
             }
         },
         created() { 
-			this.socket = io("http://localhost:3000");
+			this.socket = io("http://localhost:3000/game")
 		},
         mounted() {
             let canva = this.$refs.game as HTMLCanvasElement;
             this.context = canva.getContext("2d")!;
-			this.socket.on("position", (data: {x: number; y: number}) => {
-			this.position = data;
-			this.context.clearRect(0, 0, canva.width, canva.height);
-			this.context.fillStyle = "#FFFFFF";
-			this.context.fillRect(0, 0, canva.width, canva.width);
-			this.context.fillStyle = "#000000";
-			this.context.fillRect(this.position.x, this.position.y, 20, 20);
+			this.socket.on("position", (data: {p1: {x: number; y: number}, p2: {x: number; y: number}}) => {
+                this.position = data;
+                this.context.clearRect(0, 0, canva.width, canva.height);
+                this.context.fillStyle = "#FFFFFF";
+                this.context.fillRect(0, 0, canva.width, canva.width);
+                this.context.fillStyle = "#000000";
+                this.context.fillRect(this.position.p1.x, this.position.p1.y, 20, 20);
+                this.context.fillRect(this.position.p2.x, this.position.p2.y, 20, 20);
     });
         },
         methods: { 

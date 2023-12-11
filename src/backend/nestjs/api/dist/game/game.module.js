@@ -14,7 +14,7 @@ let GameModule = class GameModule {
 exports.GameModule = GameModule;
 exports.GameModule = GameModule = __decorate([
     (0, common_1.Module)({
-        imports: [game_gateway_1.GameGateway],
+        providers: [game_gateway_1.GameGateway],
     })
 ], GameModule);
 //# sourceMappingURL=game.module.js.map
