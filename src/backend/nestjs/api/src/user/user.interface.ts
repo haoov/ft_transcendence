@@ -1,5 +1,6 @@
 export interface User {
-	username: string,
+	username: string;
 	avatar: string;
-	email: string,
+	email: string;
+	twofa_code: string;
 }

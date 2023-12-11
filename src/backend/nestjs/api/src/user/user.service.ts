@@ -29,6 +29,16 @@ export class UserService {
 		return null;
 	}
 
+	async add2FACode(email: string, code: string): Promise<User> {
+		try {
+			const user: User = await this.getUser(email);
+			user.twofa_code = code;
+			return this.usersRepository.save(user);
+		} catch (err) {
+
+		}
+	}
+
 	async deleteUser(username: string) {
 		const user: User = await this.usersRepository.findOneBy({ username: username }) as User;
 		if (!user)

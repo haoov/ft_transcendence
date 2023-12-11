@@ -16,7 +16,7 @@ stop :
 
 clean:
 	@cd $(SRC) && $(SUDO) docker compose down -v
-	@$(SUDO) docker system prune -f
+	# @$(SUDO) docker system prune -f
 
 fclean : clean
 	@$(SUDO) rm -rf src/backend/postgresql/data/*

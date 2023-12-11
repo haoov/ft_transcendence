@@ -8,6 +8,8 @@ export class UserEntity {
 	username: string;
 	@Column()
 	avatar: string;
+	@Column({ default: null })
+	twofa_code: string;
 	@Column()
 	email: string;
 }
