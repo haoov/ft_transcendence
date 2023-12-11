@@ -1,9 +1,14 @@
 PROJDIR		=	$(realpath $(CURDIR))
 SRC			=	$(CURDIR)/src
-
-SUDO		=	/usr/bin/sudo
+USE			=	$(shell cat /etc/hostname)
 
 all : build run
+
+ifneq (,$(findstring 42paris,$(USE)))
+    SUDO	=	
+else
+    SUDO	=	/bin/sudo
+endif
 
 build :
 	@cd $(SRC) && $(SUDO) docker compose build
@@ -20,5 +25,8 @@ clean:
 
 fclean : clean
 	@$(SUDO) rm -rf src/backend/postgresql/data/*
+
+test :
+	@echo $(SUDO)
 
 .PHONY : build run clean fclean
