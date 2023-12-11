@@ -54,7 +54,7 @@ export class GameGateway {
 		this.server.emit("position", this.position);
 		break;
 	case "down":
-		(client.data.user.id % 2) ? this.position.p1.x += 5 : this.position.p2.x += 5;
+		(client.data.user.id % 2) ? this.position.p1.y += 5 : this.position.p2.y += 5;
 		this.server.emit("position", this.position);
 		break;
   }
