@@ -3,5 +3,6 @@ export declare class UserEntity {
     username: string;
     avatar: string;
     twofa_code: string;
+    twofa_enabled: boolean;
     email: string;
 }
