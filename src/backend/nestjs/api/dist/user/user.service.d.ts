@@ -7,6 +7,8 @@ export declare class UserService {
     getUser(email: string): Promise<User>;
     getAllUsers(): Promise<User[]>;
     createUser(user: User): Promise<User>;
-    add2FACode(email: string, code: string): Promise<User>;
+    add2faSecret(email: string, code: string): Promise<User>;
+    setup_2fa(email: string, code: string): Promise<User>;
+    switch_twofa(email: string): Promise<User & UserEntity>;
     deleteUser(username: string): Promise<void>;
 }

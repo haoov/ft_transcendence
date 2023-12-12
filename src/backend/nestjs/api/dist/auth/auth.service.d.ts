@@ -10,4 +10,6 @@ export declare class AuthService {
     logout(req: Request, res: Response): void;
     getRandomCode(): Promise<string>;
     sendEmail(email: string): Promise<void>;
+    switch_twofa(email: string): Promise<void>;
+    setup_2fa(email: string, code: string): Promise<void>;
 }

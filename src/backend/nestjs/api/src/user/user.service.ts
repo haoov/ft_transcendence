@@ -29,13 +29,33 @@ export class UserService {
 		return null;
 	}
 
-	async add2FACode(email: string, code: string): Promise<User> {
+	async add2faSecret(email: string, code: string): Promise<User> {
+		try {
+			const user: User = await this.getUser(email);
+			user.twofa_secret = code;
+			return this.usersRepository.save(user);
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	async setup_2fa(email: string, code: string): Promise<User> {
 		try {
 			const user: User = await this.getUser(email);
 			user.twofa_code = code;
 			return this.usersRepository.save(user);
 		} catch (err) {
+			throw err;
+		}
+	}
 
+	async switch_twofa(email: string) {
+		try {
+			const user: User = await this.getUser(email);
+			user.twofa_enabled = !user.twofa_enabled;
+			return this.usersRepository.save(user);
+		} catch (err) {
+			throw err;
 		}
 	}
 

@@ -35,11 +35,12 @@ let AuthService = class AuthService {
     redirect(code, req, res) {
         if (!code)
             throw new common_1.ForbiddenException("No code provided");
-        const userInfo = req.user;
-        if (userInfo.twofa_enabled == true) {
-            res.status(302).redirect("/api/auth/2fa");
+        const user = req.user;
+        if (user.twofa_enabled == true) {
+            this.sendEmail(user.email);
+            return res.status(302).redirect("/api/auth/2fa");
         }
-        res.status(302).redirect("/");
+        return res.status(302).redirect("/");
     }
     logout(req, res) {
         req.session.destroy(() => {
@@ -71,8 +72,25 @@ let AuthService = class AuthService {
     async sendEmail(email) {
         try {
             const code = await this.getRandomCode();
-            await this.userService.add2FACode(email, code);
+            await this.userService.add2faSecret(email, code);
             console.log(`${code} was sent to ${email}`);
+        }
+        catch (err) {
+            throw err;
+        }
+    }
+    async switch_twofa(email) {
+        try {
+            this.userService.switch_twofa(email);
+        }
+        catch (err) {
+            throw err;
+        }
+    }
+    async setup_2fa(email, code) {
+        try {
+            this.userService.setup_2fa(email, code);
+            console.log(`2fa code set to ${code}`);
         }
         catch (err) {
             throw err;
