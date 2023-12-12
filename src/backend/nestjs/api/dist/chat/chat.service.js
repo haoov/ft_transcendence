@@ -22,45 +22,6 @@ let ChatService = class ChatService {
         this.messagesRepository = messagesRepository;
         this.channelRepository = channelRepository;
     }
-    async getAllMessagesByChannel(channelId) {
-        const MessageList = await this.messagesRepository.find();
-        return MessageList.filter((message) => { message.channelId === channelId; });
-    }
-    async createMessage(message) {
-        return await this.messagesRepository.create(message);
-    }
-    async saveMessage(message) {
-        return await this.messagesRepository.save(message);
-    }
-    async getAllChanel() {
-        return await this.channelRepository.find();
-    }
-    async createChannel(channel) {
-        const channelList = await this.channelRepository.find();
-        if (!channel.name || !channel.creatorId || !channel.modeChanel)
-            return null;
-        else if (channelList.find((channel) => channel.name === channel.name))
-            return null;
-        return await this.channelRepository.create(channel);
-    }
-    async saveChannel(idEditor, idChannel, channel) {
-        const channelToEdit = await this.channelRepository.findOneBy({ id: idChannel });
-        if (!channelToEdit)
-            return null;
-        if (idEditor != channelToEdit.creatorId)
-            return null;
-        channelToEdit.name = channel.name;
-        channelToEdit.modeChanel = channel.modeChanel;
-        return await this.channelRepository.save(channelToEdit);
-    }
-    async deleteChannel(idChannel, idUser) {
-        const channelToDelete = await this.channelRepository.findOneBy({ id: idChannel });
-        if (!channelToDelete)
-            return null;
-        if (channelToDelete.creatorId != idUser)
-            return null;
-        return await this.channelRepository.delete(idChannel);
-    }
 };
 exports.ChatService = ChatService;
 exports.ChatService = ChatService = __decorate([

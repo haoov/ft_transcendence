@@ -15,6 +15,7 @@ const database_config_1 = require("./postgreSQL/database.config");
 const user_module_1 = require("./user/user.module");
 const auth_module_1 = require("./auth/auth.module");
 const health_module_1 = require("./health/health.module");
+const chat_modules_1 = require("./chat/chat.modules");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -24,7 +25,8 @@ exports.AppModule = AppModule = __decorate([
             typeorm_1.TypeOrmModule.forRoot(database_config_1.databaseConfig),
             user_module_1.UserModule,
             auth_module_1.AuthModule,
-            health_module_1.HealthModule
+            health_module_1.HealthModule,
+            chat_modules_1.ChatModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
