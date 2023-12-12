@@ -18,8 +18,16 @@ export class UserService {
 		return this.usersRepository.find() as Promise<User[]>;
 	}
 
-	getCurrentUser(req: Request): Express.User {
-		return req.user;
+	async getCurrentUser(req: Request): Promise<User> {
+		const reqUser :User = req.user as User;
+		try {
+			const user: User = await this.usersRepository.findOneBy({ email: reqUser.email });
+			return user;
+		}
+		catch (err) {
+			throw err;
+		};
+		return null;
 	}
 
 	async createUser(user: User): Promise<User> {
