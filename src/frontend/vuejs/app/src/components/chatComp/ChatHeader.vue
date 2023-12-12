@@ -1,11 +1,12 @@
 <template>
 	<div class="header-channel">
+    <ChannelWidget></ChannelWidget>
 		<p>Channel 1</p>
 	</div>
 </template>
 
 <script setup lang="ts">
-
+import ChannelWidget from '@/components/chatComp/ChannelWidget';
 </script>
 
 <style scoped>
@@ -20,8 +21,7 @@
 
 /*Need to change that */
 p {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 3rem;
   color: #000000;
   margin: auto;
 }
