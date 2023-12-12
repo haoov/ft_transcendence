@@ -20,6 +20,7 @@
   border-radius: 30px;
   overflow: hidden;
   background: #e0e0e0;
-  box-shadow: 15px 15px 30px #bebebe, -15px -15px 30px #ffffff;
+  /* box-shadow: 15px 15px 30px #bebebe, -15px -15px 30px #ffffff; */
+  box-shadow: 0 4px 8px 0 var(--c-black), 0 6px 20px 0 var(--c-blue-dark);
 }
 </style>
