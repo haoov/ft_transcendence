@@ -26,7 +26,5 @@ const socket = io('http://localhost:3000');
   align-items: center;
   width: 100vw;
   height: 100vh;
-  box-shadow: 15px 15px 30px #bebebe, -15px -15px 30px #ffffff;
-  overflow: hidden;
 }
 </style>
