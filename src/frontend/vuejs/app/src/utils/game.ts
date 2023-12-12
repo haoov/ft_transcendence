@@ -1,23 +1,23 @@
 import { reactive } from "vue";
 
-interface position {
-	x: number;
-	y: number;
-}
+export interface position {
+	p1: {
+		x: number;
+		y: number;
+	},
+	p2: {
+		x: number;
+		y: number;
+	}
+};
 
-const game = reactive({
-	myPosition: {
+export const game :position = reactive({
+	p1: {
 		x: 0,
 		y: 0,
-	} as position,
-
-	oppPosition: {
+	},
+	p2: {
 		x: 0,
 		y: 0,
-	} as position,
-
-})
-
-export default {
-	game,
-}
+	},
+});
