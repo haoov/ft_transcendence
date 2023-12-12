@@ -19,4 +19,6 @@ clean:
 fclean : clean
 	@rm -rf src/backend/postgresql/data/*
 
-.PHONY : build run clean fclean
+re : fclean all
+
+.PHONY : all build run clean fclean re

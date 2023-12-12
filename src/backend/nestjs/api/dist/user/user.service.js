@@ -31,6 +31,9 @@ let UserService = class UserService {
     getAllUsers() {
         return this.usersRepository.find();
     }
+    getCurrentUser(req) {
+        return req.user;
+    }
     async createUser(user) {
         try {
             this.usersRepository.create(user);

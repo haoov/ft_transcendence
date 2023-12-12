@@ -23,6 +23,9 @@ let UserController = class UserController {
     getAllUsers() {
         return this.userService.getAllUsers();
     }
+    getCurrentUser(req) {
+        return this.userService.getCurrentUser(req);
+    }
     deleteUser(username) {
         this.userService.deleteUser(username);
     }
@@ -34,6 +37,13 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "getAllUsers", null);
+__decorate([
+    (0, common_1.Get)("me"),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Object)
+], UserController.prototype, "getCurrentUser", null);
 __decorate([
     (0, common_1.Delete)(":username"),
     __param(0, (0, common_1.Param)("username")),
