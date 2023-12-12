@@ -5,10 +5,10 @@ import { MessageEntity , ChannelEntity} from 'src/postgreSQL/entities/chat.entit
 
 @Injectable()
 export class ChatService {
-	constructor(
-		@InjectRepository(MessageEntity) private messagesRepository: Repository<MessageEntity>,
-		@InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>
-		) {}
+	// constructor(
+	// 	@InjectRepository(MessageEntity) private messagesRepository: Repository<MessageEntity>,
+	// 	@InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>
+	// 	) {}
 
 
 	/* MESSAGE */

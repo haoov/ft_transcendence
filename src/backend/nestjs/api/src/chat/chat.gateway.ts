@@ -20,20 +20,20 @@ function buildMsg(senderName, message) {
 };
 
 @WebSocketGateway()
-export class ChatGateway {
-	// constructor(
-	// 	private readonly chatService: ChatService,
-	// 	private readonly userService: UserService
-	// 	) {}
+export class ChatGateway implements OnModuleInit {
+	constructor(
+		private readonly chatService: ChatService,
+		private readonly userService: UserService
+		) {}
 
-	// @WebSocketServer()
-	// server: Server;
+	@WebSocketServer()
+	server: Server;
 
-	// onModuleInit() {
-	// 	this.server.on('connection', (socket: Socket) => {
-	// 	console.log('New connection');
-	// 	});
-	// }
+	onModuleInit() {
+		this.server.on('connection', (socket: Socket) => {
+		console.log('New connection');
+		});
+	}
 
 	// @SubscribeMessage('newMessage')
 	// async onNewMessage(@MessageBody() data: Message) {

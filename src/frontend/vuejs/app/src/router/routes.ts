@@ -1,5 +1,6 @@
 import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
+import ChatView from "@/views/ChatView.vue";
 
 const routes = [
 	{
@@ -11,6 +12,12 @@ const routes = [
 		path: "/login",
 		name: "login",
 		component: LoginView
+	},
+	{
+		path: "/chat",
+		name: "chat",
+		component: ChatView,
+		children: [],
 	}
 ];
 
