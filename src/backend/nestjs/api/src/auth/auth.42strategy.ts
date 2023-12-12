@@ -13,7 +13,7 @@ export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
 						clientSecret: process.env.INTRA_CLIENT_SECRET,
 						callbackURL: process.env.LOCAL_CALLBACK,
 						scope: "public"
-					});
+					}	);
 	}
 	async validate(accesToken: string, refreshToken: string, profile: Profile): Promise<any> {
 		const userInfos: UserAuthDTO =	{

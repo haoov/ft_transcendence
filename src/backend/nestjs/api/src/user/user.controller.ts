@@ -4,7 +4,7 @@ import { User } from "./user.interface";
 import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
 
 @Controller("user")
-@UseGuards(new AuthentificatedGuard())
+// @UseGuards(new AuthentificatedGuard())
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 

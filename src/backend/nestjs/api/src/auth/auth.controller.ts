@@ -3,6 +3,7 @@ import { AuthService } from "./auth.service";
 import { Intra42Guard } from "./guards/auth.Intra42Guard";
 import { Request, Response } from "express";
 import { AuthentificatedGuard } from "./guards/auth.AuthentificatedGuard";
+import { User } from "src/user/user.interface";
 
 @Controller("auth")
 export class AuthController {
@@ -29,9 +30,10 @@ export class AuthController {
 	}
 
 	@Get("2fa")
-	@UseGuards(Intra42Guard)
-	async get2FA(@Res() response: Response): Promise<Response> {
-		return response;
+	@UseGuards(AuthentificatedGuard)
+	get2FA(@Req() req: Request) {
+		const user: User = req.user as User;
+		return { 'is2faEnabled': user.twofa_enabled };
 	}
 
 	@Get("logout")
@@ -40,11 +42,30 @@ export class AuthController {
 		this.authService.logout(req, res);
 	}
 
-	@Get("test")
+	@Get("test_mail")
 	@UseGuards(AuthentificatedGuard)
 	async random(@Req() req: Request) {
-		const user: any = req.user;
+		const user: User = req.user as User;
 		await this.authService.sendEmail(user.email);
-		return { 'message': `email sent to ${user.email}` }; 
+		return { 'message': `email sent to ${user.email}` };
+	}
+
+	@Get("setup_2fa")
+	// @UseGuards(AuthentificatedGuard)
+	async setup_2fa(
+		@Query("2fa") code: string, 
+		@Req() req: Request
+	) {
+		const user: User = req.user as User;
+		await this.authService.setup_2fa(user.email, code);
+		return { 'message': `2fa switched for ${user.username}` };
+	}	
+
+	@Get("test_2fa")
+	@UseGuards(AuthentificatedGuard)
+	async switch_twofa(@Req() req: Request) {
+		const user: User = req.user as User;
+		await this.authService.switch_twofa(user.email);
+		return { 'message': `2fa switched for ${user.username}` };
 	}
 }
