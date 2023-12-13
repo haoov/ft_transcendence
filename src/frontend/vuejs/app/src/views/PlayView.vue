@@ -1,23 +1,9 @@
 <template>
     <div class="blockGame">
-        <h1 class="pongTitle"> Welcome to Pong Game ! </h1>
-        <div class="gameDiv" v-if="isStatus('playing')" id="canvaContainer">
-            <canvas id="gameCanva" ref="gameCanva" width="640" height="480" style="border: 1px solid black;"></canvas>
-            <p>
-                <button class="move" @click="move('right')">Right</button>
-                <button class="move" @click="move('left')">Left</button>
-                <button class="move" @click="move('up')">Up</button>
-                <button class="move" @click="move('down')">Bottom</button>
-            </p>
-        </div>
-        <div class="gameDiv" v-else-if="isStatus('waiting')">
-            <h3>Waiting for a game...</h3>
-        </div>
-        <div class="gameDiv" v-else-if="isStatus('alreadyWaiting')">
-            <h3>You are already waiting !</h3>
-        </div>
-        <div class="gameDiv" v-else-if="isStatus('alreadyPlaying')">
-            <h3>You are already playing !</h3>
+        <h1 class="pongTitle">PONG GAME</h1>
+        <h3 id="gameText">{{state}}</h3>
+        <div class="gameDiv" id="canvaContainer">
+            <Suspense><canvas id="gameCanva" ref="gameCanva" :width="canvaWidth" :height="canvaHeight"></canvas></Suspense>
         </div>
     </div>
 </template>
@@ -28,61 +14,87 @@
     import { Socket} from "socket.io-client";
     import { game, ClientEvents, ServerEvents } from '../utils';
     import type { position } from '../utils';
-    import { onMounted, ref } from "vue";
+    import {onMounted, ref } from "vue";
+    import { onBeforeRouteLeave, type RouteLocationNormalized } from "vue-router";
+
     const socket = io("http://localhost:3000/game") as Socket;
     const gameCanva = ref<HTMLCanvasElement | null>(null);
-    let globalStatus = "";
+    let canvaWidth = ref(0);
+    let canvaHeight = ref(0);
+    let state = ref("");
+
     axios.get("http://localhost:3000/api/user/me").then((response) => {
-        console.log(response.data);
         socket.emit(ClientEvents.connected, response.data)
     })
 
     onMounted(() => {
-        checkAleadyWaiting();
+        checkAlreadyWaiting();
         checkAlreadyPlaying();
         checkWaiting();
-        //updatePosition();
+        updatePosition();
+        window.addEventListener("keypress", (event: KeyboardEvent) => {
+            switch (event.key) {
+                case "w" :
+                    socket.emit("move", "up");
+                    break;
+                case "s" :
+                    socket.emit("move", "down");
+                    break;
+                case "a" :
+                    socket.emit("move", "left");
+                    break;
+                case "d" :
+                    socket.emit("move", "right");
+                    break;
+                }
+            });
     });
-	
-    function isStatus(status: string) : boolean {
-        if (globalStatus === status)
-            return true;
-        else
-            return false;
-    }
 
-    // function updatePosition() {
-    //     globalStatus = "playing";
-    //     const canva = gameCanva.value as HTMLCanvasElement;
-    //     const context = canva.getContext("2d")! as CanvasRenderingContext2D;
-    //     socket.on(ServerEvents.position, (data: position) => {
-    //         game.p1 = data.p1;
-    //         game.p2 = data.p2;
-    //         context.clearRect(0, 0, canva.width, canva.height);
-    //         context.fillStyle = "#FFFFFF";
-    //         context.fillRect(0, 0, canva.width, canva.width);
-    //         context.fillStyle = "#000000";
-    //         context.fillRect(game.p1.x, game.p1.y, 20, 20);
-    //         context.fillRect(game.p2.x, game.p2.y, 20, 20);
-    //         });
-    // }
-    function  move(direction: string) {
-		socket.emit("move", direction); }
+    onBeforeRouteLeave((to: RouteLocationNormalized, from: RouteLocationNormalized, next: () => void) => {
+        socket.disconnect();
+        next();
+    })
+    
+    function updatePosition() {
+        socket.on(ServerEvents.position, (data: position) => {
+            state.value = "";
+            canvaHeight.value = 480;
+            canvaWidth.value = 640;
+            const canva = gameCanva.value as HTMLCanvasElement;
+            const context = canva.getContext("2d")! as CanvasRenderingContext2D;
+            game.p1 = data.p1;
+            game.p2 = data.p2;
+            context.clearRect(0, 0, canva.width, canva.height);
+            context.fillStyle = "#FFFFFF";
+            context.fillRect(0, 0, canva.width, canva.width);
+            context.fillStyle = "#0000FF";
+            context.fillRect(game.p1.x, game.p1.y, 20, 20);
+            context.fillStyle = "#FF0000";
+            context.fillRect(game.p2.x, game.p2.y, 20, 20);
+            });
+    }
     
     function  checkAlreadyPlaying() {
         socket.on(ServerEvents.alreadyPlaying, () => {
-            globalStatus = "alreadyPlaying";
+            state.value = "You are already playing !";
+            emptyCanva();
         });
     }
-    function  checkAleadyWaiting() {
+    function  checkAlreadyWaiting() {
         socket.on(ServerEvents.alreadyWaiting, () => {
-            globalStatus = "alreadyWaiting";
+            state.value = "You are already waiting !";
+            emptyCanva();
         });
     }
     function  checkWaiting() {
         socket.on(ServerEvents.waiting, () => {
-            globalStatus = "waiting";
+            state.value = "Waiting for a game...";
+            emptyCanva();
         });
+    }
+    function emptyCanva() {
+        canvaHeight.value = 0;
+        canvaWidth.value = 0;
     }
 </script>
 
@@ -94,6 +106,10 @@
     .gameDiv {
 		margin: 20px;
 	}
+    
+    #gameText {
+        color:white;
+    }
 
 	.blockGame {
 		height: 100%;
@@ -109,7 +125,6 @@
 
     #gameCanva {
         border-radius: 8px;
-        border-color: white;
         background-color: white;
         box-shadow:0 0 12px white;
         border:none;

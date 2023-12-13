@@ -7,7 +7,7 @@ export enum ClientEvents {
 };
 
 export enum ServerEvents {
-	position = "connected",
+	position = "position",
 	alreadyPlaying = "alreadyPlaying",
 	alreadyWaiting = "alreadyWaiting",
 	waiting = "waiting",

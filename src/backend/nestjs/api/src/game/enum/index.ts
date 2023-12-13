@@ -1,2 +1,2 @@
-export * from "./player";
-export * from "./events";
+export * from "./player.enum";
+export * from "./events.enum";
