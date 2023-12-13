@@ -53,7 +53,7 @@ export class AuthController {
 	@Get("setup_2fa")
 	// @UseGuards(AuthentificatedGuard)
 	async setup_2fa(
-		@Query("2fa") code: string, 
+		@Query("code") code: string, 
 		@Req() req: Request
 	) {
 		const user: User = req.user as User;
@@ -61,11 +61,15 @@ export class AuthController {
 		return { 'message': `2fa switched for ${user.username}` };
 	}	
 
-	@Get("test_2fa")
+	@Get("set_2fa_stat")
 	@UseGuards(AuthentificatedGuard)
-	async switch_twofa(@Req() req: Request) {
+	async set_twofa_stat(
+		@Req() req: Request,
+		@Query("stat") stat: boolean, 
+	) {
+		if (!stat) return { "error": "no stat provided" };
 		const user: User = req.user as User;
-		await this.authService.switch_twofa(user.email);
-		return { 'message': `2fa switched for ${user.username}` };
+		await this.authService.set_twofa_stat(user.email, stat);
+		return { 'message': `2fa enabled for ${user.username}` };
 	}
 }
