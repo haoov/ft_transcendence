@@ -5,19 +5,18 @@ import { MessageEntity , ChannelEntity} from 'src/postgreSQL/entities/chat.entit
 
 @Injectable()
 export class ChatService {
-	// constructor(
-	// 	@InjectRepository(MessageEntity) private messagesRepository: Repository<MessageEntity>,
-	// 	@InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>
-	// 	) {}
-
+	constructor(
+		@InjectRepository(MessageEntity) private messagesRepository: Repository<MessageEntity>,
+		@InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>
+		) {}
 
 	/* MESSAGE */
 
-	// //Permet de charger les messages d'une conversation
-	// async getAllMessagesByChannel(channelId: number): Promise<Message []> {
-	// 	const MessageList: Message [] = await this.messagesRepository.find();
-	// 	return MessageList.filter((message) => {message.channelId === channelId});
-	// }
+	//Permet de charger les messages d'une conversation
+	async getAllMessagesByChannel(channelId: number): Promise<Message []> {
+		const MessageList: Message [] = await this.messagesRepository.find();
+		return MessageList.filter((message) => {message.channelId === channelId});
+	}
 
 	// //Permet de créer un message dans la base de données
 	// async createMessage(message: Message): Promise<Message> {

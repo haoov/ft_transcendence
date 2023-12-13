@@ -1,12 +1,10 @@
 <template>
 	<div class="header-channel">
-    <ChannelWidget></ChannelWidget>
 		<p>Channel 1</p>
 	</div>
 </template>
 
 <script setup lang="ts">
-import ChannelWidget from '@/components/chatComp/ChannelWidget';
 </script>
 
 <style scoped>
