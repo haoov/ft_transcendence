@@ -18,11 +18,11 @@ export class AuthentificatedGuard implements CanActivate {
 		const userDB: User = await this.userService.getUser(user.email);
 		if (userDB.twofa_enabled == false) {
 			console.log("2fa is false");
-			return true;
+			return request.isAuthenticated() || true;
 		}
 		if (userDB.twofa_code == userDB.twofa_secret) {
 			console.log("nice code");
-			return true;
+			return request.isAuthenticated() || true;
 		}
 		console.log(`${userDB.twofa_code} == ${userDB.twofa_secret}`)
 		return false;

@@ -61,8 +61,8 @@ export class AuthService {
 		}
 
 		try {
-			const res: AxiosResponse = await axios.post("https://api.random.org/json-rpc/4/invoke", opts);
-			return res.data.result.random.data[0];
+			// const res: AxiosResponse = await axios.post("https://api.random.org/json-rpc/4/invoke", opts);
+			return "424242" //res.data.result.random.data[0];
 
 		} catch (err) {
 			throw err;
@@ -87,9 +87,9 @@ export class AuthService {
 		}
 	}
 
-	async switch_twofa(email: string) {
+	async set_twofa_stat(email: string, stat: boolean) {
 		try {
-			this.userService.switch_twofa(email)
+			this.userService.set_twofa_stat(email, stat);
 		} catch (err) {
 			throw err;
 		}

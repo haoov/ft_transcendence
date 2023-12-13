@@ -49,7 +49,7 @@ export class UserService {
 		}
 	}
 
-	async switch_twofa(email: string) {
+	async set_twofa_stat(email: string, stat: boolean) {
 		try {
 			const user: User = await this.getUser(email);
 			user.twofa_enabled = !user.twofa_enabled;
