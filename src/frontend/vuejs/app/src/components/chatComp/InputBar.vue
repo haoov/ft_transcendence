@@ -1,13 +1,41 @@
 <template>
 	<div class="input-bar-div">
-		<form class="form-message">
-			<input type="text" autocomplete="off" name="text" class="input" placeholder="messages">
+		<form class="form-message" @submit.prevent="sendMessage">
+			<input 
+				type="text"
+				autocomplete="off"
+				name="text"
+				class="input"
+				placeholder="messages"
+				v-model="input"
+			>
 		</form>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { Socket, io } from "socket.io-client";
+import { ref, defineProps } from "vue";
 
+const input = ref<string>("");
+const DateRawStamp = new Date().toISOString();
+const socket = io("http://localhost:3000");
+
+const sendMessage = () => {
+	const message: object = {
+		userId: "1",
+		channelId: "1",
+		messageText: input.value,
+		datestamp: DateRawStamp.substring(0, 10),
+		timestamp: DateRawStamp.substring(12, 19)
+	};
+	socket.emit("newMessage", message);
+	input.value = "";
+};
+
+socket.on("newMessage", (message: object) => {
+	console.log(message);
+});
 </script>
 
 <style scoped>
@@ -30,7 +58,7 @@
 .input {
   border: none;
   outline: none;
-  padding: 1em;
+  padding: 1.25em;
   background-color: #ccc;
   box-shadow: inset 2px 5px 10px rgba(0, 0, 0, 0.3);
   transition: 300ms ease-in-out;

@@ -1,13 +1,22 @@
 <template>
 	<div class="Messages-div">
-		<p>Ceci est un message random</p>
-					<!-- Messages -->
-						<!-- Message -->
+		<!-- <li v-for="(message, index) in messages">
+			<Message :value="message"></Message>	
+		</li> -->
 	</div>
 </template>
 
 <script setup lang="ts">
-// A FAIRE
+	import axios from 'axios';
+	import Message from './Message.vue';
+	import { ref } from 'vue';
+
+	// const messages = ref<any[]>([]);
+	// const socket = defineProps(['socket']).socket;
+	// socket.on("newMessage", (message: any) => {
+	// 	messages.value.push(message);
+	// });
+
 </script>
 
 <style scoped>
@@ -15,6 +24,7 @@
 .Messages-div {
   width: 100%;
   height: 100%;
+  overflow:hidden;
 }
 
 p {

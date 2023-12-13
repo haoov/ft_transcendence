@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/socket.io-client": "^3.0.0",
     "axios": "^1.6.2",
+    "npm-watch": "^0.11.0",
     "socket.io": "^4.7.2",
     "vue": "^3.3.4",
     "vue-router": "^4.2.5"

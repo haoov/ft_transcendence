@@ -8,13 +8,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatGateway = void 0;
 const socket_io_1 = require("socket.io");
 const chat_service_1 = require("./chat.service");
 const user_service_1 = require("../user/user.service");
 const websockets_1 = require("@nestjs/websockets");
-const ADMIN_NAME = 'Admin';
 function buildMsg(senderName, message) {
     return {
         senderName: senderName,
@@ -30,8 +32,12 @@ let ChatGateway = class ChatGateway {
     }
     onModuleInit() {
         this.server.on('connection', (socket) => {
-            console.log('New connection');
         });
+    }
+    onNewMessage(message) {
+        console.log(message);
+        const msg = message.messageText;
+        this.server.emit('newMessage', { sender: "Aboulest", data: message });
     }
 };
 exports.ChatGateway = ChatGateway;
@@ -39,6 +45,13 @@ __decorate([
     (0, websockets_1.WebSocketServer)(),
     __metadata("design:type", socket_io_1.Server)
 ], ChatGateway.prototype, "server", void 0);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('newMessage'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ChatGateway.prototype, "onNewMessage", null);
 exports.ChatGateway = ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(),
     __metadata("design:paramtypes", [chat_service_1.ChatService,

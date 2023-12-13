@@ -8,16 +8,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatModule = void 0;
 const common_1 = require("@nestjs/common");
-const user_module_1 = require("../user/user.module");
+const user_service_1 = require("../user/user.service");
 const chat_gateway_1 = require("./chat.gateway");
 const chat_service_1 = require("./chat.service");
+const typeorm_1 = require("@nestjs/typeorm");
+const chat_entity_1 = require("../postgreSQL/entities/chat.entity");
+const user_entity_1 = require("../postgreSQL/entities/user.entity");
+const chat_controller_1 = require("./chat.controller");
 let ChatModule = class ChatModule {
 };
 exports.ChatModule = ChatModule;
 exports.ChatModule = ChatModule = __decorate([
     (0, common_1.Module)({
-        imports: [user_module_1.UserModule],
-        providers: [chat_gateway_1.ChatGateway, chat_service_1.ChatService],
+        imports: [typeorm_1.TypeOrmModule.forFeature([chat_entity_1.MessageEntity, chat_entity_1.ChannelEntity, user_entity_1.UserEntity])],
+        providers: [chat_gateway_1.ChatGateway, chat_service_1.ChatService, user_service_1.UserService],
+        controllers: [chat_controller_1.ChatController],
     })
 ], ChatModule);
 ;
