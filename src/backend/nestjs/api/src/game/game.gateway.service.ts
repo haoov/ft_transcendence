@@ -42,8 +42,8 @@ export class GameGatewayService {
 	startGame(left: Socket, right: Socket, server: Server) {
 
 		// Setting opponent
-		left.data.opponent = right.data.user;
-		right.data.opponent = left.data.user;
+		left.data.opponent = right;
+		right.data.opponent = left;
 
 		// Joining room
 		const leftUser :User = left.data.user as User;
@@ -82,8 +82,8 @@ export class GameGatewayService {
 				(side == PlayerSide.left) ? position.p1.y += 5 : position.p2.y += 5;
 				break;
 			}
-			const opponent: Socket = players.find((player) => player.data.user == client.data.opponent);
-			opponent.data.position = client.data.position;
+			//const opponent: Socket = players.find((player) => player.data.user == client.data.opponent);
+			client.data.opponent.data.position = client.data.position;
 			server.to(client.data.room).emit(ServerEvents.position, client.data.position);
 		}
 	}
@@ -96,14 +96,16 @@ export class GameGatewayService {
 					//break;
 				}
 			}
+			// FONCTION RESET : opponent field  + envoyer un event connection lost
 		}
 		else if (client.data.status === UserStatus.waiting) {
-			for(let i: number = 0; i < waiting.length; i++) {
-				if (waiting[i].data.user.id == client.data.user.id) {
-					waiting.splice(i, 1);
-					//break;
-				}
-			}
+			// for(let i: number = 0; i < waiting.length; i++) {
+			// 	if (waiting[i].data.user.id == client.data.user.id) {
+			// 		waiting.splice(i, 1);
+			// 		//break;
+			// 	}
+			// }
+			waiting.pop();
 		}
 	}
 }
