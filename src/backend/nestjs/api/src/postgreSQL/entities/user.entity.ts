@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { UserStatus } from "../../user/enum/userStatus.enum"
 
 @Entity()
 export class UserEntity {
@@ -10,4 +11,6 @@ export class UserEntity {
 	avatar: string;
 	@Column()
 	email: string;
+	@Column({ default: UserStatus.undefined})
+	status: string;
 }
