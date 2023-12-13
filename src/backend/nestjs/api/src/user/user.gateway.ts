@@ -7,6 +7,7 @@ import { UserEntity } from '../postgreSQL/entities/user.entity';
 import { UserStatus } from './enum/userStatus.enum';
 import { ClientEvents } from '../game/enum';
 
+// DRAFT : ne fonctionne pas bien 
 
 // Outil de gestion des web socket events
 @WebSocketGateway({ namespace: 'connect' })
@@ -29,7 +30,7 @@ export class UserGateway
 				if (user.status === UserStatus.undefined || user.status === UserStatus.offline) {
 					user.status = UserStatus.online;
 					await this.usersRepository.save(user);
-					console.log("status on active pour " + user.username);
+					//console.log("status on active pour " + user.username);
 				}
 			}
 			catch (err) {
@@ -49,7 +50,7 @@ export class UserGateway
 					const user: User = await this.usersRepository.findOneBy({ email: client.data.user.email });
 					user.status = UserStatus.offline;
 					await this.usersRepository.save(user);
-					console.log("status on offline pour " + user.username);
+					//console.log("status on offline pour " + user.username);
 				}
 			}
 			// Remove from array

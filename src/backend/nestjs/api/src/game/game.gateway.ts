@@ -35,7 +35,6 @@ export class GameGateway
 	}
 
 	handleDisconnect(client: Socket) {
-		console.log("client disconnected");
 		this.gameGtwService.handleUserDisconnection(
 			client,
 			this.players, 
@@ -47,7 +46,6 @@ export class GameGateway
 	// les messages (events) qu'on recoit du client
 	@SubscribeMessage('move')
 	moveDot(client: Socket, data: string){
-		console.log("move done");
 		this.gameGtwService.moveDot(client, data, this.players, this.server);
 	}
 }
