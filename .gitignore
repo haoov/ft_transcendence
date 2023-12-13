@@ -2,8 +2,9 @@ src/.env
 
 #BACKEND
 src/backend/nestjs/api/node_modules
+src/backend/nestjs/api/dist
 
 #FRONTEND
 src/frontend/vuejs/app/node_modules
+src/frontend/vuejs/app/dist
 
-dist/
