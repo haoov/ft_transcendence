@@ -6,13 +6,15 @@ import { databaseConfig } from './postgreSQL/database.config';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
 							TypeOrmModule.forRoot(databaseConfig),
 							UserModule,
 							AuthModule,
-							HealthModule
+							HealthModule,
+							GameModule
 						],
   controllers: [AppController],
   providers: [AppService],
