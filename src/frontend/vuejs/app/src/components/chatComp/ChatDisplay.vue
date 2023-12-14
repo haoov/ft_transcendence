@@ -2,7 +2,7 @@
 	<div class="chat-display-div">
 		<ChatHeader></ChatHeader>
 		<MessageDisplay></MessageDisplay>
-		<InputBar></InputBar>
+		<Suspense><InputBar></InputBar></Suspense>
 	</div>
 </template>
 

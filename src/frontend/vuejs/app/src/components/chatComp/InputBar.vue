@@ -15,27 +15,34 @@
 
 <script setup lang="ts">
 import { Socket, io } from "socket.io-client";
-import { ref, defineProps } from "vue";
+import { ref, inject } from "vue";
 
 const input = ref<string>("");
-const DateRawStamp = new Date().toISOString();
-const socket = io("http://localhost:3000");
+const $data : any = inject('$data');
+const myUser = await $data.getMyUser();
+const socket : Socket = $data.getSocket();
+const DateRawStamp : string = new Date().toISOString();
+
+type Message = {
+	userId: Number;
+	channelId: Number;
+	messageText: String;
+	datestamp: String;
+	timestamp: String;
+};
 
 const sendMessage = () => {
-	const message: object = {
-		userId: "1",
-		channelId: "1",
+	const message: Message = {
+		userId: myUser._id,
+		channelId: 1,
 		messageText: input.value,
 		datestamp: DateRawStamp.substring(0, 10),
 		timestamp: DateRawStamp.substring(12, 19)
 	};
-	socket.emit("newMessage", message);
 	input.value = "";
+	socket.emit("newMessage", message);
 };
 
-socket.on("newMessage", (message: object) => {
-	console.log(message);
-});
 </script>
 
 <style scoped>
@@ -52,7 +59,7 @@ socket.on("newMessage", (message: object) => {
   display: flex;
   justify-content: column;
   width: 100%;
-  height: 100%;
+  height: 50%;
   overflow: hidden;
 }
 .input {

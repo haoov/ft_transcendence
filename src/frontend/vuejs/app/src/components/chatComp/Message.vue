@@ -1,24 +1,46 @@
 <template>
-	<div class="message-div">
+	<div class="message-div" id="{{ index }}">
 		<div class="profile-img-div">
-			<img src="https://picsum.photos/200/300" alt="Profile Picture">
+			<!-- <img src="https://picsum.photos/200/300" alt="Profile Picture"> -->
+			<img :src="profilePic" alt="Profile Picture">
 		</div>
 		<div class="core-message-div">
 			<div class="user-info-div">
-				<h3>aboulest</h3>
-				<h4>00:25:03</h4>
+				<h3>{{ username }}</h3>
+				<h4>{{ timestamp }}</h4>
 			</div>
 			<div class="text-div">
-				<p>Message</p>
+				<p>{{ message }}</p>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
+	import { defineProps } from 'vue';
 
-	// const message = defineProps(['message']).message;
-	// console.log(message);
+	/*Message received:
+		return {
+			sender:{
+				name: senderName,
+				avatar: profilePic,
+			},
+			message: {
+				text : message.message,
+				time: message.timestamp,
+			}
+		}
+	*/
+
+	const props : any = defineProps({
+		message: Object,
+		index: Number
+	});
+	const index : number = props.index;
+	const message : string = props.message.message.text;
+	const timestamp : string = props.message.data.time;
+	const username : string = props.message.sender.name;
+	const profilePic : string = props.message.sender.avatar;
 
 </script>
 

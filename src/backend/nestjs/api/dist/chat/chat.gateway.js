@@ -17,11 +17,16 @@ const socket_io_1 = require("socket.io");
 const chat_service_1 = require("./chat.service");
 const user_service_1 = require("../user/user.service");
 const websockets_1 = require("@nestjs/websockets");
-function buildMsg(senderName, message) {
+function buildMsg(senderName, profilePic, message) {
     return {
-        senderName: senderName,
-        text: message.message,
-        time: message.timestamp,
+        sender: {
+            name: senderName,
+            avatar: profilePic,
+        },
+        message: {
+            text: message.message,
+            time: message.timestamp,
+        }
     };
 }
 ;
@@ -34,10 +39,9 @@ let ChatGateway = class ChatGateway {
         this.server.on('connection', (socket) => {
         });
     }
-    onNewMessage(message) {
-        console.log(message);
-        const msg = message.messageText;
-        this.server.emit('newMessage', { sender: "Aboulest", data: message });
+    async onNewMessage(message) {
+        const sender = await this.userService.getUser(message.id);
+        this.server.emit('newMessage', buildMsg(sender.username, sender.avatar, message));
     }
 };
 exports.ChatGateway = ChatGateway;
@@ -50,7 +54,7 @@ __decorate([
     __param(0, (0, websockets_1.MessageBody)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], ChatGateway.prototype, "onNewMessage", null);
 exports.ChatGateway = ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(),

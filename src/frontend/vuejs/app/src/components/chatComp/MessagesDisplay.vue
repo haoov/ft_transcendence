@@ -1,8 +1,8 @@
 <template>
 	<div class="Messages-div">
-		<!-- <li v-for="(message, index) in messages">
-			<Message :value="message"></Message>	
-		</li> -->
+		<li v-for="(message, index) in messages">
+			<Message :message="message" :index="index"></Message>	
+		</li>
 	</div>
 </template>
 
@@ -10,12 +10,15 @@
 	import axios from 'axios';
 	import Message from './Message.vue';
 	import { ref } from 'vue';
+	import { inject } from 'vue';
+	import { Socket } from 'socket.io-client';
 
-	// const messages = ref<any[]>([]);
-	// const socket = defineProps(['socket']).socket;
-	// socket.on("newMessage", (message: any) => {
-	// 	messages.value.push(message);
-	// });
+	const data : any = inject('$data');
+	const messages = ref<any[]>([]);
+	const socket: Socket = data.getSocket();
+	socket.on("newMessage", (message: any) => {
+		messages.value.push(message);
+	});
 
 </script>
 
