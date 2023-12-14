@@ -10,4 +10,5 @@ export class ChatController {
 		const idChannel = parseInt('idChannel');
 		return await this.chatService.getAllMessagesByChannel(idChannel);
 	}
+
 }

@@ -8,5 +8,5 @@ export declare class ChatGateway implements OnModuleInit {
     constructor(chatService: ChatService, userService: UserService);
     server: Server;
     onModuleInit(): void;
-    onNewMessage(message: any): void;
+    onNewMessage(message: any): Promise<void>;
 }

@@ -9,11 +9,16 @@ import {
 	WebSocketServer
 } from '@nestjs/websockets';
 
-function buildMsg(senderName, message) {
+function buildMsg(senderName, profilePic, message) {
 	return {
-		senderName: senderName,
-		text : message.message,
-		time: message.timestamp,
+		sender:{
+			name: senderName,
+			avatar: profilePic,
+		},
+		message: {
+			text : message.message,
+			time: message.timestamp,
+		}
 	}
 };
 
@@ -33,10 +38,12 @@ export class ChatGateway implements OnModuleInit {
 	}
 
 	@SubscribeMessage('newMessage')
-	onNewMessage(@MessageBody() message: any) {
-		console.log(message);
-		// const msg = buildMsg(message.senderName, message);
-		const msg = message.messageText;
-		this.server.emit('newMessage', { sender:"Aboulest", data: message });
+	async onNewMessage(@MessageBody() message: any) {
+		const sender = await this.userService.getUser(message.id);
+		this.server.emit('newMessage', buildMsg(
+			sender.username,
+			sender.avatar,
+			message
+		));
 	}
 }
