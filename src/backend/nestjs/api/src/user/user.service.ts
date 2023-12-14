@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
 import { User } from "./user.interface";
 import { PG_UNIQUE_VIOLATION } from "@drdgvhbh/postgres-error-codes";
+import { Request } from "express";
 
 @Injectable()
 export class UserService {
