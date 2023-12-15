@@ -11,6 +11,6 @@ export class UserEntity {
 	avatar: string;
 	@Column()
 	email: string;
-	@Column({ default: UserStatus.undefined})
+	@Column({ default: "undefined"})
 	status: string;
 }
