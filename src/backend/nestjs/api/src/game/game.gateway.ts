@@ -7,25 +7,8 @@ import { User } from "src/user/user.interface";
 export class GameGateway {
 	constructor(private gameService: GameService) {}
 
-	handleConnection(@ConnectedSocket() socket: Socket) {
-		console.log("new connection", socket.id);
-		socket.on("connected", (data) => {
-			this.gameService.addPlayer(socket.id, data as User);
-		})
-	}
-
-	handleDisconnect(@ConnectedSocket() socket: Socket) {
-		console.log("disonnected", socket.id);
-		this.gameService.reset();
-	}
-
-	@SubscribeMessage("move")
-	move(@ConnectedSocket() socket: Socket, @MessageBody() direction: string) {
-		this.gameService.movePaddle(socket.id, direction);
-	}
-
-	@SubscribeMessage("update")
-	update(@ConnectedSocket() socket: Socket) {
-		socket.emit("updated", this.gameService.update());
-	}
+	// @SubscribeMessage("update")
+	// update(@ConnectedSocket() socket: Socket) {
+	// 	socket.emit("updated", this.gameService.update());
+	// }
 };

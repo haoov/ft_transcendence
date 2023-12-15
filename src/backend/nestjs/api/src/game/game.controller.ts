@@ -6,10 +6,10 @@ import { Response } from "express";
 export class GameController {
 	constructor(private readonly gameService: GameService) {};
 
-	@Get("params")
-	getInitParams(@Res() response: Response) {
-		response.send(this.gameService.initParams());
-	}
+	// @Get("params")
+	// getInitParams(@Res() response: Response) {
+	// 	response.send(this.gameService.initParams());
+	// }
 
 	@Get("textures")
 	getTexture(	@Query("color") color: string,

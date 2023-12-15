@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { Game } from "../game/game"
+import { Game } from "../game/game";
 import axios from 'axios';
-import io from "socket.io-client"
-import { Socket } from "socket.io-client"
+import io from "socket.io-client";
+import { Socket } from "socket.io-client";
 
 const socket: Socket = io("http://localhost:3000/game");
 const currentUser = await axios.get("http://localhost:3000/api/user").then((response) => {

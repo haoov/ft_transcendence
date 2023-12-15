@@ -16,7 +16,7 @@ export class UserController {
 
 	@Get("me")
 	getCurrentUser(@Req() req: Request): Express.User {
-		return this.userService.getCurrentUser(req);
+		return this.userService.getUser((req.user as User).email);
 	}
 
 	@Delete(":username")

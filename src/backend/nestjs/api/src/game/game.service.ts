@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "src/user/user.interface";
 import { UserService } from "src/user/user.service";
 import { Player } from "./data/player";
 import { Ball } from "./data/ball";
@@ -13,13 +12,13 @@ export class GameService {
 	players: Player[];
 	ball: Ball;
 	field: Field;
-	effects: Effect[];
+	effect: Effect;
 
 	constructor(private userService: UserService) {
 		this.players = [];
 		this.ball = new Ball();
 		this.field = new Field();
-		this.effects[0] = new Effect("ice");
+		this.effect = new Effect();
 	}
 
 	initParams() {
@@ -38,7 +37,7 @@ export class GameService {
 		};
 	}
 
-	async addPlayer(socketId: string, user: User) {
+	addPlayer(socketId: string, user: User) {
 		const playerId = (this.players.length == 0 ? 1 : 2);
 		this.players.push(new Player(user, socketId, playerId, this.field));
 	}
@@ -52,13 +51,23 @@ export class GameService {
 	}
 
 	update() {
-		this.ball.moove(this.players, this.field, this.effects);
+		if (this.players.length == 2) {
+			this.effect.moove(this.field);
+			this.ball.moove(this.players, this.field, this.effect);
+		}
 		return {
 			ballPosition: this.ball.position,
+			ballScale: this.ball.scale,
+			ballEffect: (this.ball.effect != null ? this.ball.effect.type : "none"),
 			p1PaddlePosition: this.players[0]?.paddle.position,
 			p1PaddleScale: this.players[0]?.paddle.scale,
+			p1Effect: (this.players[0]?.paddle.effect != null ? this.players[0]?.paddle.effect.type : "none"),
 			p2PaddlePosition: this.players[1]?.paddle.position,
 			p2PaddleScale: this.players[1]?.paddle.scale,
+			p2Effect: (this.players[1]?.paddle.effect != null ? this.players[1]?.paddle.effect.type : "none"),
+			effectPosition: this.effect.position,
+			effectRotationSpeed: this.effect.rotationSpeed,
+			effectOn: this.effect.on,
 		};
 	}
 

@@ -17,10 +17,6 @@ export class UserService {
 		return this.usersRepository.find() as Promise<User[]>;
 	}
 
-	getCurrentUser(req: Request): Express.User {
-		return req.user;
-	}
-
 	async createUser(user: User): Promise<User> {
 		try {
 			this.usersRepository.create(user as UserEntity);
