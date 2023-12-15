@@ -4,6 +4,7 @@ import { GameGatewayService } from './game.gateway.service';
 import { ClientEvents, PlayerSide } from './enum';
 import { User } from 'src/user/user.interface';
 import { UserStatus } from 'src/user/enum/userStatus.enum';
+import { Room } from './classes/Room';
 
 
 // Outil de gestion des web socket events
@@ -13,22 +14,22 @@ export class GameGateway
 
 	// On declare le serveur et les variables
 	@WebSocketServer() server: Server;
-	players: Socket[];
+	rooms: Room[]
 	waiting: Socket[];
 
 	constructor(private gameGtwService: GameGatewayService) {
-		this.players = [];
+		this.rooms = [];
 		this.waiting = [];
 	}
 
 	handleConnection(client: Socket) {
 		client.on(ClientEvents.connected, (data: User) => {
 			client.data.user = data;
-			client.data.status = UserStatus.undefined;
-			client.data.side = PlayerSide.undefined;
+			// client.data.status = UserStatus.undefined;
+			// client.data.side = PlayerSide.undefined;
 			this.gameGtwService.handleUserConnection(
 				client, 
-				this.players, 
+				this.rooms, 
 				this.waiting, 
 				this.server);
 		});
