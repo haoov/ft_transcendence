@@ -12,8 +12,10 @@ export class GameController {
 	}
 
 	@Get("textures")
-	getTexture(	@Query("texture") texture: string, @Res() response: Response) {
-		const file = this.gameService.getTexture(texture);
+	getTexture(	@Query("color") color: string,
+							@Query("displacement") displacement: string,
+							@Res() response: Response) {
+		const file = this.gameService.getTexture(color, displacement);
 		response.send(file);
 	}
 };

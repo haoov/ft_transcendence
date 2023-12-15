@@ -27,6 +27,9 @@ onMounted(() => {
 	function animate() {
 		requestAnimationFrame(animate);
 		socket.emit("update");
+		game.effect.rotateX(0.01);
+		game.effect.rotateY(0.01);
+		game.effect.rotateZ(0.01);
 		game.renderer.render(game.scene, game.camera);
 	}
 	animate();

@@ -13,13 +13,13 @@ export class GameService {
 	players: Player[];
 	ball: Ball;
 	field: Field;
-	effect: Effect;
+	effects: Effect[];
 
 	constructor(private userService: UserService) {
 		this.players = [];
 		this.ball = new Ball();
 		this.field = new Field();
-		this.effect = new Effect();
+		this.effects[0] = new Effect("ice");
 	}
 
 	initParams() {
@@ -38,7 +38,7 @@ export class GameService {
 		};
 	}
 
-	addPlayer(socketId: string, user: User) {
+	async addPlayer(socketId: string, user: User) {
 		const playerId = (this.players.length == 0 ? 1 : 2);
 		this.players.push(new Player(user, socketId, playerId, this.field));
 	}
@@ -52,23 +52,13 @@ export class GameService {
 	}
 
 	update() {
-		if (this.players.length == 2) {
-			this.effect.moove(this.field);
-			this.ball.moove(this.players, this.field, this.effect);
-		}
+		this.ball.moove(this.players, this.field, this.effects);
 		return {
 			ballPosition: this.ball.position,
-			ballScale: this.ball.scale,
-			ballEffect: (this.ball.effect != null ? this.ball.effect.type : "none"),
 			p1PaddlePosition: this.players[0]?.paddle.position,
 			p1PaddleScale: this.players[0]?.paddle.scale,
-			p1Effect: (this.players[0]?.paddle.effect != null ? this.players[0]?.paddle.effect.type : "none"),
 			p2PaddlePosition: this.players[1]?.paddle.position,
 			p2PaddleScale: this.players[1]?.paddle.scale,
-			p2Effect: (this.players[1]?.paddle.effect != null ? this.players[1]?.paddle.effect.type : "none"),
-			effectPosition: this.effect.position,
-			effectRotationSpeed: this.effect.rotationSpeed,
-			effectOn: this.effect.on,
 		};
 	}
 
@@ -78,17 +68,17 @@ export class GameService {
 			this.players[i].paddle.reset();
 	}
 
-	getTexture(texture: string) {
-		switch (texture) {
+	getTexture(color: string, displacement: string) {
+		switch (color) {
 			case "ice":
 				return readFileSync("src/game/data/textures/ice.color.jpg");
-			case "fire":
-				return readFileSync("src/game/data/textures/fire.color.png")
 			case "tennisCourt":
 				return readFileSync("src/game/data/textures/tennis_court.jpeg");
-			case "questionMark":
-				return readFileSync("src/game/data/textures/questionMark.jpeg");
 			default: break;
+		}
+		switch (displacement) {
+			case "ice":
+				return readFileSync("src/game/data/textures/ice.displacement.png")
 		}
 	}
 

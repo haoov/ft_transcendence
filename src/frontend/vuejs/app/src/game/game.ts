@@ -41,24 +41,23 @@ interface initParams {
 
 interface updatedParams {
 	ballPosition: Vec3,
-	ballScale: Vec3,
 	ballEffect: string,
 	p1PaddlePosition: Vec3,
+	p1Effect: string;
 	p1PaddleScale: Vec3,
-	p1Effect: string,
 	p2PaddlePosition: Vec3,
-	p2PaddleScale: Vec3,
 	p2Effect: string,
-	effectPosition: Vec3,
-	effectRotationSpeed: number,
-	effectOn: boolean,
+	p2PaddleScale: Vec3,
 }
 
 interface textures {
-	tennisCourt: th.Texture,
-	questionMark: th.Texture,
-	ice: th.Texture,
-	fire: th.Texture,
+	tennisCourt: {
+		colorMap: th.Texture,
+	}
+	ice: {
+		colorMap: th.Texture,
+		displacementMap: th.Texture,
+	},
 }
 
 export class Game {
@@ -96,10 +95,13 @@ export class Game {
 		//init textures
 		this.textureLoader = new th.TextureLoader();
 		this.textures = {
-			tennisCourt: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=tennisCourt"),
-			questionMark: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=questionMark"),
-			ice: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=ice"),
-			fire: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=fire"),
+			tennisCourt: {
+				colorMap: this.textureLoader.load("http://localhost:3000/api/game/textures?color=tennisCourt"),
+			},
+			ice: {
+				colorMap: this.textureLoader.load("http://localhost:3000/api/game/textures?color=ice"),
+				displacementMap: this.textureLoader.load("http://localhost:3000/api/game/textures?displacement=ice"),
+			}
 		}
 
 		//init lights
@@ -114,7 +116,7 @@ export class Game {
 		this.paddle1 = this.createPaddle(init);
 		this.paddle2 = this.createPaddle(init);
 		this.field = this.createField(init.params.FIELD_WIDTH, init.params.FIELD_HEIGHT);
-		this.field.material.map = this.textures.tennisCourt;
+		this.field.material.map = this.textures.tennisCourt.colorMap;
 		this.effect = this.createEffect();
 		this.scene.add(this.field, this.ball, this.paddle1, this.paddle2, this.effect);
 	};
@@ -152,9 +154,7 @@ export class Game {
 		const geometry = new th.BoxGeometry(0.2, 0.2, 0.2, 100, 100, 100);
 		const material = new th.MeshPhongMaterial();
 		const effect = new th.Mesh(geometry, material);
-		effect.material.map = this.textures.questionMark;
-		effect.material.transparent = true;
-		effect.material.opacity = 0.7;
+		effect.material.map = this.textures.ice.colorMap;
 		effect.castShadow = true;
 		effect.receiveShadow = true;
 		return effect;
@@ -173,42 +173,9 @@ export class Game {
 		const newPaddle2Pos = new th.Vector3(	data.p2PaddlePosition.x,
 																					data.p2PaddlePosition.y,
 																					data.p2PaddlePosition.z);
-		const newEffectPos = new th.Vector3(	data.effectPosition.x,
-																					data.effectPosition.y,
-																					data.effectPosition.z);
 
 		this.ball.position.lerp(newBallPos, 1);
-		this.ball.scale.set(data.ballScale.x, data.ballScale.y, data.ballScale.z);
-		this.updateMaterial(this.ball, data.ballEffect);
 		this.paddle1.position.lerp(newPaddle1Pos, 0.2);
-		this.updateMaterial(this.paddle1, data.p1Effect);
-		this.paddle1.scale.y = data.p1PaddleScale.y;
 		this.paddle2.position.lerp(newPaddle2Pos, 0.2);
-		this.paddle2.scale.y = data.p2PaddleScale.y;
-		this.updateMaterial(this.paddle2, data.p2Effect);
-		this.effect.position.lerp(newEffectPos, 0.2);
-		this.effect.rotateX(data.effectRotationSpeed);
-		this.effect.rotateY(data.effectRotationSpeed);
-		this.effect.rotateZ(data.effectRotationSpeed);
-		if (data.effectOn == false)
-			this.scene.remove(this.effect);
-		if (data.effectOn == true)
-			this.scene.add(this.effect);
-	}
-
-	updateMaterial(obj: th.Mesh<th.BufferGeometry, th.MeshPhongMaterial>, texture: string) {
-		switch (texture) {
-			case "ice":
-				obj.material.map = this.textures.ice;
-				break;
-			case "fire":
-				obj.material.map = this.textures.fire;
-				break;
-			case "none":
-				obj.material.map = null;
-				break;
-			default: break;
-		}
-		obj.material.needsUpdate = true;
 	}
 }
