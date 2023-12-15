@@ -33,7 +33,7 @@ type Message = {
 
 const sendMessage = () => {
 	const message: Message = {
-		userId: myUser._id,
+		userId: myUser.id,
 		channelId: 1,
 		messageText: input.value,
 		datestamp: DateRawStamp.substring(0, 10),

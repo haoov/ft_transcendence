@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 	import { defineProps } from 'vue';
-
 	/*Message received:
 		return {
 			sender:{
@@ -31,16 +30,17 @@
 			}
 		}
 	*/
-
 	const props : any = defineProps({
 		message: Object,
 		index: Number
 	});
-	const index : number = props.index;
-	const message : string = props.message.message.text;
-	const timestamp : string = props.message.data.time;
+
 	const username : string = props.message.sender.name;
 	const profilePic : string = props.message.sender.avatar;
+	const message : string = props.message.message.text;
+	const timestamp : string = props.message.message.time;
+	const index : number = props.index;
+	// console.log(props.username);
 
 </script>
 
