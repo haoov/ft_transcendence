@@ -49,4 +49,9 @@ export class UserService {
 		this.usersRepository.remove(user as UserEntity);
 	}
 
+
+	async updateUserStatus(user: User, newStatus: string) {
+		user.status = newStatus;
+		this.usersRepository.save(user as UserEntity);
+	}
 }
