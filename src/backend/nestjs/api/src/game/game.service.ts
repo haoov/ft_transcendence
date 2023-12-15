@@ -77,17 +77,17 @@ export class GameService {
 			this.players[i].paddle.reset();
 	}
 
-	getTexture(color: string, displacement: string) {
-		switch (color) {
+	getTexture(texture: string) {
+		switch (texture) {
 			case "ice":
 				return readFileSync("src/game/data/textures/ice.color.jpg");
+			case "fire":
+				return readFileSync("src/game/data/textures/fire.color.png")
 			case "tennisCourt":
 				return readFileSync("src/game/data/textures/tennis_court.jpeg");
+			case "questionMark":
+				return readFileSync("src/game/data/textures/questionMark.jpeg");
 			default: break;
-		}
-		switch (displacement) {
-			case "ice":
-				return readFileSync("src/game/data/textures/ice.displacement.png")
 		}
 	}
 
