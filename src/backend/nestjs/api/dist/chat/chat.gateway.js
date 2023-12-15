@@ -24,7 +24,7 @@ function buildMsg(senderName, profilePic, message) {
             avatar: profilePic,
         },
         message: {
-            text: message.message,
+            text: message.messageText,
             time: message.timestamp,
         }
     };
@@ -40,7 +40,9 @@ let ChatGateway = class ChatGateway {
         });
     }
     async onNewMessage(message) {
-        const sender = await this.userService.getUser(message.id);
+        console.log(message);
+        const sender = await this.userService.getUser(message.userId);
+        console.log(sender);
         this.server.emit('newMessage', buildMsg(sender.username, sender.avatar, message));
     }
 };

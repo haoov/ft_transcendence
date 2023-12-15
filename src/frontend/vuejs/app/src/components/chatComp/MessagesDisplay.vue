@@ -1,13 +1,12 @@
 <template>
 	<div class="Messages-div">
-		<li v-for="(message, index) in messages">
+		<ul v-for="(message, index) in messages">
 			<Message :message="message" :index="index"></Message>	
-		</li>
+		</ul>
 	</div>
 </template>
 
 <script setup lang="ts">
-	import axios from 'axios';
 	import Message from './Message.vue';
 	import { ref } from 'vue';
 	import { inject } from 'vue';
