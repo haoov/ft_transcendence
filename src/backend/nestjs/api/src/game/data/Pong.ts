@@ -70,3 +70,5 @@ class Pong {
 			this.players[i].paddle.reset();
 	}
 };
+
+export { Pong };

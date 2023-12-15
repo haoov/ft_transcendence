@@ -116,7 +116,7 @@ export class Game {
 		this.field = this.createField(init.params.FIELD_WIDTH, init.params.FIELD_HEIGHT);
 		this.field.material.map = this.textures.tennisCourt;
 		this.effect = this.createEffect();
-		this.scene.add(this.field, this.ball, this.paddle1, this.paddle2, this.effect);
+		this.scene.add(this.field, this.ball, this.paddle1, this.paddle2);
 	};
 
 	createBall(radius: number) {

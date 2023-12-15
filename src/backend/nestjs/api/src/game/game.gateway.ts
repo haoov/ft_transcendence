@@ -2,13 +2,18 @@ import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from
 import { Server, Socket } from "socket.io";
 import { GameService } from "./game.service";
 import { User } from "src/user/user.interface";
+import { Pong } from "./data/Pong";
 
 @WebSocketGateway({ namespace: "game" })
 export class GameGateway {
-	constructor(private gameService: GameService) {}
+	pong: Pong;
 
-	// @SubscribeMessage("update")
-	// update(@ConnectedSocket() socket: Socket) {
-	// 	socket.emit("updated", this.gameService.update());
-	// }
+	constructor(private gameService: GameService) {
+		this.pong = new Pong();
+	}
+
+	@SubscribeMessage("update")
+	update(@ConnectedSocket() socket: Socket) {
+		socket.emit("updated", this.pong.update());
+	}
 };

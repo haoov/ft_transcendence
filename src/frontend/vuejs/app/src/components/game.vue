@@ -6,7 +6,7 @@ import io from "socket.io-client";
 import { Socket } from "socket.io-client";
 
 const socket: Socket = io("http://localhost:3000/game");
-const currentUser = await axios.get("http://localhost:3000/api/user").then((response) => {
+const currentUser = await axios.get("http://localhost:3000/api/user/me").then((response) => {
 		socket.emit("connected", response.data);
 		return response.data;
 	});
@@ -29,6 +29,7 @@ onMounted(() => {
 		socket.emit("update");
 		game.renderer.render(game.scene, game.camera);
 	}
+
 	animate();
 })
 </script>
@@ -43,8 +44,16 @@ onMounted(() => {
 	}
 
 	#game {
+		display: flex;
 		width: 720px;
 		height: 480px;
 		border: solid var(--c-black);
+		justify-content: center;
+		align-items: center;
+	}
+
+	#playButton {
+		position: absolute;
+		z-index: 100;
 	}
 </style>
