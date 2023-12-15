@@ -3,8 +3,8 @@ import { Server, Socket } from 'socket.io'
 import { GameGatewayService } from './game.gateway.service';
 import { ClientEvents, PlayerSide } from './enum';
 import { User } from 'src/user/user.interface';
-import { UserStatus } from 'src/user/enum/userStatus.enum';
 import { Room } from './classes/Room';
+import { UserService } from 'src/user/user.service';
 
 
 // Outil de gestion des web socket events
@@ -17,7 +17,7 @@ export class GameGateway
 	rooms: Room[]
 	waiting: Socket[];
 
-	constructor(private gameGtwService: GameGatewayService) {
+	constructor(private gameGtwService: GameGatewayService, private readonly userService: UserService) {
 		this.rooms = [];
 		this.waiting = [];
 	}
@@ -25,8 +25,6 @@ export class GameGateway
 	handleConnection(client: Socket) {
 		client.on(ClientEvents.connected, (data: User) => {
 			client.data.user = data;
-			// client.data.status = UserStatus.undefined;
-			// client.data.side = PlayerSide.undefined;
 			this.gameGtwService.handleUserConnection(
 				client, 
 				this.rooms, 
@@ -38,7 +36,7 @@ export class GameGateway
 	handleDisconnect(client: Socket) {
 		this.gameGtwService.handleUserDisconnection(
 			client,
-			this.players, 
+			this.rooms, 
 			this.waiting,
 			this.server
 		)
@@ -47,6 +45,6 @@ export class GameGateway
 	// les messages (events) qu'on recoit du client
 	@SubscribeMessage('move')
 	moveDot(client: Socket, data: string){
-		this.gameGtwService.moveDot(client, data, this.players, this.server);
+		this.gameGtwService.moveDot(client, data, this.rooms, this.server);
 	}
 }

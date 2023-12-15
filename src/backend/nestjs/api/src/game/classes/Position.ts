@@ -1,11 +1,11 @@
 import { PositionInterface } from "../interfaces"
 
 export class Position {
-	private p1:{
+	public p1:{
 		x: number;
 		y: number;
 	};
-	private p2: {
+	public p2: {
 		x: number;
 		y: number;
 	}
