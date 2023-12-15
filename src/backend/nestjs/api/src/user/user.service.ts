@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
 import { User } from "./user.interface";
 import { PG_UNIQUE_VIOLATION } from "@drdgvhbh/postgres-error-codes";
+import { Request } from "express";
 
 @Injectable()
 export class UserService {
@@ -15,10 +16,6 @@ export class UserService {
 
 	getAllUsers(): Promise<User[]> {
 		return this.usersRepository.find() as Promise<User[]>;
-	}
-
-	getCurrentUser(req: Request): Express.User {
-		return req.user;
 	}
 
 	async createUser(user: User): Promise<User> {
