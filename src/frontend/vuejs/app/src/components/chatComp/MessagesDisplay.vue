@@ -1,5 +1,5 @@
 <template>
-	<div class="Messages-div">
+	<div class="Messages-div" ref="divRef">
 		<ul v-for="(message, index) in messages">
 			<Message :message="message" :index="index"></Message>	
 		</ul>
@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 	import Message from './Message.vue';
-	import { ref } from 'vue';
+	import { onUpdated, ref } from 'vue';
 	import { inject } from 'vue';
 	import { Socket } from 'socket.io-client';
 
@@ -19,6 +19,13 @@
 		messages.value.push(message);
 	});
 
+	const divRef = ref(null);
+	onUpdated(() => {
+		if (divRef.value) {
+			divRef.value.scrollTop = divRef.value.scrollHeight;
+		}
+		return {divRef}
+	});
 </script>
 
 <style scoped>
