@@ -58,10 +58,13 @@
   height: 50px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #527a3f;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.profile-img-div img {
+  max-width: 100%;
+  max-height: 100%;
 }
 .core-message-div {
   display: grid;
