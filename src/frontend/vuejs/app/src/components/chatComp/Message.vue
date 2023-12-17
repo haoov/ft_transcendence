@@ -1,13 +1,13 @@
 <template>
-	<div class="message-div" id="{{ index }}">
+	<div class="message-div" :id="index">
 		<div class="profile-img-div">
 			<!-- <img src="https://picsum.photos/200/300" alt="Profile Picture"> -->
 			<img :src="profilePic" alt="Profile Picture">
 		</div>
 		<div class="core-message-div">
 			<div class="user-info-div">
-				<h3>{{ username }}</h3>
-				<h4>{{ timestamp }}</h4>
+				<h4>{{ username }}</h4>
+				<h5>{{ timestamp }}</h5>
 			</div>
 			<div class="text-div">
 				<p>{{ message }}</p>
@@ -18,29 +18,17 @@
 
 <script setup lang="ts">
 	import { defineProps } from 'vue';
-	/*Message received:
-		return {
-			sender:{
-				name: senderName,
-				avatar: profilePic,
-			},
-			message: {
-				text : message.message,
-				time: message.timestamp,
-			}
-		}
-	*/
+
 	const props : any = defineProps({
-		message: Object,
+		data: Object,
 		index: Number
 	});
 
-	const username : string = props.message.sender.name;
-	const profilePic : string = props.message.sender.avatar;
-	const message : string = props.message.message.text;
-	const timestamp : string = props.message.message.time;
-	const index : number = props.index;
-	// console.log(props.username);
+	const username : string = props.data.sender.name;
+	const profilePic : string = props.data.sender.avatar;
+	const message : string = props.data.message.text;
+	const timestamp : string = props.data.message.time;
+	const index : string = props.index.toString();
 
 </script>
 
@@ -76,17 +64,17 @@
 .user-info-div {
   display: flex;
   flex-direction: row;
-  padding: 0 2px;
-}
-
-h3 {
-  font-size: 1.5em;
-  color: #707070;
 }
 
 h4 {
-  font-size: 1em;
-  color: #a7a7a7;
+	font-size: 1.5em;
+	color: #707070;
+}
+
+h5 {
+	font-size: 1em;
+	color: #a7a7a7;
+	padding: 2%;
 }
 
 p {

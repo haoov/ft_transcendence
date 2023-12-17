@@ -17,7 +17,7 @@ import ChatHeader from './ChatHeader.vue';
 
 .chat-display-div {
   display: grid;
-  grid-template-rows: 1fr 6fr 2fr;
+  grid-template-rows: 1fr 6fr 0.5fr;
   align-content: stretch;
   width: 100%;
   height: 100%;
