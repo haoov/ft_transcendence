@@ -39,9 +39,7 @@ export class ChatGateway implements OnModuleInit {
 
 	@SubscribeMessage('newMessage')
 	async onNewMessage(@MessageBody() message: any) {
-		console.log(message);
-		const sender = await this.userService.getUser(message.userId);
-		console.log(sender);
+		const sender = await this.userService.getUserById(message.userId);
 		this.server.emit('newMessage', buildMsg(
 			sender.username,
 			sender.avatar,

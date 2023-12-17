@@ -40,9 +40,7 @@ let ChatGateway = class ChatGateway {
         });
     }
     async onNewMessage(message) {
-        console.log(message);
-        const sender = await this.userService.getUser(message.userId);
-        console.log(sender);
+        const sender = await this.userService.getUserById(message.userId);
         this.server.emit('newMessage', buildMsg(sender.username, sender.avatar, message));
     }
 };

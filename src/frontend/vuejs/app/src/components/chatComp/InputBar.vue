@@ -17,23 +17,25 @@
 import { Socket, io } from "socket.io-client";
 import { ref, inject } from "vue";
 
-const input = ref<string>("");
-const $data : any = inject('$data');
-const myUser = await $data.getMyUser();
-const socket : Socket = $data.getSocket();
-const DateRawStamp : string = new Date().toISOString();
-
 type Message = {
-	userId: Number;
+	userId: string;
+	userEmail: String;
 	channelId: Number;
 	messageText: String;
 	datestamp: String;
 	timestamp: String;
 };
 
+const input = ref<string>("");
+const $data : any = inject('$data');
+const socket : Socket = $data.getSocket();
+const myUser = await $data.getMyUser();
+const DateRawStamp : string = new Date().toISOString();
+
 const sendMessage = () => {
 	const message: Message = {
 		userId: myUser.id,
+		userEmail: myUser.email,
 		channelId: 1,
 		messageText: input.value,
 		datestamp: DateRawStamp.substring(0, 10),
@@ -59,7 +61,7 @@ const sendMessage = () => {
   display: flex;
   justify-content: column;
   width: 100%;
-  height: 50%;
+  height: 100%;
   overflow: hidden;
 }
 .input {
@@ -70,7 +72,7 @@ const sendMessage = () => {
   box-shadow: inset 2px 5px 10px rgba(0, 0, 0, 0.3);
   transition: 300ms ease-in-out;
   width: 100%;
-  margin-top: auto;
+  height: auto;
 }
 
 .input:focus {
