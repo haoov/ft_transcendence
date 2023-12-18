@@ -118,12 +118,8 @@ export class GameGatewayService {
 			// }
 			if (room) {
 				room.getSockets().forEach(async (socket) => {
-
 					await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
-					socket.data.side = "";
-					socket.data.mode = "";
-					socket.data.room = "";
-					socket.leave(socket.data.room);
+					room.removeSocket(socket);
 				});
 				rooms.splice(rooms.indexOf(room), 1);
 			}

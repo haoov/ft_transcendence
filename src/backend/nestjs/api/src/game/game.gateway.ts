@@ -61,15 +61,12 @@ export class GameGateway
 	@SubscribeMessage('update')
 	update(client: Socket) {
 		let room: Room;
-		if (client.data.mode === "classic") {
-			room = this.classic_rooms.find((currentRoom) => {return (currentRoom.getName() == client.data.room);})
-		}
-		else {
-			room = this.super_rooms.find((currentRoom) => {return (currentRoom.getName() == client.data.room);})
-		}
-		if (room) {
+		if (client.data.mode === "classic")
+			room = this.gameGtwService.findRoom(client, this.classic_rooms);
+		else
+			room = this.gameGtwService.findRoom(client, this.super_rooms);
+		if (room)
 			this.server.to(room.getName()).emit("updated", room.getGame().update());
-		}
 	}
 
 	@SubscribeMessage('move')
