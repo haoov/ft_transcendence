@@ -41,6 +41,7 @@ export class Player {
 		this._side = side;
 	}
 
+
 	public isPartOf(status: number, sockets: Socket[]): boolean {
 		if (sockets.filter((socket) => socket.data.player._id === this._id && socket.data.player._status === status))
 			return true;

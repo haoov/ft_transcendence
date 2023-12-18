@@ -14,37 +14,56 @@ export class GameGateway
 
 	// On declare le serveur et les variables
 	@WebSocketServer() server: Server;
-	rooms: Room[]
-	waiting: Socket[];
+	classic_rooms: Room[]
+	classic_waiting: Socket[];
+	super_rooms: Room[]
+	super_waiting: Socket[];
 
 	constructor(private gameGtwService: GameGatewayService, private readonly userService: UserService) {
-		this.rooms = [];
-		this.waiting = [];
+		this.classic_rooms = [];
+		this.classic_waiting = [];
+		this.super_rooms = [];
+		this.super_waiting = [];
 	}
 
 	handleConnection(client: Socket) {
 		client.on(ClientEvents.connected, (data: User) => {
 			client.data.user = data;
-			this.gameGtwService.handleUserConnection(
-				client, 
-				this.rooms, 
-				this.waiting, 
-				this.server);
 		});
 	}
 
 	handleDisconnect(client: Socket) {
-		this.gameGtwService.handleUserDisconnection(
-			client,
-			this.rooms, 
-			this.waiting,
-			this.server
-		)
+		if (client.data.mode === "classic")
+			this.gameGtwService.handleUserDisconnection(
+											client,
+											this.classic_rooms,
+											this.classic_waiting,
+											this.server);
+		else if (client.data.mode === "super")
+			this.gameGtwService.handleUserDisconnection(
+											client,
+											this.super_rooms,
+											this.super_waiting,
+											this.server);
 	}
 
-	// les messages (events) qu'on recoit du client
+	@SubscribeMessage('mode')
+	assignMode(client: Socket, data: string) {
+		this.gameGtwService.assignMode(client,
+										data,
+										this.classic_rooms,
+										this.classic_waiting,
+										this.super_rooms,
+										this.super_waiting,
+										this.server)
+	}
+
+
 	@SubscribeMessage('move')
 	moveDot(client: Socket, data: string){
-		this.gameGtwService.moveDot(client, data, this.rooms, this.server, this.waiting);
+		if (client.data.mode === "classic")
+			this.gameGtwService.moveDot(client, data, this.classic_rooms, this.server);
+		else if (client.data.mode === "super")
+			this.gameGtwService.moveDot(client, data, this.super_rooms, this.server);
 	}
 }

@@ -10,11 +10,20 @@ export class GameGatewayService {
 
 	constructor(private readonly userService: UserService) {}
 
-	async handleUserConnection(client: Socket, rooms: Room[], waiting: Socket[], server: Server) {
+	assignMode(client: Socket, data:string, classic_r: Room[], classic_w: Socket[], super_r: Room[], super_w: Socket[], server:Server) {
+		client.data.mode = data;
+		if (data === "classic")
+			this.manageUserGame(client, classic_r, classic_w, server);
+		else if (data === "super")
+			this.manageUserGame(client, super_r, super_w, server);
+
+	}
+
+	async manageUserGame(client: Socket, rooms: Room[], waiting: Socket[], server: Server) {
 		// if (client.data.user.status === UserStatus.playing) {
 		// 	const room: Room = this.findRoom(client, rooms);
 		// 	room.addSocket(client);
-		// 	server.to(room.getName()).emit(ServerEvents.position, room.game.getPosition());
+		// 	this.emitPositon(room, server);
 		// } 
 		// else if (client.data.user.status === UserStatus.waiting || waiting.length < 1) {
 		// 	if (client.data.user.status !== UserStatus.waiting)
@@ -43,11 +52,11 @@ export class GameGatewayService {
 	}
 
 	async startGame(p1: Socket[], p2: Socket, rooms: Room[], server: Server) {
-		const name: string = rooms.length.toString();
+		const name: string = rooms.length.toString() + p2.data.mode;
 		const room: Room = new Room(name, p1, p2)
 		rooms.push(room);
-		server.to(room.getName()).emit(ServerEvents.position, room.game.getPosition());
-		server.to(room.getName()).emit(ServerEvents.position, room.game.getPosition());
+		this.emitPositon(room, server);
+		this.emitPositon(room, server);
 
 	}
 
@@ -71,7 +80,7 @@ export class GameGatewayService {
 		return count;
 	}
 
-	moveDot(client: Socket, data:string, rooms: Room[], server: Server, waiting: Socket[]) {
+	moveDot(client: Socket, data:string, rooms: Room[], server: Server) {
 		if (client.data.user.status === UserStatus.playing) {
 			const room: Room = this.findRoom(client, rooms);
 			const game = room.getGame();	
@@ -91,15 +100,24 @@ export class GameGatewayService {
 				break;
 			}
 			(side == "left") ? game.score_p1++ : game.score_p2++;
-			server.to(room.getName()).emit(ServerEvents.position, game.getPosition());
-			if (game.isFinished()) {
-				server.to(room.getName()).emit(ServerEvents.finished);
-				this.finishGame(room, rooms, waiting, server);
-			}
+			this.emitPositon(room, server);
+			if (game.isFinished())
+				this.finishGame(room, rooms, server);
 		}
 	}
 
-	finishGame(room: Room, rooms: Room[], waiting: Socket[], server: Server) {
+	emitPositon(room: Room, server: Server) {
+		server.to(room.getName()).emit(ServerEvents.position,
+										room.game.getPosition(),
+										room.game.score_p1,
+										room.game.score_p2);
+	}
+
+	finishGame(room: Room, rooms: Room[], server: Server) {
+		server.to(room.getName()).emit(ServerEvents.finished,
+										room.getWinner(),
+										room.getP1score(),
+										room.getP2score());
 		room.getSockets().forEach(async (socket) => {
 			await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
 			socket.data.side = "";
@@ -108,15 +126,24 @@ export class GameGatewayService {
 		// Database management
 	}
 
+	socketCount(client: Socket, room: Room) {
+		let count: number = 0;
+		const sockets: Socket[] = room.getSockets();
+		for(let i = 0; i < sockets.length; i++) {
+			if (sockets[i].data.user.id === client.data.user.id)
+				count++;
+		}
+		return count;
+	}
+
 	async handleUserDisconnection(client: Socket, rooms: Room[], waiting: Socket[], server: Server) {
 		if (client.data.user && client.data.user.status === UserStatus.playing) {
 			const room: Room = this.findRoom(client, rooms);
-			if (room && room.removeSocket(client) == 0) {
-				const index: number = rooms.indexOf(room);
-				rooms.splice(index, 1);
-				await this.userService.updateUserStatus(client.data.user, UserStatus.undefined);
-				// Indiquer le deconnexion
-				//server.to(room.getName()).emit(ServerEvents.disconnect);
+			if (room && this.socketCount(client, room) === 1) {
+				this.finishGame(room, rooms, server);
+			}
+			else if (room) {
+				room.removeSocket(client);
 			}
 		}
 		else if (client.data.user && client.data.user.status === UserStatus.waiting) {

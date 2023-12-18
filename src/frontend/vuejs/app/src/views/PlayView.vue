@@ -1,11 +1,14 @@
 <template>
     <div class="blockGame">
         <h1 class="pongTitle">PONG GAME</h1>
-        <h3 id="gameText">{{state}}</h3>
+        <h3 v-if="!finished()" id="gameText">{{state}}</h3>
+        <button v-if="!modeChosen" class="play_button" @click="emitMode('classic')">Classic</button>
+        <button v-if="!modeChosen" class="play_button" @click="emitMode('super')">Super</button>
         <div class="gameDiv" id="canvaContainer">
             <Suspense><canvas id="gameCanva" ref="gameCanva" :width="canvaWidth" :height="canvaHeight"></canvas></Suspense>
         </div>
-        <button v-if="finished()" id="replayButton" @click="reloadPage()">Play again</button>
+        <h2 id="result" v-if="finished()">Congrats to {{winner}} !<br> {{ p2_score }} vs. {{ p1_score }}</h2>
+        <button v-if="finished()" class="play_button" @click="reloadPage()">Play again</button>
     </div>
 </template>
 
@@ -23,13 +26,17 @@
     let canvaWidth = ref(0);
     let canvaHeight = ref(0);
     let state = ref("");
+    let winner = ref("");
+    let p1_score = ref(0);
+    let p2_score = ref(0);
+    let modeChosen = ref(0);
 
     axios.get("http://localhost:3000/api/user/me").then((response) => {
         socket.emit(ClientEvents.connected, response.data)
     })
 
     onMounted(() => {
-        checkDisconnect();
+        // checkDisconnect();
         checkWaiting();
         checkFinished();
         updatePosition();
@@ -56,8 +63,14 @@
         next();
     })
     
+
+    function emitMode(mode: string) {
+        socket.emit("mode", mode);
+        modeChosen.value = 1;
+    }
+
     function updatePosition() {
-        socket.on(ServerEvents.position, (data: position) => {
+        socket.on(ServerEvents.position, (data: position, p1: number, p2: number) => {
             state.value = "";
             canvaHeight.value = 480;
             canvaWidth.value = 640;
@@ -65,9 +78,16 @@
             const context = canva.getContext("2d")! as CanvasRenderingContext2D;
             game.p1 = data.p1;
             game.p2 = data.p2;
+            p1_score.value = p1;
+            p2_score.value = p2;
+            const score: string = p1.toString() + "   -   " + p2.toString();
             context.clearRect(0, 0, canva.width, canva.height);
             context.fillStyle = "#FFFFFF";
             context.fillRect(0, 0, canva.width, canva.width);
+            context.fillStyle = "#000000";
+            context.textAlign = "center";
+            context.font = " Avenir";
+            context.fillText(score, canva.width / 2, 20);
             context.fillStyle = "#0000FF";
             context.fillRect(game.p1.x, game.p1.y, 20, 20);
             context.fillStyle = "#FF0000";
@@ -75,12 +95,12 @@
             });
     }
     
-    function  checkDisconnect() {
-        socket.on(ServerEvents.disconnect, () => {
-            state.value = "Your opponent is disconnected ! Please waith for them...";
-            emptyCanva();
-        });
-    }
+    // function  checkDisconnect() {
+    //     socket.on(ServerEvents.disconnect, () => {
+    //         state.value = "Your opponent is disconnected ! Please waith for them...";
+    //         emptyCanva();
+    //     });
+    // }
     function  checkWaiting() {
         socket.on(ServerEvents.waiting, () => {
             state.value = "Waiting for a game...";
@@ -88,8 +108,11 @@
         });
     }
     function  checkFinished() {
-        socket.on(ServerEvents.finished, () => {
-            state.value = "The game is finished!";
+        socket.on(ServerEvents.finished, (win: string, p1: number, p2: number) => {
+            state.value = "Finished";
+            p1_score.value = p1;
+            p2_score.value = p2;
+            winner.value = win;
             emptyCanva();
         });
     }
@@ -101,7 +124,7 @@
         window.location.reload();
     }
     function finished(): boolean {
-        return state.value === "The game is finished!";
+        return state.value === "Finished";
     };
 </script>
 
@@ -116,6 +139,12 @@
     
     #gameText {
         color:white;
+    }
+
+    #result {
+        margin: 20px;
+        align-items: center;
+        text-align: center;
     }
 
 	.blockGame {
@@ -143,7 +172,7 @@
         text-align: center;
     }
 
-    #replayButton {
+    .play_button {
 		border: none;
 		background-color: #fe019a;
 		color: white;
@@ -154,5 +183,6 @@
 		font-size: 18px;
 		box-shadow:0 0 20px #fe019a;
 		border-radius: 8px;
+        margin: 10px;
 	}
 </style>@/utils/game
