@@ -32,6 +32,7 @@ class Ball {
 		for (let i = 0; i < players.length; ++i) {
 			if (players[i].hitBall(this)) {
 				this.paddleBounce(players[i].paddle);
+				players[i].scored();
 				this.lastHit = players[i].paddle;
 			}
 		}

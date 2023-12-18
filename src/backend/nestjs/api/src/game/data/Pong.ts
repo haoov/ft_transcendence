@@ -10,6 +10,7 @@ class Pong {
 	private field: Field;
 	private effect: Effect;
 	private started: boolean;
+	private finished: boolean;
 
 	constructor() {
 		this.players = [];
@@ -19,6 +20,7 @@ class Pong {
 		this.ball = new Ball();
 		this.effect = new Effect();
 		this.started = false;
+		this.finished = false;
 	}
 
 	movePaddle(side: string, direction: string) {
@@ -53,6 +55,10 @@ class Pong {
 		if (this.started) {
 			this.ball.moove(this.players, this.field, this.effect);
 			this.effect.moove(this.field);
+			for (let i = 0; i < this.players.length; ++i) {
+				if (this.players[i].score == 10)
+					this.finished = true;
+			}
 		}
 		return {
 			ballPosition: this.ball.position,

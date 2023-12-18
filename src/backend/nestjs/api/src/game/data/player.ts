@@ -6,10 +6,12 @@ import { Paddle } from "./paddle";
 class Player {
 	side: string;
 	paddle: Paddle;
+	score: number;
 
 	constructor(side: string, field: Field) {
 		this.side = side;
 		this.paddle = new Paddle(this.side, field);
+		this.score = 0;
 	}
 
 	hitBall(ball: Ball): boolean {
@@ -27,6 +29,10 @@ class Player {
 		if (aligned && this.side == "left" && ballX <= paddleX + this.paddle.width)
 				return true;
 		return false;
+	}
+
+	scored() {
+		++this.score;
 	}
 }
 
