@@ -1,5 +1,4 @@
 import { Socket } from "socket.io";
-import { Position } from "./Position";
 import { Pong } from "../data/Pong";
 
 export class Room {
@@ -73,6 +72,9 @@ export class Room {
 		const index: number = this.sockets.indexOf(socket);
 		this.sockets.splice(index, 1);
 		socket.leave(this.name);
+		socket.data.side = "";
+		socket.data.mode = "";
+		socket.data.room = "";
 
 	}
 

@@ -6,6 +6,7 @@
 	--c-grey-light: rgb(211, 211, 211);
 	--c-white: rgb(255, 255, 255);
 	--c-blue-dark : rgb(19, 27, 41);
+	--c-pink: rgb(233, 58, 166);
 
 	--text-color: var(--c-white);
 }

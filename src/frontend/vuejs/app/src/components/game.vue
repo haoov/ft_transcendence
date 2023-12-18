@@ -47,7 +47,7 @@ onMounted(() => {
 
 	socket.on("started", () => {game.started = true; state.value = "";})
 
-	socket.on("updated", (data) => {console.log("updated"); game.update(data);});
+	socket.on("updated", (data) => {game.update(data);});
 
 	function animate() {
 		requestAnimationFrame(animate);
