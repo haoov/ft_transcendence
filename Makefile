@@ -18,7 +18,9 @@ clean:
 	@cd $(SRC) && docker compose down -v
 	@docker system prune -f
 
+re: clean all
+
 # fclean : clean
 # 	@rm -rf src/backend/postgresql/data/*
 
-.PHONY : build run clean fclean
+.PHONY : build run clean fclean re

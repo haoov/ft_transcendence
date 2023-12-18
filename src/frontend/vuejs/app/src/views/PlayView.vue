@@ -5,6 +5,7 @@
         <div class="gameDiv" id="canvaContainer">
             <Suspense><canvas id="gameCanva" ref="gameCanva" :width="canvaWidth" :height="canvaHeight"></canvas></Suspense>
         </div>
+        <button v-if="finished()" id="replayButton" @click="reloadPage()">Play again</button>
     </div>
 </template>
 
@@ -28,9 +29,9 @@
     })
 
     onMounted(() => {
-        checkAlreadyWaiting();
-        checkAlreadyPlaying();
+        checkDisconnect();
         checkWaiting();
+        checkFinished();
         updatePosition();
         window.addEventListener("keypress", (event: KeyboardEvent) => {
             switch (event.key) {
@@ -74,15 +75,9 @@
             });
     }
     
-    function  checkAlreadyPlaying() {
-        socket.on(ServerEvents.alreadyPlaying, () => {
-            state.value = "You are already playing !";
-            emptyCanva();
-        });
-    }
-    function  checkAlreadyWaiting() {
-        socket.on(ServerEvents.alreadyWaiting, () => {
-            state.value = "You are already waiting !";
+    function  checkDisconnect() {
+        socket.on(ServerEvents.disconnect, () => {
+            state.value = "Your opponent is disconnected ! Please waith for them...";
             emptyCanva();
         });
     }
@@ -92,10 +87,22 @@
             emptyCanva();
         });
     }
+    function  checkFinished() {
+        socket.on(ServerEvents.finished, () => {
+            state.value = "The game is finished!";
+            emptyCanva();
+        });
+    }
     function emptyCanva() {
         canvaHeight.value = 0;
         canvaWidth.value = 0;
     }
+    function reloadPage() {
+        window.location.reload();
+    }
+    function finished(): boolean {
+        return state.value === "The game is finished!";
+    };
 </script>
 
 <style>
@@ -136,17 +143,16 @@
         text-align: center;
     }
 
-	.move {
+    #replayButton {
 		border: none;
 		background-color: #fe019a;
 		color: white;
-		padding: 5px 7px;
+		padding: 10px 12px;
 		text-align: center;
 		text-decoration: none;
 		display: inline-block;
 		font-size: 18px;
-		box-shadow:0 0 10px #fe019a;
+		box-shadow:0 0 20px #fe019a;
 		border-radius: 8px;
-        margin: 5px;
 	}
 </style>@/utils/game

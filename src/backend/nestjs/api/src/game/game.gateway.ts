@@ -1,7 +1,7 @@
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io'
 import { GameGatewayService } from './game.gateway.service';
-import { ClientEvents, PlayerSide } from './enum';
+import { ClientEvents } from './enum';
 import { User } from 'src/user/user.interface';
 import { Room } from './classes/Room';
 import { UserService } from 'src/user/user.service';
@@ -45,6 +45,6 @@ export class GameGateway
 	// les messages (events) qu'on recoit du client
 	@SubscribeMessage('move')
 	moveDot(client: Socket, data: string){
-		this.gameGtwService.moveDot(client, data, this.rooms, this.server);
+		this.gameGtwService.moveDot(client, data, this.rooms, this.server, this.waiting);
 	}
 }
