@@ -1,6 +1,5 @@
 import { Socket } from "socket.io";
 import { Position } from "./Position";
-import { PositionInterface } from "../interfaces";
 
 export class Room {
 	private name: string;
@@ -44,7 +43,21 @@ export class Room {
 		return this.sockets;
 	}
 
-	addSocket(socket: Socket): number {
+	getP1score(): number {
+		return this.game.score_p1;
+	}
+
+	getP2score(): number {
+		return this.game.score_p2;
+	}
+
+	getWinner() {
+		var winner: string;
+		this.game.score_p1 > this.game.score_p2 ? winner = this.p1_name : winner = this.p2_name;
+		return winner;
+	}
+
+	addSocket(socket: Socket): void {
 		socket.data.room = this.name;
 		if (this.p1_name === socket.data.user.username)
 			socket.data.side = "right";
@@ -53,15 +66,13 @@ export class Room {
 		this.sockets.push(socket);
 		socket.join(this.name);
 
-		return this.sockets.length;
 	}
 
-	removeSocket(socket: Socket): number {
+	removeSocket(socket: Socket): void {
 		const index: number = this.sockets.indexOf(socket);
 		this.sockets.splice(index, 1);
 		socket.leave(this.name);
-	
-		return this.sockets.length;
+
 	}
 
 }
