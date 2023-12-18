@@ -21,9 +21,8 @@ export class Room {
 		p2.data.room = name;
 		p2.data.side = "left";
 
-		// Push sockets
+		// Add sockets in socket tab
 		p1.forEach((socket) => this.sockets.push(socket));
-		//this.sockets.concat(p1);
 		this.sockets.push(p2);
 
 		// Join same room
@@ -31,10 +30,6 @@ export class Room {
 
 		// Create game
 		this.game = new Position();
-	};
-
-	destructor(): void {
-		console.log("destructor called");
 	};
 
 	getName(): string {
@@ -49,7 +44,7 @@ export class Room {
 		return this.sockets;
 	}
 
-	addSocket(socket: Socket): void {
+	addSocket(socket: Socket): number {
 		socket.data.room = this.name;
 		if (this.p1_name === socket.data.user.username)
 			socket.data.side = "right";
@@ -57,14 +52,16 @@ export class Room {
 			socket.data.side = "left";
 		this.sockets.push(socket);
 		socket.join(this.name);
+
+		return this.sockets.length;
 	}
 
-	removeSocket(socket: Socket): void {
+	removeSocket(socket: Socket): number {
 		const index: number = this.sockets.indexOf(socket);
 		this.sockets.splice(index, 1);
 		socket.leave(this.name);
-
-		// checker si il y a une deconnexion inattendue
+	
+		return this.sockets.length;
 	}
 
 }

@@ -5,10 +5,9 @@ export enum ClientEvents {
 	left = "left",
 	right = "right",
 };
-
 export enum ServerEvents {
 	position = "position",
-	alreadyPlaying = "alreadyPlaying",
-	alreadyWaiting = "alreadyWaiting",
+	finished = "finished",
+	disconnect = "disconnect",
 	waiting = "waiting",
 };
