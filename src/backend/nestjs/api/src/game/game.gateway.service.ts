@@ -4,6 +4,8 @@ import { ServerEvents } from "./enum";
 import { UserStatus } from "src/user/enum/userStatus.enum";
 import { Room } from "./classes";
 import { UserService } from "src/user/user.service";
+import { Pong } from "./data/Pong";
+import { RouterModule } from "@nestjs/core";
 
 @Injectable()
 export class GameGatewayService {
@@ -47,24 +49,18 @@ export class GameGatewayService {
 			opponent.forEach(async (socket) => {
 				await this.userService.updateUserStatus(socket.data.user, UserStatus.playing);})
 
-			this.startGame(opponent, client, rooms, server);
+			
+			// Start game
+			const name: string = rooms.length.toString() + client.data.mode;
+			const room: Room = new Room(name, opponent, client)
+			rooms.push(room);
+			room.getGame().start();
+			server.to(name).emit("started");
 		}
 	}
 
-	async startGame(p1: Socket[], p2: Socket, rooms: Room[], server: Server) {
-		const name: string = rooms.length.toString() + p2.data.mode;
-		const room: Room = new Room(name, p1, p2)
-		rooms.push(room);
-		this.emitPositon(room, server);
-		this.emitPositon(room, server);
-
-	}
-
 	findRoom(client: Socket, rooms: Room[]) : Room {
-		return rooms.find((room) => { 
-			const sockets: Socket[] = room.getSockets();
-			return sockets.find((socket) => socket.data.user.username === client.data.user.username)
-		});
+		return rooms.find((currentRoom) => {return (currentRoom.getName() == client.data.room);});
 	}
 
 	getRoomSocketCount(client: Socket, rooms: Room[]) : number {
@@ -80,51 +76,25 @@ export class GameGatewayService {
 		return count;
 	}
 
-	moveDot(client: Socket, data:string, rooms: Room[], server: Server) {
-		if (client.data.user.status === UserStatus.playing) {
-			const room: Room = this.findRoom(client, rooms);
-			const game = room.getGame();	
-			const side = client.data.side;
-			switch(data) {
-			case "left":
-				(side == "left") ? game.p1.x -= 5: game.p2.x -= 5;
-				break;
-			case "right":
-				(side == "left") ? game.p1.x += 5 : game.p2.x += 5;
-				break;
-			case "up":
-				(side == "left") ? game.p1.y -= 5 : game.p2.y -= 5;
-				break;
-			case "down":
-				(side == "left") ? game.p1.y += 5 : game.p2.y += 5;
-				break;
-			}
-			(side == "left") ? game.score_p1++ : game.score_p2++;
-			this.emitPositon(room, server);
-			if (game.isFinished())
-				this.finishGame(room, rooms, server);
-		}
+
+	move(client: Socket, direction: string, rooms: Room[]) {
+		const room: Room = this.findRoom(client, rooms);
+		room.getGame().movePaddle(client.data.side, direction);
 	}
 
-	emitPositon(room: Room, server: Server) {
-		server.to(room.getName()).emit(ServerEvents.position,
-										room.game.getPosition(),
-										room.game.score_p1,
-										room.game.score_p2);
-	}
 
-	finishGame(room: Room, rooms: Room[], server: Server) {
-		server.to(room.getName()).emit(ServerEvents.finished,
-										room.getWinner(),
-										room.getP1score(),
-										room.getP2score());
-		room.getSockets().forEach(async (socket) => {
-			await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
-			socket.data.side = "";
-		});
-		rooms.splice(rooms.indexOf(room), 1);
-		// Database management
-	}
+	// finishGame(room: Room, rooms: Room[], server: Server) {
+	// 	server.to(room.getName()).emit(ServerEvents.finished,
+	// 									room.getWinner(),
+	// 									room.getP1score(),
+	// 									room.getP2score());
+	// 	room.getSockets().forEach(async (socket) => {
+	// 		await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
+	// 		socket.data.side = "";
+	// 	});
+	// 	rooms.splice(rooms.indexOf(room), 1);
+	// 	// Database management
+	// }
 
 	socketCount(client: Socket, room: Room) {
 		let count: number = 0;
@@ -139,11 +109,23 @@ export class GameGatewayService {
 	async handleUserDisconnection(client: Socket, rooms: Room[], waiting: Socket[], server: Server) {
 		if (client.data.user && client.data.user.status === UserStatus.playing) {
 			const room: Room = this.findRoom(client, rooms);
-			if (room && this.socketCount(client, room) === 1) {
-				this.finishGame(room, rooms, server);
-			}
-			else if (room) {
-				room.removeSocket(client);
+			// A REMETTRE APRES POUR FINISH GAME
+			// if (room && this.socketCount(client, room) === 1) {
+			// 	this.finishGame(room, rooms, server);
+			// }
+			// else if (room) {
+			// 	room.removeSocket(client);
+			// }
+			if (room) {
+				room.getSockets().forEach(async (socket) => {
+
+					await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
+					socket.data.side = "";
+					socket.data.mode = "";
+					socket.data.room = "";
+					socket.leave(socket.data.room);
+				});
+				rooms.splice(rooms.indexOf(room), 1);
 			}
 		}
 		else if (client.data.user && client.data.user.status === UserStatus.waiting) {

@@ -58,12 +58,25 @@ export class GameGateway
 										this.server)
 	}
 
+	@SubscribeMessage('update')
+	update(client: Socket) {
+		let room: Room;
+		if (client.data.mode === "classic") {
+			room = this.classic_rooms.find((currentRoom) => {return (currentRoom.getName() == client.data.room);})
+		}
+		else {
+			room = this.super_rooms.find((currentRoom) => {return (currentRoom.getName() == client.data.room);})
+		}
+		if (room) {
+			this.server.to(room.getName()).emit("updated", room.getGame().update());
+		}
+	}
 
 	@SubscribeMessage('move')
 	moveDot(client: Socket, data: string){
 		if (client.data.mode === "classic")
-			this.gameGtwService.moveDot(client, data, this.classic_rooms, this.server);
+			this.gameGtwService.move(client, data, this.classic_rooms);
 		else if (client.data.mode === "super")
-			this.gameGtwService.moveDot(client, data, this.super_rooms, this.server);
+			this.gameGtwService.move(client, data, this.super_rooms);
 	}
 }

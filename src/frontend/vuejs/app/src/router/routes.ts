@@ -19,11 +19,6 @@ const routes = [
 		name: "game",
 		component: GameView
 	},
-	{
-		path: "/pong",
-		name: "pong",
-		component: PlayView
-	},
 ];
 
 export default routes;
