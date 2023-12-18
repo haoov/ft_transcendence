@@ -2,13 +2,13 @@ export declare class MessageEntity {
     id: number;
     senderId: number;
     channelId: number;
-    message: string;
+    text: string;
     datestamp: Date;
-    timestamp: number;
+    timestamp: string;
 }
 export declare class ChannelEntity {
     id: number;
     name: string;
     creatorId: number;
-    modeChanel: string;
+    modeChanel: 'public' | 'private' | 'protected' | 'secret';
 }

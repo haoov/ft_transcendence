@@ -12,16 +12,22 @@ export class ChatService {
 
 	/* MESSAGE */
 
+	//Permet de fetch tous les messages
+	async getAllMessages(): Promise<Message []> {
+		return await this.messagesRepository.find() as Message [];
+	}
+	
 	//Permet de charger les messages d'une conversation
 	async getAllMessagesByChannel(channelId: number): Promise<Message []> {
 		const MessageList: Message [] = await this.messagesRepository.find();
 		return MessageList.filter((message) => {message.channelId === channelId});
 	}
 
-	// //Permet de créer un message dans la base de données
-	// async createMessage(message: Message): Promise<Message> {
-	// 	return await this.messagesRepository.create(message);
-	// }
+	//Permet de créer un message dans la base de données
+	async createMessage(message: Message): Promise<Message> {
+		this.messagesRepository.create(message as MessageEntity);
+		return await this.messagesRepository.save(message);
+	}
 
 	// //A sup ?
 	// //Permet d'editer un message dans la base de données
@@ -32,14 +38,16 @@ export class ChatService {
 
 	// /* CHANNEL */
 
-	// //Permet de fetch tous les channels
-	// async getAllChanel(): Promise<Channel []> {
-	// 	return await this.channelRepository.find() as Channel [];
-	// }
+	//Permet de fetch tous les channels
+	async getAllChannels(): Promise<Channel []> {
+		return await this.channelRepository.find() as Channel [];
+	}
 
-	// //Permet de créer un channel dans la base de données
-	// async createChannel(channel: Channel): Promise<Channel> {
-	// 	const channelList = await this.channelRepository.find() as Channel [];
+	//Permet de créer un channel dans la base de données
+	async createChannel(channel: Channel): Promise<Channel> {
+		this.channelRepository.create(channel);
+		return await this.channelRepository.save(channel);
+	}
 
 	// 	if (!channel.name || !channel.creatorId || !channel.modeChanel)
 	// 		return null;

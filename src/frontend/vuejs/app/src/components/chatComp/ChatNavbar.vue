@@ -2,16 +2,16 @@
 	<div class="navbar-div">
 		<nav>
 			<NewChannelWidget></NewChannelWidget>
-			<ChannelWidget></ChannelWidget>
-			<ChannelWidget></ChannelWidget>
+			<!-- <ul v-for="channel in channels" :key="channel.id">
+				<ChannelWidget :channel="channel"></ChannelWidget> -->
 			<ChannelWidget></ChannelWidget>
 		</nav>
 	</div>
 </template>
 
 <script setup lang="ts">
-import ChannelWidget from './ChannelWidget.vue';
-import NewChannelWidget from './NewChannelWidget.vue';
+	import ChannelWidget from './ChannelWidget.vue';
+	import NewChannelWidget from './NewChannelWidget.vue';
 
 </script>
 
@@ -34,6 +34,5 @@ nav {
   align-items: center;
   width: 100%;
   height: 100%;
-  /* overflow: scroll; */
 }
 </style>

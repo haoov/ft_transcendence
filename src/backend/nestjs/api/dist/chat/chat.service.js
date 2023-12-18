@@ -22,9 +22,23 @@ let ChatService = class ChatService {
         this.messagesRepository = messagesRepository;
         this.channelRepository = channelRepository;
     }
+    async getAllMessages() {
+        return await this.messagesRepository.find();
+    }
     async getAllMessagesByChannel(channelId) {
         const MessageList = await this.messagesRepository.find();
         return MessageList.filter((message) => { message.channelId === channelId; });
+    }
+    async createMessage(message) {
+        this.messagesRepository.create(message);
+        return await this.messagesRepository.save(message);
+    }
+    async getAllChannels() {
+        return await this.channelRepository.find();
+    }
+    async createChannel(channel) {
+        this.channelRepository.create(channel);
+        return await this.channelRepository.save(channel);
     }
 };
 exports.ChatService = ChatService;

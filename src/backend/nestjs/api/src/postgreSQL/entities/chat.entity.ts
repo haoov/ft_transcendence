@@ -12,13 +12,13 @@ export class MessageEntity {
 	channelId: number;
 
 	@Column()
-	message: string;
+	text: string;
 
 	@Column()
 	datestamp: Date;
 
 	@Column()
-	timestamp: number;
+	timestamp: string;
 }
 
 @Entity()
@@ -33,5 +33,5 @@ export class ChannelEntity {
 	creatorId: number;
 
 	@Column()
-	modeChanel: string;
+	modeChanel: 'public' | 'private' | 'protected' | 'secret';
 }

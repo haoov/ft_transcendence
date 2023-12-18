@@ -18,10 +18,10 @@ import { Socket, io } from "socket.io-client";
 import { ref, inject } from "vue";
 
 type Message = {
-	userId: string;
+	senderId: string;
 	userEmail: String;
 	channelId: Number;
-	messageText: String;
+	text: String;
 	datestamp: String;
 	timestamp: String;
 };
@@ -33,16 +33,16 @@ const myUser = await $data.getMyUser();
 const DateRawStamp : string = new Date().toISOString();
 
 const sendMessage = () => {
-	const message: Message = {
-		userId: myUser.id,
+	const newMessage: Message = {
+		senderId: myUser.id,
 		userEmail: myUser.email,
 		channelId: 1,
-		messageText: input.value,
+		text: input.value,
 		datestamp: DateRawStamp.substring(0, 10),
 		timestamp: DateRawStamp.substring(12, 19)
 	};
 	input.value = "";
-	socket.emit("newMessage", message);
+	socket.emit("newMessage", newMessage);
 };
 
 </script>

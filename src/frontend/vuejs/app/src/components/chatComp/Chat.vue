@@ -6,10 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { io } from 'socket.io-client';
-import ChatCard from './ChatCard.vue';
-
-// const socket = io('http://localhost:3000');
+	import ChatCard from './ChatCard.vue';
 
 </script>
 

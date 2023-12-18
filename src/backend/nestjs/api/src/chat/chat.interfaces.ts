@@ -1,9 +1,9 @@
 interface Message {
 	senderId: number;
 	channelId: number;
-	message: string;
+	text: string;
 	datestamp: Date;
-	timestamp: number;
+	timestamp: string;
 }
 
 interface Channel {
