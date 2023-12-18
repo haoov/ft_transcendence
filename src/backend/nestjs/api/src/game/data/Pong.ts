@@ -9,6 +9,7 @@ class Pong {
 	private ball: Ball;
 	private field: Field;
 	private effect: Effect;
+	private started: boolean;
 
 	constructor() {
 		this.players = [];
@@ -17,6 +18,7 @@ class Pong {
 		this.players.push(new Player("left", this.field));
 		this.ball = new Ball();
 		this.effect = new Effect();
+		this.started = false;
 	}
 
 	movePaddle(side: string, direction: string) {
@@ -43,10 +45,14 @@ class Pong {
 		};
 	}
 
+	start() {
+		this.started = true;
+	}
+
 	update() {
-		if (this.players.length == 2) {
-			this.effect.moove(this.field);
+		if (this.started) {
 			this.ball.moove(this.players, this.field, this.effect);
+			this.effect.moove(this.field);
 		}
 		return {
 			ballPosition: this.ball.position,

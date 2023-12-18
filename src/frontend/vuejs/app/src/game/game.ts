@@ -1,5 +1,6 @@
 import * as th from "three";
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
 interface Vec3 {
 	x: number,
@@ -69,6 +70,7 @@ export class Game {
 	readonly scene: th.Scene;
 	readonly camera: th.PerspectiveCamera;
 	readonly renderer: th.WebGLRenderer;
+	readonly cssRenderer: CSS2DRenderer;
 	textureLoader;
 	textures: textures;
 	ball;
@@ -76,6 +78,10 @@ export class Game {
 	paddle2;
 	field;
 	effect;
+	menu: CSS2DObject;
+	playButoon;
+	launch: boolean;
+	started: boolean;
 
 	/*------------------------------------*/
 	/*      CONSTRUCTOR / INIT PHASE      */
@@ -93,6 +99,11 @@ export class Game {
 		this.renderer.setSize(init.window.WIDTH, init.window.HEIGHT);
 		this.container.appendChild(this.renderer.domElement);
 
+		this.cssRenderer = new CSS2DRenderer();
+		this.cssRenderer.setSize(init.window.WIDTH, init.window.HEIGHT);
+		this.cssRenderer.domElement.style.position = "absolute";
+		this.container.appendChild(this.cssRenderer.domElement);
+
 		//init textures
 		this.textureLoader = new th.TextureLoader();
 		this.textures = {
@@ -109,6 +120,28 @@ export class Game {
 		directionalLight.castShadow = true;
 		this.scene.add(ambiantLight, directionalLight);
 
+		//init menu
+		this.menu = new CSS2DObject(document.createElement("div"));
+		this.menu.element.id = "mainMenu";
+		const classicButton = document.createElement("button");
+		classicButton.className = "mainMenuButton";
+		classicButton.textContent = "Classic Pong";
+		const superButton = document.createElement("button");
+		superButton.className = "mainMenuButton";
+		superButton.textContent = "Super Pong";
+		this.playButoon = document.createElement("button");
+		this.playButoon.className = "mainMenuButton";
+		this.playButoon.textContent = "Play";
+		this.playButoon.onclick = () => {
+			this.menu.element.removeChild(this.playButoon);
+			this.menu.element.appendChild(classicButton);
+			this.menu.element.appendChild(superButton);
+		};
+		//this.playButoon.onmouseup = () => {this.playButoon.style.backgroundColor = }
+		this.menu.element.appendChild(this.playButoon);
+		this.scene.add(this.menu);
+		this.cssRenderer.render(this.scene, this.camera);
+
 		//init objects
 		this.ball = this.createBall(init.params.BALL_RADIUS);
 		this.paddle1 = this.createPaddle(init);
@@ -116,7 +149,9 @@ export class Game {
 		this.field = this.createField(init.params.FIELD_WIDTH, init.params.FIELD_HEIGHT);
 		this.field.material.map = this.textures.tennisCourt;
 		this.effect = this.createEffect();
-		this.scene.add(this.field, this.ball, this.paddle1, this.paddle2);
+
+		this.launch = false;
+		this.started = false;
 	};
 
 	createBall(radius: number) {
@@ -163,6 +198,10 @@ export class Game {
 	/*------------------------------------*/
 	/*           RUNNING PHASE            */
 	/*------------------------------------*/
+	hasStarted(): boolean {
+		return (this.started);
+	}
+
 	update(data: updatedParams) {
 		const newBallPos = new th.Vector3(	data.ballPosition.x,
 																				data.ballPosition.y,

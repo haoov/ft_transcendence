@@ -1,7 +1,6 @@
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
+import { Socket } from "socket.io";
 import { GameService } from "./game.service";
-import { User } from "src/user/user.interface";
 import { Pong } from "./data/Pong";
 
 @WebSocketGateway({ namespace: "game" })
@@ -10,6 +9,12 @@ export class GameGateway {
 
 	constructor(private gameService: GameService) {
 		this.pong = new Pong();
+	}
+
+	@SubscribeMessage("start")
+	start(@ConnectedSocket() socket: Socket) {
+		this.pong.start();
+		socket.emit("started");
 	}
 
 	@SubscribeMessage("update")

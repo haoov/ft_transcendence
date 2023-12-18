@@ -17,7 +17,7 @@ class Effect {
 		this.rotationSpeed = 0.005;
 		this.size = 0.2;
 		this.speed = 0.005;
-		this.on = true;
+		this.on = false;
 		this.types = ["ice", "fire", "big", "small"];
 		this.type = (type ? type : this.types[Math.floor(Math.random() * this.types.length)]);
 	}

@@ -20,6 +20,11 @@ class Ball {
 		this.scale = {x: 1, y: 1, z: 1};
 	}
 
+	start() {
+		const direction: number = (Math.random() > 0.5 ? 1 : -1);
+		this.vecSpeed.x = params.BALL_SPEED * direction;
+	}
+
 	moove(players: Player[], field: Field, effect: Effect) {
 		this.position.x += this.vecSpeed.x;
 		this.position.y += this.vecSpeed.y;
@@ -37,7 +42,6 @@ class Ball {
 			this.vecSpeed.y *= -1;
 		if (this.position.x >= field.borders.right || this.position.x <= field.borders.left)
 			this.reset();
-
 	}
 
 	paddleBounce(paddle: Paddle) {
@@ -65,7 +69,8 @@ class Ball {
 		this.resetEffect();
 		this.position = {x: 0, y: 0, z: 0};
 		this.speed = params.BALL_SPEED;
-		this.vecSpeed = {x: this.speed, y: 0, z: 0};
+		this.vecSpeed = {x: 0, y: 0, z: 0};
+		setTimeout(this.start, 1000);
 	}
 };
 

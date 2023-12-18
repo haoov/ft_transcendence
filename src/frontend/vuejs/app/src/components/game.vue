@@ -22,12 +22,17 @@ onMounted(() => {
 			socket.emit("move", "down");
 	})
 
-	socket.on("updated", (data) => {game.update(data)});
+	socket.on("updated", (data) => {game.update(data);});
+	socket.on("started", () => {game.started = true;});
 
 	function animate() {
 		requestAnimationFrame(animate);
-		socket.emit("update");
+		if (game.hasStarted())
+			socket.emit("update");
+		else if (game.launch)
+			socket.emit("start");
 		game.renderer.render(game.scene, game.camera);
+		game.cssRenderer.render(game.scene, game.camera);
 	}
 
 	animate();
@@ -39,21 +44,25 @@ onMounted(() => {
 </template>
 
 <style>
-	#title_test {
-		color: var(--c-black);
-	}
-
 	#game {
 		display: flex;
 		width: 720px;
 		height: 480px;
-		border: solid var(--c-black);
+		border: solid var(--c-white);
 		justify-content: center;
 		align-items: center;
 	}
 
-	#playButton {
-		position: absolute;
-		z-index: 100;
+	#mainMenu {
+		display: flex;
+	}
+
+	.mainMenuButton {
+		border: none;
+		border-radius: 8px;
+		padding: 10px 12px;
+		font-size: x-large;
+		background-color: var(--c-pink);
+		box-shadow: 1px 1px 20px var(--c-pink);
 	}
 </style>
