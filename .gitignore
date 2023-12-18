@@ -1,5 +1,6 @@
 src/.env
 src/TODO.md
+./TODO.md
 #BACKEND
 src/backend/nestjs/api/node_modules
 
