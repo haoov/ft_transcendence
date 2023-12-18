@@ -1,12 +1,13 @@
 import { Socket } from "socket.io";
 import { Position } from "./Position";
+import { Pong } from "../data/Pong";
 
 export class Room {
 	private name: string;
 	private p1_name: string;
 	private p2_name: string;
 	private sockets: Socket[];
-	public game: Position;
+	public game: Pong;
 
 	constructor(name: string, p1: Socket[], p2: Socket) {
 		this.sockets = [];
@@ -28,14 +29,14 @@ export class Room {
 		this.sockets.forEach(socket => {socket.join(name)});
 
 		// Create game
-		this.game = new Position();
+		this.game = new Pong();
 	};
 
 	getName(): string {
 		return this.name;
 	}
 
-	getGame(): Position {
+	getGame(): Pong {
 		return this.game;
 	}
 
@@ -43,19 +44,19 @@ export class Room {
 		return this.sockets;
 	}
 
-	getP1score(): number {
-		return this.game.score_p1;
-	}
+	// getP1score(): number {
+	// 	return this.game.score_p1;
+	// }
 
-	getP2score(): number {
-		return this.game.score_p2;
-	}
+	// getP2score(): number {
+	// 	return this.game.score_p2;
+	// }
 
-	getWinner() {
-		var winner: string;
-		this.game.score_p1 > this.game.score_p2 ? winner = this.p1_name : winner = this.p2_name;
-		return winner;
-	}
+	// getWinner() {
+	// 	var winner: string;
+	// 	this.game.score_p1 > this.game.score_p2 ? winner = this.p1_name : winner = this.p2_name;
+	// 	return winner;
+	// }
 
 	addSocket(socket: Socket): void {
 		socket.data.room = this.name;

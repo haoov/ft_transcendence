@@ -1,5 +1,6 @@
 export enum ClientEvents {
 	connected = "connected",
+	mode = "mode",
 	up = "up",
 	down = "down",
 	left = "left",
