@@ -29,14 +29,14 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], MessageEntity.prototype, "message", void 0);
+], MessageEntity.prototype, "text", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", Date)
 ], MessageEntity.prototype, "datestamp", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], MessageEntity.prototype, "timestamp", void 0);
 exports.MessageEntity = MessageEntity = __decorate([
     (0, typeorm_1.Entity)()

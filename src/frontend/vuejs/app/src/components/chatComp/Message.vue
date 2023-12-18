@@ -1,5 +1,5 @@
 <template>
-	<div class="message-div" :id="index">
+	<div class="message-div" :id="id">
 		<div class="profile-img-div">
 			<!-- <img src="https://picsum.photos/200/300" alt="Profile Picture"> -->
 			<img :src="profilePic" alt="Profile Picture">
@@ -21,14 +21,14 @@
 
 	const props : any = defineProps({
 		data: Object,
-		index: Number
+		id: Number
 	});
 
 	const username : string = props.data.sender.name;
 	const profilePic : string = props.data.sender.avatar;
 	const message : string = props.data.message.text;
 	const timestamp : string = props.data.message.time;
-	const index : string = props.index.toString();
+	const id : string = props.id.toString();
 
 </script>
 
@@ -37,7 +37,8 @@
   display: grid;
   grid-template-columns: 1fr 3fr;
   width: 100%;
-  overflow: hidden;
+  height: 100%;
+  overflow: auto;
   margin: 10px;
 }
 
@@ -64,6 +65,13 @@
 .user-info-div {
   display: flex;
   flex-direction: row;
+}
+
+.text-div {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
 }
 
 h4 {

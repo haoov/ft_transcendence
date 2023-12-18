@@ -16,7 +16,7 @@ function buildMsg(senderName, profilePic, message) {
 			avatar: profilePic,
 		},
 		message: {
-			text : message.messageText,
+			text : message.text,
 			time: message.timestamp,
 		}
 	}
@@ -39,11 +39,13 @@ export class ChatGateway implements OnModuleInit {
 
 	@SubscribeMessage('newMessage')
 	async onNewMessage(@MessageBody() message: any) {
-		const sender = await this.userService.getUserById(message.userId);
+		// console.log(message);
+		const sender = await this.userService.getUserById(message.senderId);
 		this.server.emit('newMessage', buildMsg(
 			sender.username,
 			sender.avatar,
 			message
 		));
+		this.chatService.createMessage(message);
 	}
 }

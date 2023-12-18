@@ -1,10 +1,10 @@
 <template>
-	<div class="Messages-div" ref="divRef">
-		<ul v-for="(message, index) in messages">
-			<Message
-				:data="message"
-				:index="index"
-			></Message>
+	<div class="Messages-div" ref="">
+		<ul 
+			v-for="(message, index) in messages"
+			:id="index == messages.length - 1 ? 'last' : ''"
+		>
+			<Message :data="message" :id="index"></Message>
 		</ul>
 	</div>
 </template>
@@ -12,7 +12,7 @@
 <script setup lang="ts">
 
 	import Message from './Message.vue';
-	import { onUpdated, ref } from 'vue';
+	import { onUpdated, onMounted, ref } from 'vue';
 	import { inject } from 'vue';
 	import { Socket } from 'socket.io-client';
 	
@@ -27,19 +27,59 @@
 		};
 	}
 
-	let currentSender : string = "";
 	const data : any = inject('$data');
-	const messages = ref<Message[]>([]);
+	const usersList = await data.getUsers();
+	const messagesRaw = await data.getRawMessages();
+	
+	function convertMessage(messagesRaw : any[]) : Message[] {
+		let messages : Message[] = [];
+		for (const messageRaw of messagesRaw) {
+			let message : Message = {
+				sender: {
+					name: "",
+					avatar: ""
+				},
+				message: {
+					text: "",
+					time: ""
+				}
+			};
+			for (const user of usersList) {
+				if (user.id == messageRaw.senderId) {
+					message.sender.name = user.username;
+					message.sender.avatar = user.avatar;
+					break;
+				}
+			}
+			message.message.text = messageRaw.text;
+			message.message.time = messageRaw.timestamp;
+			messages.push(message);
+		};
+		return messages;
+	};
 	const socket: Socket = data.getSocket();
+	let messages = ref<Message[]>(convertMessage(messagesRaw));
+	let currentSender : string = "";
 
-	//Probleme pour ajouter le message a la suite du precedent
+	function scrollToBottomOnMounted() {
+		const end = document.getElementById('last');
+		end?.scrollIntoView();
+	}
+
+	function scrollToBottomSmooth() {
+		const end = document.getElementById('last');
+		end?.scrollIntoView({ behavior: 'smooth' });
+	}
+	
+	onMounted(() => {
+		scrollToBottomOnMounted();
+	});
+
+	onUpdated(() => {
+		scrollToBottomSmooth();
+	});
+
 	socket.on("newMessage", (data: any) => {
-		if (currentSender == data.sender.name) {
-			messages.value[messages.value.length - 1].message.text += "\n" + data.message.text;
-			data = messages.value.pop() as Message;
-		} else {
-			currentSender = data.sender.name;
-		}
 		messages.value.push(data);
 	});
 
@@ -52,7 +92,13 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+ul {
+  width: fit-content;
+  height: fit-content;
 }
 
 p {
