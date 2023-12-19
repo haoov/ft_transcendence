@@ -65,11 +65,11 @@ const sendMessage = () => {
   overflow: hidden;
 }
 .input {
+  color: white;
   border: none;
   outline: none;
   padding: 1.25em;
-  background-color: #ccc;
-  box-shadow: inset 2px 5px 10px rgba(0, 0, 0, 0.3);
+  background-color: transparent;
   transition: 300ms ease-in-out;
   width: 100%;
   height: auto;

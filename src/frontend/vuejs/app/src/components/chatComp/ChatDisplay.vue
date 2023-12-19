@@ -16,15 +16,6 @@
 	import ChatHeader from './ChatHeader.vue';
 	import { ref, Suspense, onMounted } from 'vue';
 
-	const end = ref<HTMLElement | null>(null);
-
-	// onMounted(() => {
-	// 	const chatDisplayDiv = document.querySelector('.chat-display-div');
-	// 	if (chatDisplayDiv != null) {
-	// 		chatDisplayDiv.scrollTo(end);
-	// 	}
-	// });
-
 </script>
 
 <style scoped>
@@ -35,6 +26,7 @@
   align-content: stretch;
   width: 100%;
   height: 100%;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 /* Styles spécifiques à WebKit */
@@ -55,8 +47,8 @@
 
 ::-webkit-scrollbar-thumb:hover,
 ::-webkit-scrollbar-thumb:active {
-  background-color: #fe019a;
-  box-shadow:0 0 6px #fe019a; /*A voir si on garde*/
+  background-color: #07cece;
+  box-shadow:0 0 6px #07cece; /*A voir si on garde*/
 }
 
 ::-webkit-scrollbar-track:hover,

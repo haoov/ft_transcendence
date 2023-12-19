@@ -35,21 +35,21 @@
 <style scoped>
 .message-div {
   display: grid;
-  grid-template-columns: 1fr 3fr;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  margin: 10px;
+  grid-template: auto auto / 1fr 2fr;
+  width: 95%;
+  height: 98%;
+  overflow: hidden;
+  margin: 2% 0 0 5%;
 }
 
 .profile-img-div {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 .profile-img-div img {
   max-width: 100%;
@@ -57,9 +57,9 @@
 }
 .core-message-div {
   display: grid;
-  grid-template-rows: 1fr 3fr;
+  grid-template: fit-content fit-content / 1fr 3fr;
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 .user-info-div {
@@ -70,22 +70,24 @@
 .text-div {
   display: flex;
   flex-direction: row;
-  height: 100%;
+  height: fit-content;
   width: 100%;
 }
 
 h4 {
-	font-size: 1.5em;
-	color: #707070;
+	font-size: 1em;
+	color: #e9e8e8;
 }
 
 h5 {
-	font-size: 1em;
-	color: #a7a7a7;
+	font-size: 0.5em;
+	color: #c5c5c5;
 	padding: 2%;
 }
 
 p {
-	color:black;
+	font-size: 0.75em;
+	color:rgb(240, 240, 240);
+	height: auto;
 }
 </style>

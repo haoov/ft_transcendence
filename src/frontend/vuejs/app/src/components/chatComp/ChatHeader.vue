@@ -13,14 +13,21 @@
   height: 100%;
   display: flex;
   justify-content: center;
-  background: #e0e0e0;
-  box-shadow: 15px 15px 30px #bebebe, -15px -15px 30px #ffffff;
+  background: transparent;
+  border-bottom: 2.5px solid #fe019a;
 }
 
 /*Need to change that */
 p {
-  font-size: 3rem;
-  color: #000000;
+  background-color: #f3ec78;
+  background-image: linear-gradient(45deg, #07cece, #fe019a);
+  background-size: 100%;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent; 
+  -moz-text-fill-color: transparent;
+  font-size: 2rem;
+  /* color: linear-gradient(blue, pink);*/
   margin: auto;
 }
 </style>

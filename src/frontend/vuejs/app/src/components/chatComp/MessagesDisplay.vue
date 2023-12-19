@@ -91,17 +91,19 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: auto;
   overflow-x: hidden;
   overflow-y: auto;
 }
 
 ul {
-  width: fit-content;
+  width: 100%;
   height: fit-content;
+  padding: 0;
+  margin: 0;
 }
 
 p {
-  color: black;
+  color: rgb(216, 216, 216);
 }
 </style>
