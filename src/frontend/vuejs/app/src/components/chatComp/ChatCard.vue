@@ -17,10 +17,16 @@
   grid-template-columns: 1fr 3fr;
   width: 70vh;
   height: 80vh;
-  border-radius: 30px;
   overflow: hidden;
-  background: #e0e0e0;
-  box-shadow: 10px 10px 20px #414040, -15px -15px 30px #5e5e5e;
+  background: linear-gradient(
+	  to right,
+	  var(--c-black),
+	  var(--c-blue-dark),
+	  var(--c-black)
+	  );
+  border: 5px solid #fe019a;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #fafafa;
 }
 
 
