@@ -1,35 +1,27 @@
 <template>
 	<div
 		class="circle-container"
-		v-if="!isFormVisible"
 		@click="toggleFormVisibility"
 	>
 		<p>+</p>
 	</div>
-	<div class="form-container" v-if="isFormVisible">
-		<form  @submit.prevent="submitForm">
-			<input type="text" placeholder="Channel Name" />
-			<input type="text" placeholder="Channel Description" />
-			<button type="submit">Create Channel</button>
-		</form>
-	</div>
+		<NewChannelForm
+			v-if="isFormVisible"
+			:Visibility="isFormVisible"
+			@update:Visibility="toggleFormVisibility"
+		></NewChannelForm>
 </template>
 
 <script setup lang="ts">
 
 import { ref } from 'vue';
+import NewChannelForm from './NewChannelForm.vue';
 
-const boxIsChecked = ref(false);
 const isFormVisible = ref(false);
 
 const toggleFormVisibility = () => {
-	console.log('toggling form visibility');
 	isFormVisible.value = !isFormVisible.value;
-}
-
-const submitForm = () => {
-	console.log('submitting form');
-}
+};
 
 </script>
 
@@ -44,6 +36,7 @@ const submitForm = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 p {
@@ -53,12 +46,5 @@ p {
   margin: 0;
 }
 
-.form-container {
-	position: fixed;
-	border: 1px solid #fe019a;
-	width: 100%;
-	height: 100%;
-	z-index: 1;
-}
 
 </style>

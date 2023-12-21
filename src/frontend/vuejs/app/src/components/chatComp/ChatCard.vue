@@ -18,16 +18,11 @@
   width: 70vh;
   height: 80vh;
   overflow: hidden;
-  background: linear-gradient(
-	  to right,
-	  var(--c-black),
-	  var(--c-blue-dark),
-	  var(--c-black)
-	  );
-  border: 5px solid #fe019a;
   border-radius: 8px;
-  box-shadow: 0 0 10px #fafafa;
+  /* border: 5px solid #fe019a; */
+  /* box-shadow: 0 0 10px #fafafa; */
+  box-shadow: 0 0 10px #fe019a;
+  animation: gradient 10s ease infinite;
 }
-
 
 </style>
