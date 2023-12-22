@@ -6,8 +6,7 @@ interface Message {
     timestamp: string;
 }
 interface Channel {
-    id: number;
     name: string;
     creatorId: number;
-    modeChanel: 'public' | 'private' | 'protected' | 'secret';
+    modeChannel: 'public' | 'private' | 'protected' | 'secret';
 }

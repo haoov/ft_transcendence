@@ -1,10 +1,13 @@
 <template>
 	<div class="navbar-div">
 		<nav>
-			<NewChannelWidget></NewChannelWidget>
-			<!-- <ul v-for="channel in channels" :key="channel.id">
-				<ChannelWidget :channel="channel"></ChannelWidget> -->
-			<ChannelWidget></ChannelWidget>
+			<NewChannelWidget @update:Visibility="openNewChannelForm"></NewChannelWidget>
+			<ul v-for="(channel, index) in channels">
+				<ChannelWidget
+				:channel="channel"
+				:key="index"
+				></ChannelWidget>
+			</ul>
 		</nav>
 	</div>
 </template>
@@ -12,6 +15,21 @@
 <script setup lang="ts">
 	import ChannelWidget from './ChannelWidget.vue';
 	import NewChannelWidget from './NewChannelWidget.vue';
+	import { inject } from 'vue';
+
+	const $data : any = inject('$data');
+	const channels = await $data.getChannels();
+	console.log('channels ->', channels);
+
+	const emit = defineEmits();
+	const openNewChannelForm = () => {
+		emit('update:Visibility', '');
+	};
+
+	const updateActiveChannel = ( channelClicked: any ) => {
+		console.log('channelClicked', channelClicked);
+		// emit('update:ActiveChannel', channels[0]);
+	};
 
 </script>
 
@@ -24,7 +42,7 @@
   width: 100%;
   height: 100%;
   background: transparent;
-  border-right: 2.5px solid #fe019a;
+  border-right: 2px solid #fe019973;
 }
 
 nav {

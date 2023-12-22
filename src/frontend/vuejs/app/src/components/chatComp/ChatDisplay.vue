@@ -14,7 +14,7 @@
 	import InputBar from './InputBar.vue';
 	import MessageDisplay from './MessagesDisplay.vue';
 	import ChatHeader from './ChatHeader.vue';
-	import { ref, Suspense, onMounted } from 'vue';
+	import { Suspense } from 'vue';
 
 </script>
 
@@ -29,31 +29,29 @@
   overflow-x: hidden;
   overflow-y: auto;
 }
-/* Styles spécifiques à WebKit */
+
 ::-webkit-scrollbar {
-  width: 6px; /* Ajustez la largeur de la scrollbar selon vos besoins */
+  width: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: transparent; /* Couleur transparente par défaut */
-  border-radius: 8px; /* Arrondi des bords */
+  background-color: transparent;
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: transparent; /* Couleur transparente par défaut */
+  background-color: transparent;
 }
-
-/* Rendre la thumb visible lors du survol et de l'interaction */
 
 ::-webkit-scrollbar-thumb:hover,
 ::-webkit-scrollbar-thumb:active {
   background-color: #07cece;
-  box-shadow:0 0 6px #07cece; /*A voir si on garde*/
+  box-shadow:0 0 6px #07cece;
 }
 
 ::-webkit-scrollbar-track:hover,
 ::-webkit-scrollbar-track:active {
-  background-color: transparent; /* Couleur de la track lors du survol et de l'interaction */
+  background-color: transparent;
 }
 
 </style>

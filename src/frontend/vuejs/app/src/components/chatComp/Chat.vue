@@ -1,12 +1,20 @@
 
 <template>
 	<div class="chat">
-		<ChatCard></ChatCard>
-		<Modal v-if="isModalOpen">
-			<NewChannelForm></NewChannelForm>
+		<ChatCard
+			@update:Visibility="toggleModal"
+		></ChatCard>
+		<Modal
+			v-if="isModalOpen"
+			:Visibility="isModalOpen"
+			@update:Visibility="toggleModal"
+		>
+			<Suspense>
+				<NewChannelForm
+					@update:Visibility="toggleModal"
+				></NewChannelForm>
+			</Suspense>
 		</Modal>
-		<button @click="openModal">Open Modal</button>
-		<button @click="closeModal">Close Modal</button>
 	</div>
 </template>
 
@@ -17,17 +25,13 @@ import NewChannelForm from './NewChannelForm.vue';
 import { ref } from 'vue';
 
 let isModalOpen = ref(false);
-function openModal() {
-	console.log('openModal', isModalOpen);
-	isModalOpen.value = true;
-}
 
-function closeModal() {
-	console.log('closeModal', isModalOpen);
-	isModalOpen.value = false;
-}
+function toggleModal() {
+	isModalOpen.value = !isModalOpen.value;
+};
 
 </script>
+
 
 <style scoped>
 .chat {

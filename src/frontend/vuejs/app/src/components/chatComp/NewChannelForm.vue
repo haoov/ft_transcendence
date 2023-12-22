@@ -3,58 +3,71 @@
 		<form class="form" @submit.prevent="submitForm">
 			<div class="form-group">
 				<label for="channelName">Channel Name</label>
-				<input name="channelName" id="channelName" type="text">
+				<input 
+					v-model="channelName"
+					name="channelName"
+					id="channelName"
+					type="text"
+					autocomplete="off"
+				>
 			</div>
 			<div class="form-group">
 				<label for="channelMode">Channel Mode</label>
 				<div class="radio-inputs" id="channelMode">
-					<label class="radio">
-						<input type="radio" v-model="selectedOption" :value="options[0]">
-						<span class="name">Public</span>
-					</label>
-					<label class="radio">
-						<input type="radio" v-model="selectedOption" :value="options[1]">
-						<span class="name">Private</span>
-					</label>
-					<label class="radio">
-						<input type="radio" v-model="selectedOption" :value="options[2]">
-						<span class="name">Protected</span>
-					</label>
-					<label class="radio">
-						<input type="radio" v-model="selectedOption" :value="options[3]">
-						<span class="name">Secret</span>
+					<label
+						class="radio"
+						v-for="(option, index) in options"
+					>
+					<input
+						autocomplete="off"
+						type="radio"
+						v-model="selectedOption"
+						:value="option"
+						name="channelMode"
+					>
+					<span class="name">{{ option }}</span>
 					</label>
 				</div>
 			</div>
-			<button type="submit" class="form-submit-btn">Submit</button>
+			<button 
+				type="submit" 
+				class="form-submit-btn"
+				:disabled="isSubmitDisabled"
+			>Submit</button>
 		</form>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, inject } from 'vue';
 
-import { defineEmits, defineProps } from 'vue';
+let selectedOption = 'Public';
+const options = ['Public', 'Private', 'Protected', 'Secret'];
+const $data : any = inject('$data');
+const socket = $data.getSocket();
+const usersList = await $data.getUsers();
+const currentUser = await $data.getCurrentUser();
+const emit = defineEmits();
+const channelName = ref('');
+const channelNameError = ref(false);
 
-const props = defineProps({
-	Visibility: Boolean
+const isSubmitDisabled = computed(() => {
+  return !channelName.value || channelNameError.value;
 });
 
-let selectedOption = '';
-const emit = defineEmits();
-const options = ['Public', 'Private', 'Protected', 'Secret'];
-
-const updateVisibility = () => {
-	emit('update:Visibility', '');
-}
-
 const submitForm = () => {
-	const channelName = document.getElementById('channelName') as HTMLInputElement;
+	if (!channelName.value) {
+		channelNameError.value = true;
+		return;
+	}
 	const newChannel = {
 		name: channelName.value,
-		mode: selectedOption
+		modeChannel: selectedOption,
+		creatorId: currentUser.id,
 	};
 	console.log(newChannel);
-	updateVisibility();
+	emit('update:Visibility', '');
+	socket.emit('newChannel', newChannel);
 }
 
 </script>
@@ -62,7 +75,7 @@ const submitForm = () => {
 <style scoped>
 
 .new-channel-form-container {
-  width: 66%;
+  width: 300px;
   background: linear-gradient(#212121, #212121) padding-box,
               linear-gradient(145deg, transparent 35%,#e81cff, #40c9ff) border-box;
   border: 2px solid transparent;
@@ -93,7 +106,7 @@ const submitForm = () => {
   }
 }
 
-.new-channel-form-container button:active {
+.new-channel-form-container button:not(:disabled):active {
   scale: 0.95;
 }
 
@@ -155,7 +168,7 @@ const submitForm = () => {
   border-radius: 6px;
 }
 
-.new-channel-form-container .form-submit-btn:hover {
+.new-channel-form-container .form-submit-btn:not(:disabled):hover {
   background-color: #fff;
   border-color: #fff;
 }
@@ -197,5 +210,4 @@ const submitForm = () => {
   background-color: #fff;
   font-weight: 600;
 }
-
 </style>

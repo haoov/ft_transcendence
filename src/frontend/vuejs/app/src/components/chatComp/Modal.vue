@@ -1,12 +1,22 @@
 <template>
-  <div class="modal-overlay">
-    <div class="modal">
+  <div class="modal-overlay" @click="closeModalOutside">
+    <div class="modal" @click.stop>
 		<slot></slot>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+
+const props = defineProps({
+	Visibility: Boolean
+});
+const emit = defineEmits();
+
+function closeModalOutside() {
+	emit('update:Visibility', '');
+}
+
 </script>
 
 <style scoped>
@@ -24,8 +34,8 @@
 }
 .modal {
 	position: relative;
-	width: 50%;
-	height: 75%;
+	width: fit-content;
+	height: fit-content;
 	display: flex;
 	justify-content: center;
 	align-items: center;
