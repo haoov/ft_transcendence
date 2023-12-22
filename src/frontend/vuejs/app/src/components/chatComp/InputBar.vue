@@ -29,7 +29,7 @@ type Message = {
 const input = ref<string>("");
 const $data : any = inject('$data');
 const socket : Socket = $data.getSocket();
-const myUser = await $data.getMyUser();
+const myUser = await $data.getCurrentUser();
 const DateRawStamp : string = new Date().toISOString();
 
 const sendMessage = () => {

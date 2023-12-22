@@ -39,7 +39,6 @@ export class ChatGateway implements OnModuleInit {
 
 	@SubscribeMessage('newMessage')
 	async onNewMessage(@MessageBody() message: any) {
-		// console.log(message);
 		const sender = await this.userService.getUserById(message.senderId);
 		this.server.emit('newMessage', buildMsg(
 			sender.username,
@@ -48,4 +47,11 @@ export class ChatGateway implements OnModuleInit {
 		));
 		this.chatService.createMessage(message);
 	}
+
+	@SubscribeMessage('newChannel')
+	async onNewChannel(@MessageBody() channel: any) {
+		console.log(channel);
+		this.chatService.createChannel(channel);
+	}
+
 }

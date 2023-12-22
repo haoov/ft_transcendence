@@ -6,6 +6,12 @@
 
 <script setup lang="ts">
 
+const props = defineProps({
+	channel: {
+		type: Object,
+	}
+});
+
 </script>
 
 <style scoped>

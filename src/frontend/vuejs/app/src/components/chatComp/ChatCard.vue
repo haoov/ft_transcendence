@@ -1,7 +1,9 @@
 
 <template>
 	<div class="chat-display-card">
-		<ChatNavbar ></ChatNavbar>
+		<Suspense>
+			<ChatNavbar @update:Visibility="openNewChannelForm"></ChatNavbar>
+		</Suspense>
 		<ChatDisplay></ChatDisplay>
 	</div>
 </template>
@@ -9,6 +11,11 @@
 <script setup lang="ts">
 	import ChatDisplay from './ChatDisplay.vue';
 	import ChatNavbar from './ChatNavbar.vue';
+
+	const emit = defineEmits();
+	const openNewChannelForm = () => {
+		emit('update:Visibility', '');
+	};
 </script>
 
 <style scoped>
@@ -19,8 +26,6 @@
   height: 80vh;
   overflow: hidden;
   border-radius: 8px;
-  /* border: 5px solid #fe019a; */
-  /* box-shadow: 0 0 10px #fafafa; */
   box-shadow: 0 0 10px #fe019a;
   animation: gradient 10s ease infinite;
 }

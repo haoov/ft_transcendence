@@ -1,7 +1,6 @@
 <template>
 	<div class="message-div" :id="id">
 		<div class="profile-img-div">
-			<!-- <img src="https://picsum.photos/200/300" alt="Profile Picture"> -->
 			<img :src="profilePic" alt="Profile Picture">
 		</div>
 		<div class="core-message-div">

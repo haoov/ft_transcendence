@@ -44,6 +44,10 @@ let ChatGateway = class ChatGateway {
         this.server.emit('newMessage', buildMsg(sender.username, sender.avatar, message));
         this.chatService.createMessage(message);
     }
+    async onNewChannel(channel) {
+        console.log(channel);
+        this.chatService.createChannel(channel);
+    }
 };
 exports.ChatGateway = ChatGateway;
 __decorate([
@@ -57,6 +61,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ChatGateway.prototype, "onNewMessage", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('newChannel'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "onNewChannel", null);
 exports.ChatGateway = ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(),
     __metadata("design:paramtypes", [chat_service_1.ChatService,

@@ -19,34 +19,6 @@ async function fetchMessages() : Promise<any> {
 
 const socket = io('http://localhost:3000');
 
-type Message = {
-	sender: {
-		name: string;
-		avatar: string;
-	};
-	message: {
-		text: string;
-		time: string;
-	};
-}
-
-// function convertDataToMessage(data : Promise<any[]> ) : Message[] {
-// 	const messages : Message[] = [];
-// 	for (const message of data) {
-// 		messages.push({
-// 			sender: {
-// 				name: message.username,
-// 				avatar: message.avatar,
-// 			},
-// 			message: {
-// 				text: message.messageText,
-// 				time: message.timestamp,
-// 			},
-// 		});
-// 	}
-// 	return messages;
-// }
-
 export default {
 	getSocket() {
 		return socket;
@@ -56,7 +28,7 @@ export default {
 		return fetchUsers();
 	},
 
-	getMyUser() : Object {
+	getCurrentUser() : Object {
 		return fetchMyUser();
 	},
 
@@ -68,8 +40,4 @@ export default {
 		return fetchMessages();
 	},
 
-	// getMessages() : Message[] {
-	// 	const data : Promise<any[]> = fetchMessages();
-	// 	return convertDataToMessage(data);
-	// },
 };

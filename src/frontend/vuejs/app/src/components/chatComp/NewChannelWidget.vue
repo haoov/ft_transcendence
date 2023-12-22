@@ -1,30 +1,20 @@
 <template>
 	<div
 		class="circle-container"
-		@click="toggleFormVisibility"
+		@click="openNewChannelForm"
 	>
 		<p>+</p>
 	</div>
-		<NewChannelForm
-			v-if="isFormVisible"
-			:Visibility="isFormVisible"
-			@update:Visibility="toggleFormVisibility"
-		></NewChannelForm>
 </template>
 
 <script setup lang="ts">
 
-import { ref } from 'vue';
-import NewChannelForm from './NewChannelForm.vue';
-
-const isFormVisible = ref(false);
-
-const toggleFormVisibility = () => {
-	isFormVisible.value = !isFormVisible.value;
+const emit = defineEmits();
+const openNewChannelForm = () => {
+	emit('update:Visibility', '');
 };
 
 </script>
-
 
 <style scoped>
 .circle-container {
@@ -45,6 +35,5 @@ p {
   font-weight: bold;
   margin: 0;
 }
-
 
 </style>
