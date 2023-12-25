@@ -1,18 +1,10 @@
 
 <template>
 	<div class="chat">
-		<ChatCard
-			@update:Visibility="toggleModal"
-		></ChatCard>
-		<Modal
-			v-if="isModalOpen"
-			:Visibility="isModalOpen"
-			@update:Visibility="toggleModal"
-		>
+		<ChatCard></ChatCard>
+		<Modal v-if="store.isModalOpen">
 			<Suspense>
-				<NewChannelForm
-					@update:Visibility="toggleModal"
-				></NewChannelForm>
+				<NewChannelForm></NewChannelForm>
 			</Suspense>
 		</Modal>
 	</div>
@@ -22,13 +14,10 @@
 import ChatCard from './ChatCard.vue';
 import Modal from './Modal.vue';
 import NewChannelForm from './NewChannelForm.vue';
-import { ref } from 'vue';
+import { Suspense, inject } from 'vue';
 
-let isModalOpen = ref(false);
-
-function toggleModal() {
-	isModalOpen.value = !isModalOpen.value;
-};
+const $data: any = inject('$data');
+const store = $data.getStore();
 
 </script>
 
@@ -47,7 +36,4 @@ function toggleModal() {
 	height: 100vh;
 }
 
-p {
-	color: white;
-}
 </style>

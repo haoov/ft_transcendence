@@ -33,5 +33,5 @@ export class ChannelEntity {
 	creatorId: number;
 
 	@Column()
-	modeChannel: 'public' | 'private' | 'protected' | 'secret';
+	mode: 'public' | 'private' | 'protected' | 'secret';
 }

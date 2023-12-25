@@ -10,5 +10,5 @@ export declare class ChannelEntity {
     id: number;
     name: string;
     creatorId: number;
-    modeChannel: 'public' | 'private' | 'protected' | 'secret';
+    mode: 'public' | 'private' | 'protected' | 'secret';
 }

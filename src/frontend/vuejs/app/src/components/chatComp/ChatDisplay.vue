@@ -15,7 +15,6 @@
 	import MessageDisplay from './MessagesDisplay.vue';
 	import ChatHeader from './ChatHeader.vue';
 	import { Suspense } from 'vue';
-
 </script>
 
 <style scoped>

@@ -1,11 +1,18 @@
 import axios from "axios";
 import io from "socket.io-client";
+import { reactive } from "vue";
+
+interface Channel {
+	name: string;
+	mode: string;
+	creatorId: any;
+};
 
 async function fetchUsers() : Promise<any> {
 	return axios.get('http://localhost:3000/api/user').then((res) => { return res.data });
 };
 
-async function fetchMyUser() : Promise<any> {
+async function fetchCurrentUser() : Promise<any> {
 	return  axios.get('http://localhost:3000/api/user/me').then((res) => { return res.data });
 };
 
@@ -19,6 +26,12 @@ async function fetchMessages() : Promise<any> {
 
 const socket = io('http://localhost:3000');
 
+const store = reactive({
+	channels: [] as Channel[],
+	isModalOpen: false,
+
+});
+
 export default {
 	getSocket() {
 		return socket;
@@ -29,7 +42,7 @@ export default {
 	},
 
 	getCurrentUser() : Object {
-		return fetchMyUser();
+		return fetchCurrentUser();
 	},
 
 	getChannels() : Object {
@@ -40,4 +53,25 @@ export default {
 		return fetchMessages();
 	},
 
+	getStore() : Object {
+		return store;
+	},
+
+	loadChannels() {
+		fetchChannels().then((channels) => {
+			store.channels = channels;
+		});
+	},
+
+	addChannel(channel: Channel) {
+		store.channels.push(channel);
+	},
+
+	openModal() {
+		store.isModalOpen = true;
+	},
+
+	closeModal() {
+		store.isModalOpen = false;
+	},
 };
