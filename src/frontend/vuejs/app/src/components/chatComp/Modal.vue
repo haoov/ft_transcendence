@@ -8,13 +8,12 @@
 
 <script setup lang="ts">
 
-const props = defineProps({
-	Visibility: Boolean
-});
-const emit = defineEmits();
+import { inject } from 'vue';
+
+const $data: any = inject('$data');
 
 function closeModalOutside() {
-	emit('update:Visibility', '');
+	$data.closeModal();
 }
 
 </script>

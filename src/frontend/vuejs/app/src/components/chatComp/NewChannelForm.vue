@@ -57,16 +57,16 @@ const isSubmitDisabled = computed(() => {
 
 const submitForm = () => {
 	if (!channelName.value) {
-		channelNameError.value = true;
+		channelNameError.value = true;emit('update:Visibility', '')
 		return;
 	}
 	const newChannel = {
 		name: channelName.value,
-		modeChannel: selectedOption,
+		mode: selectedOption,
 		creatorId: currentUser.id,
 	};
-	console.log(newChannel);
-	emit('update:Visibility', '');
+	$data.addChannel(newChannel);
+	$data.closeModal();
 	socket.emit('newChannel', newChannel);
 }
 

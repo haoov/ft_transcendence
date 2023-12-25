@@ -8,5 +8,5 @@ interface Message {
 interface Channel {
     name: string;
     creatorId: number;
-    modeChannel: 'public' | 'private' | 'protected' | 'secret';
+    mode: 'public' | 'private' | 'protected' | 'secret';
 }

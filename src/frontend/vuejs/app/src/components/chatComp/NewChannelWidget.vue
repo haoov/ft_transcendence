@@ -8,10 +8,13 @@
 </template>
 
 <script setup lang="ts">
+import { inject } from 'vue';
+
+const $data: any = inject('$data');
 
 const emit = defineEmits();
 const openNewChannelForm = () => {
-	emit('update:Visibility', '');
+	$data.openModal();
 };
 
 </script>

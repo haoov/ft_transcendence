@@ -59,7 +59,7 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], ChannelEntity.prototype, "modeChannel", void 0);
+], ChannelEntity.prototype, "mode", void 0);
 exports.ChannelEntity = ChannelEntity = __decorate([
     (0, typeorm_1.Entity)()
 ], ChannelEntity);
