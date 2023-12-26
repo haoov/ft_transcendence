@@ -4,13 +4,16 @@
 		<Suspense>
 			<ChatNavbar></ChatNavbar>
 		</Suspense>
-		<ChatDisplay></ChatDisplay>
+		<Suspense>
+			<ChatDisplay></ChatDisplay>
+		</Suspense>
 	</div>
 </template>
 
 <script setup lang="ts">
 	import ChatDisplay from './ChatDisplay.vue';
 	import ChatNavbar from './ChatNavbar.vue';
+	import { Suspense } from 'vue';
 
 </script>
 

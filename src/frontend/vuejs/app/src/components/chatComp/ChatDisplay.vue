@@ -1,20 +1,30 @@
 <template>
 	<div class="chat-display-div">
-		<ChatHeader></ChatHeader>
+		<ChatHeader :activeChannel="activeChannel"></ChatHeader>
 		<Suspense>
-			<MessageDisplay></MessageDisplay>
+			<MessageDisplay :activeChannel="activeChannel"></MessageDisplay>
 		</Suspense>
 		<Suspense>
-			<InputBar></InputBar>
+			<InputBar :activeChannel="activeChannel"></InputBar>
 		</Suspense>
 	</div>
 </template>
 
 <script setup lang="ts">
-	import InputBar from './InputBar.vue';
-	import MessageDisplay from './MessagesDisplay.vue';
-	import ChatHeader from './ChatHeader.vue';
-	import { Suspense } from 'vue';
+import InputBar from './InputBar.vue';
+import MessageDisplay from './MessagesDisplay.vue';
+import ChatHeader from './ChatHeader.vue';
+import { Suspense, inject, computed, onMounted, ref, watch } from 'vue';
+
+const data : any = inject('$data');
+const store = data.getStore();
+
+let activeChannel = ref(store.activeChannel);
+
+onMounted(() => {
+	data.loadLastActiveChannel();
+});
+
 </script>
 
 <style scoped>

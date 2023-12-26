@@ -1,16 +1,19 @@
 <template>
     <div class="circle-container">
-        <p>CH</p>
+        <p>{{ channelName }}</p>
     </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 
 const props = defineProps({
 	channel: {
 		type: Object,
 	}
 });
+
+const channelName = ref(props.channel?.name);
 
 </script>
 

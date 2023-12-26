@@ -10,78 +10,57 @@
 </template>
 
 <script setup lang="ts">
-
-	import Message from './Message.vue';
-	import { onUpdated, onMounted, ref } from 'vue';
-	import { inject } from 'vue';
-	import { Socket } from 'socket.io-client';
+import Message from './Message.vue';
+import { onUpdated, onMounted, computed} from 'vue';
+import { inject } from 'vue';
+import { Socket } from 'socket.io-client';
 	
-	type Message = {
-		sender: {
-			name: string;
-			avatar: string;
-		};
-		message: {
-			text: string;
-			time: string;
-		};
-	}
-
-	const data : any = inject('$data');
-	const usersList = await data.getUsers();
-	const messagesRaw = await data.getRawMessages();
-	
-	function convertMessage(messagesRaw : any[]) : Message[] {
-		let messages : Message[] = [];
-		for (const messageRaw of messagesRaw) {
-			let message : Message = {
-				sender: {
-					name: "",
-					avatar: ""
-				},
-				message: {
-					text: "",
-					time: ""
-				}
-			};
-			for (const user of usersList) {
-				if (user.id == messageRaw.senderId) {
-					message.sender.name = user.username;
-					message.sender.avatar = user.avatar;
-					break;
-				}
-			}
-			message.message.text = messageRaw.text;
-			message.message.time = messageRaw.timestamp;
-			messages.push(message);
-		};
-		return messages;
+type Message = {
+	sender: {
+		name: string;
+		avatar: string;
 	};
-	const socket: Socket = data.getSocket();
-	let messages = ref<Message[]>(convertMessage(messagesRaw));
-	let currentSender : string = "";
+	message: {
+		text: string;
+		time: string;
+	};
+};
 
-	function scrollToBottomOnMounted() {
-		const end = document.getElementById('last');
-		end?.scrollIntoView();
+function scrollToBottomOnMounted() {
+	const end = document.getElementById('last');
+	end?.scrollIntoView();
+};
+
+function scrollToBottomSmooth() {
+	const end = document.getElementById('last');
+	end?.scrollIntoView({ behavior: 'smooth' });
+};
+
+const data : any = inject('$data');
+const store = data.getStore();
+const socket: Socket = data.getSocket();
+const props = defineProps({
+	activeChannel: {
+		type: Object,
+	},
+});
+const activeChannel = props.activeChannel;
+let messages = computed(() => store.messages as Message[]);
+
+onMounted(() => {
+	if (activeChannel) {
+		data.loadMessagesByChannel(activeChannel.id);
 	}
+	scrollToBottomOnMounted();
+});
 
-	function scrollToBottomSmooth() {
-		const end = document.getElementById('last');
-		end?.scrollIntoView({ behavior: 'smooth' });
-	}
-	
-	onMounted(() => {
-		scrollToBottomOnMounted();
-	});
+onUpdated(() => {
+	scrollToBottomSmooth();
+});
 
-	onUpdated(() => {
-		scrollToBottomSmooth();
-	});
-
-	socket.on("newMessage", (data: any) => {
-		messages.value.push(data);
-	});
+socket.on("newMessage", (message : any) => {
+	store.messages.push(message);
+});
 
 </script>
 

@@ -1,10 +1,18 @@
 <template>
 	<div class="header-channel">
-		<p>Channel 1</p>
+		<p>{{ channelName }}</p>
 	</div>
 </template>
 
 <script setup lang="ts">
+const props = defineProps({
+	activeChannel: {
+		type: Object,
+	},
+});
+
+const channelName = props.activeChannel?.name;
+
 </script>
 
 <style scoped>

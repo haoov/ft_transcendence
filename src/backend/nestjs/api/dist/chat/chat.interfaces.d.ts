@@ -1,4 +1,5 @@
-interface Message {
+interface MessageRaw {
+    id: number;
     senderId: number;
     channelId: number;
     text: string;
@@ -6,6 +7,7 @@ interface Message {
     timestamp: string;
 }
 interface Channel {
+    id: number;
     name: string;
     creatorId: number;
     mode: 'public' | 'private' | 'protected' | 'secret';

@@ -11,6 +11,7 @@
 </template>
 
 <script setup lang="ts">
+
 import ChatCard from './ChatCard.vue';
 import Modal from './Modal.vue';
 import NewChannelForm from './NewChannelForm.vue';
