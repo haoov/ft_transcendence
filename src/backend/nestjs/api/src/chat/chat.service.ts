@@ -13,28 +13,21 @@ export class ChatService {
 	/* MESSAGE */
 
 	//Permet de fetch tous les messages
-	async getAllMessages(): Promise<Message []> {
-		return await this.messagesRepository.find() as Message [];
+	async getAllMessages(): Promise<MessageRaw []> {
+		return await this.messagesRepository.find() as MessageRaw [];
 	}
 	
 	//Permet de charger les messages d'une conversation
-	async getAllMessagesByChannel(channelId: number): Promise<Message []> {
-		const MessageList: Message [] = await this.messagesRepository.find();
-		return MessageList.filter((message) => {message.channelId === channelId});
+	async getAllMessagesByChannel(channelId: number): Promise<MessageRaw []> {
+		const MessageList = await this.messagesRepository.findBy({ channelId: channelId }) as MessageRaw [];
+		return MessageList;
 	}
 
 	//Permet de créer un message dans la base de données
-	async createMessage(message: Message): Promise<Message> {
+	async createMessage(message: MessageRaw): Promise<MessageRaw> {
 		this.messagesRepository.create(message as MessageEntity);
 		return await this.messagesRepository.save(message);
 	}
-
-	// //A sup ?
-	// //Permet d'editer un message dans la base de données
-	// async saveMessage(message: Message): Promise<Message> {
-	// 	return await this.messagesRepository.save(message);
-	// }
-
 
 	// /* CHANNEL */
 
@@ -43,38 +36,15 @@ export class ChatService {
 		return await this.channelRepository.find() as Channel [];
 	}
 
+	//Permet de fetch un channel par son id
+	async getChannelById(id: number): Promise<Channel> {
+		return await this.channelRepository.findOneBy({ id: id }) as Channel;
+	}
+
 	//Permet de créer un channel dans la base de données
 	async createChannel(channel: Channel): Promise<Channel> {
 		this.channelRepository.create(channel);
 		return await this.channelRepository.save(channel);
 	}
 
-	// 	if (!channel.name || !channel.creatorId || !channel.modeChanel)
-	// 		return null;
-	// 	else if (channelList.find((channel) => channel.name === channel.name))
-	// 		return null;
-	// 	return await this.channelRepository.create(channel);
-	// }
-
-	// //Permet d'editer un channel dans la base de données
-	// async saveChannel(idEditor: number, idChannel: number, channel: Channel): Promise<Channel> {
-	// 	const channelToEdit = await this.channelRepository.findOneBy({ id: idChannel });
-	// 	if (!channelToEdit)
-	// 		return null;
-	// 	if (idEditor != channelToEdit.creatorId)
-	// 		return null;
-	// 	channelToEdit.name = channel.name;
-	// 	channelToEdit.modeChanel = channel.modeChanel;
-	// 	return await this.channelRepository.save(channelToEdit);
-	// }
-
-	// //Permet de supprimer un channel dans la base de données
-	// async deleteChannel(idChannel: number, idUser: number): Promise<Channel> {
-	// 	const channelToDelete = await this.channelRepository.findOneBy({ id: idChannel });
-	// 	if (!channelToDelete)
-	// 		return null;
-	// 	if (channelToDelete.creatorId != idUser)
-	// 		return null;
-	// 	return await this.channelRepository.delete(idChannel);//Pas suuuuuuuu
-	// }
 }

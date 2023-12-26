@@ -3,9 +3,28 @@ import io from "socket.io-client";
 import { reactive } from "vue";
 
 interface Channel {
+	id: number;
 	name: string;
 	mode: string;
 	creatorId: any;
+};
+
+interface Message {
+	sender: {
+		name: string;
+		avatar: string;
+	};
+	message: {
+		text: string;
+		time: string;
+	};
+};
+
+interface User {
+	id : number,
+	username: string,
+	avatar: string;
+	email: string,
 };
 
 async function fetchUsers() : Promise<any> {
@@ -16,20 +35,30 @@ async function fetchCurrentUser() : Promise<any> {
 	return  axios.get('http://localhost:3000/api/user/me').then((res) => { return res.data });
 };
 
-async function fetchChannels() : Promise<any> {
+async function fetchChannels() : Promise<Channel[]> {
 	return axios.get('http://localhost:3000/api/chat/channels').then((res) => { return res.data });
+};
+
+async function fetchChannelById(id: number) : Promise<Channel> {
+	return axios.get(`http://localhost:3000/api/chat/channels/${id}`).then((res) => { return res.data });
 }
 
-async function fetchMessages() : Promise<any> {
+async function fetchMessages() : Promise<Message[]> {
 	return axios.get('http://localhost:3000/api/chat/messages').then((res) => { return res.data });
-}
+};
+
+async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
+	return axios.get(`http://localhost:3000/api/chat/messages/${id}`).then((res) => { return res.data });
+};
 
 const socket = io('http://localhost:3000');
-
 const store = reactive({
 	channels: [] as Channel[],
+	messages: [] as Message [],
+	users: [] as User [],
+	currentUser: null as User | null,
 	isModalOpen: false,
-
+	activeChannel: null as Channel | null,
 });
 
 export default {
@@ -53,6 +82,13 @@ export default {
 		return fetchMessages();
 	},
 
+	loadLastActiveChannel() {
+		const lastActiveChannelId = parseInt(localStorage.getItem('lastActiveChannel') || '0');
+		fetchChannelById(lastActiveChannelId).then((channel) => {
+			store.activeChannel = channel;
+		});
+	},
+
 	getStore() : Object {
 		return store;
 	},
@@ -64,7 +100,34 @@ export default {
 	},
 
 	addChannel(channel: Channel) {
-		store.channels.push(channel);
+		store.channels.unshift(channel)
+	},
+
+	setActiveChannel(channel: Channel) {
+		store.activeChannel = channel;
+		localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString());
+	},
+
+	loadMessages() {
+		fetchMessages().then((messages) => {
+			store.messages = messages;
+		});
+	},
+
+	loadMessagesByChannel(idChannel: number) {
+		fetchMessagesByChannelId(idChannel).then((messages) => {
+			store.messages = messages;
+		});
+	},
+
+	addMessage(message: Message) {
+		store.messages.push(message);
+	},
+
+	loadUsers() {
+		fetchUsers().then((users) => {
+			store.users = users;
+		});
 	},
 
 	openModal() {

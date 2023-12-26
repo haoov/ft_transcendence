@@ -5,6 +5,7 @@
 				<ChannelWidget
 				:channel="channel"
 				:key="index"
+				@click="setActiveChannel(channel)"
 				></ChannelWidget>
 			</ul>
 			<NewChannelWidget></NewChannelWidget>
@@ -13,17 +14,21 @@
 </template>
 
 <script setup lang="ts">
-	import ChannelWidget from './ChannelWidget.vue';
-	import NewChannelWidget from './NewChannelWidget.vue';
-	import { inject, onMounted, computed } from 'vue';
+import ChannelWidget from './ChannelWidget.vue';
+import NewChannelWidget from './NewChannelWidget.vue';
+import { inject, onMounted, computed } from 'vue';
 
-	const $data : any = inject('$data');
-	const store = $data.getStore();
+const $data : any = inject('$data');
+const store = $data.getStore();
+const channels = computed (() => store.channels);
 
-	onMounted(() => {
-		$data.loadChannels();
-	});
-	const channels = computed (() => store.channels);
+onMounted(() => {
+	$data.loadChannels();
+});
+
+const setActiveChannel = (channel : any) => {
+	$data.setActiveChannel(channel);
+};
 
 </script>
 

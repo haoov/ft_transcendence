@@ -4,9 +4,10 @@ export declare class ChatService {
     private messagesRepository;
     private channelRepository;
     constructor(messagesRepository: Repository<MessageEntity>, channelRepository: Repository<ChannelEntity>);
-    getAllMessages(): Promise<Message[]>;
-    getAllMessagesByChannel(channelId: number): Promise<Message[]>;
-    createMessage(message: Message): Promise<Message>;
+    getAllMessages(): Promise<MessageRaw[]>;
+    getAllMessagesByChannel(channelId: number): Promise<MessageRaw[]>;
+    createMessage(message: MessageRaw): Promise<MessageRaw>;
     getAllChannels(): Promise<Channel[]>;
+    getChannelById(id: number): Promise<Channel>;
     createChannel(channel: Channel): Promise<Channel>;
 }

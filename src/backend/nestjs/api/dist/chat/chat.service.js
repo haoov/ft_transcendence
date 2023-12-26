@@ -26,8 +26,8 @@ let ChatService = class ChatService {
         return await this.messagesRepository.find();
     }
     async getAllMessagesByChannel(channelId) {
-        const MessageList = await this.messagesRepository.find();
-        return MessageList.filter((message) => { message.channelId === channelId; });
+        const MessageList = await this.messagesRepository.findBy({ channelId: channelId });
+        return MessageList;
     }
     async createMessage(message) {
         this.messagesRepository.create(message);
@@ -35,6 +35,9 @@ let ChatService = class ChatService {
     }
     async getAllChannels() {
         return await this.channelRepository.find();
+    }
+    async getChannelById(id) {
+        return await this.channelRepository.findOneBy({ id: id });
     }
     async createChannel(channel) {
         this.channelRepository.create(channel);

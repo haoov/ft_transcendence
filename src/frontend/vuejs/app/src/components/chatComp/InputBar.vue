@@ -18,12 +18,11 @@ import { Socket, io } from "socket.io-client";
 import { ref, inject } from "vue";
 
 type Message = {
-	senderId: string;
-	userEmail: String;
-	channelId: Number;
-	text: String;
-	datestamp: String;
-	timestamp: String;
+	senderId: number;
+	channelId: number;
+	text: string;
+	datestamp: string;
+	timestamp: string;
 };
 
 const input = ref<string>("");
@@ -31,12 +30,17 @@ const $data : any = inject('$data');
 const socket : Socket = $data.getSocket();
 const myUser = await $data.getCurrentUser();
 const DateRawStamp : string = new Date().toISOString();
+const props = defineProps({
+	activeChannel: {
+		type: Object,
+	},
+});
+const activeChannel = props.activeChannel;
 
 const sendMessage = () => {
 	const newMessage: Message = {
 		senderId: myUser.id,
-		userEmail: myUser.email,
-		channelId: 1,
+		channelId: activeChannel?.id as number,
 		text: input.value,
 		datestamp: DateRawStamp.substring(0, 10),
 		timestamp: DateRawStamp.substring(12, 19)
