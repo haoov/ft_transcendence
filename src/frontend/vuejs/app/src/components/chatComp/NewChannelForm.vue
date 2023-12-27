@@ -57,7 +57,7 @@ const isSubmitDisabled = computed(() => {
 
 const submitForm = () => {
 	if (!channelName.value) {
-		channelNameError.value = true;emit('update:Visibility', '')
+		channelNameError.value = true;
 		return;
 	}
 	const newChannel = {

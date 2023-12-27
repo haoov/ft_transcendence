@@ -22,6 +22,7 @@ function convertRawMessagesToMessages(messagesRaw, users) {
     for (const message of messagesRaw) {
         const user = users.find((user) => { return user.id === message.senderId; });
         let messageConverted = {
+            id: message.id,
             sender: {
                 name: user?.username,
                 avatar: user?.avatar,

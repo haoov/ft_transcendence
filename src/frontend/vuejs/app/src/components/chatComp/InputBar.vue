@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { Socket, io } from "socket.io-client";
-import { ref, inject } from "vue";
+import { ref, inject, computed, watch } from "vue";
 
 type Message = {
 	senderId: number;
@@ -30,17 +30,13 @@ const $data : any = inject('$data');
 const socket : Socket = $data.getSocket();
 const myUser = await $data.getCurrentUser();
 const DateRawStamp : string = new Date().toISOString();
-const props = defineProps({
-	activeChannel: {
-		type: Object,
-	},
-});
-const activeChannel = props.activeChannel;
+const $store = $data.getStore();
+const activeChannel = computed(() => $store.activeChannel);
 
 const sendMessage = () => {
 	const newMessage: Message = {
 		senderId: myUser.id,
-		channelId: activeChannel?.id as number,
+		channelId: activeChannel.value.id,
 		text: input.value,
 		datestamp: DateRawStamp.substring(0, 10),
 		timestamp: DateRawStamp.substring(12, 19)
@@ -60,7 +56,6 @@ const sendMessage = () => {
   overflow: hidden;
 }
 
-/* Form and paragraph styles */
 .form-message {
   display: flex;
   justify-content: column;
@@ -79,7 +74,7 @@ const sendMessage = () => {
   height: auto;
 }
 
-.input:focus {
+.input:not(:disabled):focus {
   color : black;
   background-color: white;
   transform: scale(1.05);
