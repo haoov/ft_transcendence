@@ -4,7 +4,7 @@
 			<ul v-for="(channel, index) in channels">
 				<ChannelWidget
 				:channel="channel"
-				:key="index"
+				:key="channel.id"
 				@click="setActiveChannel(channel)"
 				></ChannelWidget>
 			</ul>
@@ -27,6 +27,7 @@ onMounted(() => {
 });
 
 const setActiveChannel = (channel : any) => {
+	console.log('setActiveChannel', channel);
 	$data.setActiveChannel(channel);
 };
 

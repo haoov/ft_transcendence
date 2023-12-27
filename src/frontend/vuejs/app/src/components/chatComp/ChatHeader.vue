@@ -5,13 +5,16 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-	activeChannel: {
-		type: Object,
-	},
-});
+import { inject, computed, ref, watch } from 'vue';
 
-const channelName = props.activeChannel?.name;
+const $data : any = inject('$data');
+const store = $data.getStore();
+const activeChannel = computed(() => store.activeChannel);
+let channelName = ref('');
+
+watch(activeChannel, () => {
+	channelName.value = activeChannel.value.name;
+});
 
 </script>
 

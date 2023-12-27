@@ -5,6 +5,7 @@ import { UserEntity } from "src/postgreSQL/entities/user.entity";
 
 
 interface Message {
+	id: number;
 	sender: {
 		name: string;
 		avatar: string;
@@ -20,6 +21,7 @@ function convertRawMessagesToMessages(messagesRaw: MessageRaw [], users: UserEnt
 	for (const message of messagesRaw) {
 		const user = users.find((user) => { return user.id === message.senderId });
 		let messageConverted: Message = {
+			id: message.id,
 			sender: {
 				name: user?.username as string,
 				avatar: user?.avatar as string,

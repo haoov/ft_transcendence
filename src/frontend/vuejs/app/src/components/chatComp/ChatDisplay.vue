@@ -1,11 +1,11 @@
 <template>
 	<div class="chat-display-div">
-		<ChatHeader :activeChannel="activeChannel"></ChatHeader>
+		<ChatHeader></ChatHeader>
 		<Suspense>
-			<MessageDisplay :activeChannel="activeChannel"></MessageDisplay>
+			<MessageDisplay></MessageDisplay>
 		</Suspense>
 		<Suspense>
-			<InputBar :activeChannel="activeChannel"></InputBar>
+			<InputBar></InputBar>
 		</Suspense>
 	</div>
 </template>
@@ -18,17 +18,6 @@ import { Suspense, inject, computed, onMounted, ref, watch } from 'vue';
 
 const data : any = inject('$data');
 const store = data.getStore();
-
-let activeChannel = ref(store.activeChannel);
-
-watch(() => store.activeChannel, (newActiveChannel) => {
-  activeChannel.value = newActiveChannel;
-  console.log(activeChannel.value);
-});
-
-onMounted(() => {
-	data.loadLastActiveChannel();
-});
 
 </script>
 

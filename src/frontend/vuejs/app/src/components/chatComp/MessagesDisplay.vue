@@ -4,17 +4,17 @@
 			v-for="(message, index) in messages"
 			:id="index == messages.length - 1 ? 'last' : ''"
 		>
-			<Message :data="message" :id="index"></Message>
+			<Message :data="message" :id="index" :key="message.id"></Message>
 		</ul>
 	</div>
 </template>
 
 <script setup lang="ts">
 import Message from './Message.vue';
-import { onUpdated, onMounted, computed} from 'vue';
+import { onUpdated, onMounted, computed, watch} from 'vue';
 import { inject } from 'vue';
 import { Socket } from 'socket.io-client';
-	
+
 type Message = {
 	sender: {
 		name: string;
@@ -39,18 +39,15 @@ function scrollToBottomSmooth() {
 const data : any = inject('$data');
 const store = data.getStore();
 const socket: Socket = data.getSocket();
-const props = defineProps({
-	activeChannel: {
-		type: Object,
-	},
+
+const activeChannel = computed(() => store.activeChannel);
+const messages = computed(() => store.messages);
+
+watch(activeChannel, () => {
+	data.loadMessagesByChannel(activeChannel.value.id);
 });
-const activeChannel = props.activeChannel;
-let messages = computed(() => store.messages as Message[]);
 
 onMounted(() => {
-	if (activeChannel) {
-		data.loadMessagesByChannel(activeChannel.id);
-	}
 	scrollToBottomOnMounted();
 });
 

@@ -10,6 +10,7 @@ interface Channel {
 };
 
 interface Message {
+	id: number;
 	sender: {
 		name: string;
 		avatar: string;
@@ -48,6 +49,7 @@ async function fetchMessages() : Promise<Message[]> {
 };
 
 async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
+	console.log('channel id =', id);
 	return axios.get(`http://localhost:3000/api/chat/messages/${id}`).then((res) => { return res.data });
 };
 
@@ -82,20 +84,13 @@ export default {
 		return fetchMessages();
 	},
 
-	loadLastActiveChannel() {
-		const lastActiveChannelId = parseInt(localStorage.getItem('lastActiveChannel') || '0');
-		fetchChannelById(lastActiveChannelId).then((channel) => {
-			store.activeChannel = channel;
-		});
-	},
-
 	getStore() : Object {
 		return store;
 	},
 
 	loadChannels() {
 		fetchChannels().then((channels) => {
-			store.channels = channels;
+			store.channels = channels.slice().reverse();
 		});
 	},
 

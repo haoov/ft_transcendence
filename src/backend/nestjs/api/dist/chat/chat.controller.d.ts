@@ -1,6 +1,7 @@
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
 interface Message {
+    id: number;
     sender: {
         name: string;
         avatar: string;
