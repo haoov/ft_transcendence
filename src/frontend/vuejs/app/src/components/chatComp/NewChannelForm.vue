@@ -61,6 +61,7 @@ const submitForm = () => {
 		return;
 	}
 	const newChannel = {
+		id: $data.generateId(),
 		name: channelName.value,
 		mode: selectedOption,
 		creatorId: currentUser.id,

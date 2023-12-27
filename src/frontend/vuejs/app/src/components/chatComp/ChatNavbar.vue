@@ -59,7 +59,7 @@ nav {
 }
 
 nav ul {
-	margin-bottom: 3%;
+	margin-bottom: 10%;
 }
 
 ::-webkit-scrollbar {
