@@ -21,6 +21,11 @@ const store = data.getStore();
 
 let activeChannel = ref(store.activeChannel);
 
+watch(() => store.activeChannel, (newActiveChannel) => {
+  activeChannel.value = newActiveChannel;
+  console.log(activeChannel.value);
+});
+
 onMounted(() => {
 	data.loadLastActiveChannel();
 });
