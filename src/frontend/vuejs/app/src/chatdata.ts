@@ -125,6 +125,11 @@ export default {
 		});
 	},
 
+	generateId() {
+		this.loadChannels();
+		return store.channels.length + 1;
+	},
+
 	openModal() {
 		store.isModalOpen = true;
 	},
