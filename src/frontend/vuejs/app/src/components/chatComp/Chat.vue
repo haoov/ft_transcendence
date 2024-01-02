@@ -2,7 +2,7 @@
 <template>
 	<div class="chat">
 		<ChatCard></ChatCard>
-		<Modal v-if="store.isModalOpen">
+		<Modal v-if="store.isModalNewChannelFormOpen">
 			<Suspense>
 				<NewChannelForm></NewChannelForm>
 			</Suspense>

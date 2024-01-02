@@ -16,7 +16,7 @@
 				<div class="radio-inputs" id="channelMode">
 					<label
 						class="radio"
-						v-for="(option, index) in options"
+						v-for="option in options"
 					>
 					<input
 						autocomplete="off"
@@ -28,6 +28,7 @@
 					<span class="name">{{ option }}</span>
 					</label>
 				</div>
+				<SeachBar v-if="selectedOption !== 'Public'" ></SeachBar>
 			</div>
 			<button 
 				type="submit" 
@@ -39,13 +40,13 @@
 </template>
 
 <script setup lang="ts">
+import SeachBar from './SearchBar.vue';
 import { ref, computed, inject } from 'vue';
 
-let selectedOption = 'Public';
+const selectedOption = ref('Public');
 const options = ['Public', 'Private', 'Protected', 'Secret'];
 const $data : any = inject('$data');
 const socket = $data.getSocket();
-const usersList = await $data.getUsers();
 const currentUser = await $data.getCurrentUser();
 const emit = defineEmits();
 const channelName = ref('');
@@ -61,13 +62,13 @@ const submitForm = () => {
 		return;
 	}
 	const newChannel = {
-		id: $data.generateId(),
+		id: $data.getNewId(),
 		name: channelName.value,
 		mode: selectedOption,
 		creatorId: currentUser.id,
 	};
 	$data.addChannel(newChannel);
-	$data.closeModal();
+	$data.closeModalNewChannelForm();
 	socket.emit('newChannel', newChannel);
 }
 
