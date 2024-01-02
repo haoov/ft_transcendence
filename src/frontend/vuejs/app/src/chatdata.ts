@@ -28,7 +28,7 @@ interface User {
 	email: string,
 };
 
-async function fetchUsers() : Promise<any> {
+async function fetchUsers() : Promise<User []> {
 	return axios.get('http://localhost:3000/api/user').then((res) => { return res.data });
 };
 
@@ -59,16 +59,18 @@ const store = reactive({
 	messages: [] as Message [],
 	users: [] as User [],
 	currentUser: null as User | null,
-	isModalOpen: false,
+	isModalNewChannelFormOpen: false,
 	activeChannel: null as Channel | null,
 });
+
+let nbChannel = 0;
 
 export default {
 	getSocket() {
 		return socket;
 	},
 
-	getUsers() : Object {
+	getUsers() : Promise<User []> {
 		return fetchUsers();
 	},
 
@@ -125,16 +127,16 @@ export default {
 		});
 	},
 
-	generateId() {
-		this.loadChannels();
-		return store.channels.length + 1;
+	getNewId() {
+		return ++nbChannel;
 	},
 
-	openModal() {
-		store.isModalOpen = true;
+	openModalNewChannelForm() {
+		store.isModalNewChannelFormOpen = true;
 	},
 
-	closeModal() {
-		store.isModalOpen = false;
+	closeModalNewChannelForm() {
+		store.isModalNewChannelFormOpen = false;
 	},
+
 };

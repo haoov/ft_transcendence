@@ -27,7 +27,6 @@ onMounted(() => {
 });
 
 const setActiveChannel = (channel : any) => {
-	console.log('setActiveChannel', channel);
 	$data.setActiveChannel(channel);
 };
 

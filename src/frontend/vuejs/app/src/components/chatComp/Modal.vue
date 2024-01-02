@@ -13,7 +13,7 @@ import { inject } from 'vue';
 const $data: any = inject('$data');
 
 function closeModalOutside() {
-	$data.closeModal();
+	$data.closeModalNewChannelForm();
 }
 
 </script>
