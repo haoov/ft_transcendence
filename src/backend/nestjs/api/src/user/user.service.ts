@@ -10,6 +10,10 @@ import { Request } from "express";
 export class UserService {
 	constructor(@InjectRepository(UserEntity) private usersRepository: Repository<UserEntity>) {}
 
+	async getUserById(id: number): Promise<User> {
+		return this.usersRepository.findOneBy({ id: id }) as Promise<User>;
+	}
+
 	getUser(email: string): Promise<User> {
 		return this.usersRepository.findOneBy({ email: email }) as Promise<User>;
 	}
@@ -27,7 +31,6 @@ export class UserService {
 		catch (err) {
 			throw err;
 		};
-		return null;
 	}
 
 	async createUser(user: User): Promise<User> {

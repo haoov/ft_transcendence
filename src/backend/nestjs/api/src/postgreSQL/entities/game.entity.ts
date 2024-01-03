@@ -16,7 +16,7 @@ export class GameEntity {
 	
 	@ManyToOne(
 		() => UserEntity,
-		winner => winner.games)
+		loser => loser.games)
 	loser: UserEntity;
 		
 	@Column()

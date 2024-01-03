@@ -5,6 +5,7 @@ import { ClientEvents } from './enum';
 import { User } from 'src/user/user.interface';
 import { Room } from './classes/Room';
 import { UserService } from 'src/user/user.service';
+import { UserStatus } from 'src/user/enum/userStatus.enum';
 
 
 // Outil de gestion des web socket events
@@ -66,16 +67,31 @@ export class GameGateway
 		else
 			room = this.gameGtwService.findRoom(client, this.super_rooms);
 		if (room) {
-			this.server.to(room.getName()).emit("updated", room.getGame().update());
-			// if
+			let update = room.getGame().update();
+			this.server.to(room.getName()).emit("updated", update);
+			if (update.finished && client.data.mode === "classic")
+				this.gameGtwService.finishGame(room, this.classic_rooms, this.server);
+			else if (update.finished && client.data.mode === "super")
+				this.gameGtwService.finishGame(room, this.super_rooms, this.server);
 		}
 	}
-
+	
 	@SubscribeMessage('move')
-	moveDot(client: Socket, data: string){
+	move(client: Socket, data: string){
 		if (client.data.mode === "classic")
 			this.gameGtwService.move(client, data, this.classic_rooms);
 		else if (client.data.mode === "super")
 			this.gameGtwService.move(client, data, this.super_rooms);
+	}
+
+	@SubscribeMessage('stop_wait')
+	async stopWaiting(client: Socket) {
+		if (client.data.mode === "classic")
+			this.classic_waiting.length = 0;
+		else if (client.data.mode === "super")
+			this.super_waiting.length = 0;
+		await this.userService.updateUserStatus(client.data.user, UserStatus.undefined);
+		this.gameGtwService.resetSocket(client);
+
 	}
 }
