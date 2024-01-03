@@ -9,6 +9,8 @@ import gameMenu from '@/game/components/gameMenu.vue';
 
 let state = ref("");
 
+let displayMenu = ref(true);
+
 const socket: Socket = io("http://localhost:3000/game");
 const currentUser = await axios.get("http://localhost:3000/api/user/me").then((response) => {
 		socket.emit(ClientEvents.connected, response.data);
@@ -24,6 +26,11 @@ socket.on(ServerEvents.waiting, () => {
 socket.on(ServerEvents.finished, () => {
 	state.value = "Finished";
 });
+
+function assignMode(selectedGame: string, selectedMode: string, selectedDifficulty: string) {
+	socket.emit("mode", selectedGame, selectedMode, selectedDifficulty);
+	displayMenu.value = false;
+}
 
 onMounted(() => {
 	const game: Game = new Game("game", initParams);
@@ -52,7 +59,7 @@ onMounted(() => {
 
 <template>
 	<div id="game">
-		<gameMenu></gameMenu>
+		<gameMenu v-if="displayMenu == true" v-on:click="assignMode"></gameMenu>
 	</div>
 </template>
 

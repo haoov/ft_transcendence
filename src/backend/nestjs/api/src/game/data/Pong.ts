@@ -50,10 +50,6 @@ class Pong {
 		};
 	}
 
-	getPlayers(): Player[] {
-		return this.players;
-	}
-
 	start() {
 		this.started = true;
 	}

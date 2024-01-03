@@ -12,12 +12,21 @@ export class GameGatewayService {
 	constructor(private readonly userService: UserService,
 				private readonly gameService: GameService) {}
 
-	assignMode(client: Socket, data:string, classic_r: Room[], classic_w: Socket[], super_r: Room[], super_w: Socket[], server:Server) {
-		client.data.mode = data;
-		if (data === "classic")
+	assignMode(client: Socket,
+				params: string[],
+				classic_r: Room[],
+				classic_w: Socket[],
+				super_r: Room[],
+				super_w: Socket[],
+				server:Server) {
+		client.data.mode = params[0];
+		console.log(params)
+		if (params[0] === "classic")
 			this.manageUserGame(client, classic_r, classic_w, server);
-		else if (data === "super")
+		else if (params[0] === "super") {
+			console.log("ici");
 			this.manageUserGame(client, super_r, super_w, server);
+		}
 
 	}
 
