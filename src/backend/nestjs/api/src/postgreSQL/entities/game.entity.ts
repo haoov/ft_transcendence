@@ -9,10 +9,14 @@ export class GameEntity {
 	@Column()
 	mode: string;
 
-	@ManyToOne(() => UserEntity)
+	@ManyToOne(
+		() => UserEntity,
+		winner => winner.games)
 	winner: UserEntity;
 	
-	@ManyToOne(() => UserEntity)
+	@ManyToOne(
+		() => UserEntity,
+		winner => winner.games)
 	loser: UserEntity;
 		
 	@Column()
@@ -22,5 +26,5 @@ export class GameEntity {
 	loser_score: number;
 
 	@CreateDateColumn()
-	created_at: Date;
+	date: Date;
 }
