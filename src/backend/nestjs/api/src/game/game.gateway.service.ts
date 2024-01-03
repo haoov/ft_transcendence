@@ -115,6 +115,10 @@ export class GameGatewayService {
 	async handleUserDisconnection(client: Socket, rooms: Room[], waiting: Socket[], server: Server) {
 		if (client.data.user && client.data.user.status === UserStatus.playing) {
 			const room: Room = this.findRoom(client, rooms);
+			if (client.data.side == "right")
+				room.getGame().getPlayers()[1].topScore()
+			else
+				room.getGame().getPlayers()[0].topScore()
 			// A DECOMMENTER APRES
 			// if (room && this.socketCount(client, room) === 1) {
 			// 	this.finishGame(room, rooms, server);
