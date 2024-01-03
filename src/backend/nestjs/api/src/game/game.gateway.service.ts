@@ -63,18 +63,18 @@ export class GameGatewayService {
 		return rooms.find((currentRoom) => {return (currentRoom.getName() == client.data.room);});
 	}
 
-	getRoomSocketCount(client: Socket, rooms: Room[]) : number {
-		const room: Room = this.findRoom(client, rooms);
-		if (!room)
-			return 0;
-		const sockets = room.getSockets();
-		var count: number = 0;
-		for (var i = 0; i < sockets.length; i++) {
-			if (sockets[i].data.user.id === client.data.user.id)
-				count++;
-		}
-		return count;
-	}
+	// getRoomSocketCount(client: Socket, rooms: Room[]) : number {
+	// 	const room: Room = this.findRoom(client, rooms);
+	// 	if (!room)
+	// 		return 0;
+	// 	const sockets = room.getSockets();
+	// 	var count: number = 0;
+	// 	for (var i = 0; i < sockets.length; i++) {
+	// 		if (sockets[i].data.user.id === client.data.user.id)
+	// 			count++;
+	// 	}
+	// 	return count;
+	// }
 
 
 	move(client: Socket, direction: string, rooms: Room[]) {
