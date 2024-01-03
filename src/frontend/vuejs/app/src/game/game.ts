@@ -70,7 +70,6 @@ export class Game {
 	readonly scene: th.Scene;
 	readonly camera: th.PerspectiveCamera;
 	readonly renderer: th.WebGLRenderer;
-	readonly cssRenderer: CSS2DRenderer;
 	textureLoader;
 	textures: textures;
 	ball;
@@ -78,9 +77,6 @@ export class Game {
 	paddle2;
 	field;
 	effect;
-	menu: CSS2DObject;
-	classicButton;
-	superButton;
 	started: boolean;
 
 	/*------------------------------------*/
@@ -99,11 +95,6 @@ export class Game {
 		this.renderer.setSize(init.window.WIDTH, init.window.HEIGHT);
 		this.container.appendChild(this.renderer.domElement);
 
-		this.cssRenderer = new CSS2DRenderer();
-		this.cssRenderer.setSize(init.window.WIDTH, init.window.HEIGHT);
-		this.cssRenderer.domElement.style.position = "absolute";
-		this.container.appendChild(this.cssRenderer.domElement);
-
 		//init textures
 		this.textureLoader = new th.TextureLoader();
 		this.textures = {
@@ -119,20 +110,6 @@ export class Game {
 		directionalLight.position.set(0, 0.5, 3);
 		directionalLight.castShadow = true;
 		this.scene.add(ambiantLight, directionalLight);
-
-		//init menu
-		this.menu = new CSS2DObject(document.createElement("div"));
-		this.menu.element.id = "mainMenu";
-		this.classicButton = document.createElement("button");
-		this.classicButton.className = "mainMenuButton";
-		this.classicButton.textContent = "Classic Pong";
-		this.superButton = document.createElement("button");
-		this.superButton.className = "mainMenuButton";
-		this.superButton.textContent = "Super Pong";
-		this.menu.element.appendChild(this.classicButton);
-		this.menu.element.appendChild(this.superButton);
-		this.scene.add(this.menu);
-		this.cssRenderer.render(this.scene, this.camera);
 
 		//init objects
 		this.ball = this.createBall(init.params.BALL_RADIUS);
