@@ -65,8 +65,10 @@ export class GameGateway
 			room = this.gameGtwService.findRoom(client, this.classic_rooms);
 		else
 			room = this.gameGtwService.findRoom(client, this.super_rooms);
-		if (room)
+		if (room) {
 			this.server.to(room.getName()).emit("updated", room.getGame().update());
+			// if
+		}
 	}
 
 	@SubscribeMessage('move')
