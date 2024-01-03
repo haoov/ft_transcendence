@@ -1,10 +1,12 @@
 <script setup lang="ts">
 
-	import { ref, computed } from "vue";
+	import { ref, computed} from "vue";
 
 	const games: string[] = ["classic", "super"];
 	const difficulties: string[] = ["easy", "medium", "hard"];
 	const modes: string[] = ["singlePlayer", "multiPlayer"];
+
+	
 
 	const selectedGame = ref("");
 	const selectedMode = ref("");
@@ -13,6 +15,12 @@
 	const isDisabled = computed(() => {
 		return !selectedGame.value || !selectedMode.value || (selectedMode.value == "singlePlayer" && !selectedDifficulty.value);
 	});
+
+	const emit = defineEmits(['click']);
+
+	function play() {
+		emit("click", selectedGame.value, selectedMode.value, selectedDifficulty.value);
+	}
 
 </script>
 
@@ -46,7 +54,7 @@
 				</label>
 			</div>
 		</div>
-		<button id="playButton" type="submit" :disabled="isDisabled">Play</button>
+		<button id="playButton" type="submit" :disabled="isDisabled" v-on:click="play">Play</button>
 	</div>
 
 </template>

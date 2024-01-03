@@ -119,6 +119,8 @@ export class Game {
 		this.field.material.map = this.textures.tennisCourt;
 		this.effect = this.createEffect();
 
+		this.scene.add(this.ball, this.field, this.paddle1, this.paddle2);
+
 		this.started = false;
 	};
 

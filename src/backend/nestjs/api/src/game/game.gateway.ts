@@ -49,9 +49,9 @@ export class GameGateway
 	}
 
 	@SubscribeMessage('mode')
-	assignMode(client: Socket, data: string) {
+	assignMode(client: Socket, params : string[]) {
 		this.gameGtwService.assignMode(client,
-										data,
+										params,
 										this.classic_rooms,
 										this.classic_waiting,
 										this.super_rooms,
