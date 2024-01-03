@@ -2,6 +2,7 @@ import { ConsoleLogger } from "@nestjs/common";
 import { Ball } from "./ball";
 import { Field } from "./field";
 import { Paddle } from "./paddle";
+import { rules } from "./opts";
 
 class Player {
 	side: string;
@@ -33,6 +34,10 @@ class Player {
 
 	scored() {
 		++this.score;
+	}
+
+	topScore() {
+		this.score = rules.WIN_SCORE;
 	}
 }
 

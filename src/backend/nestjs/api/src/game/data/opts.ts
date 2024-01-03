@@ -31,6 +31,10 @@ const colors = {
 	WHITE: 0xffffff,
 };
 
+const rules = {
+	WIN_SCORE: 3,
+}
+
 class Utils {
 	visibleHeight(depth: number) {
 		const cameraOffset = cam.ZPOS;
@@ -56,3 +60,4 @@ export { params };
 export { window };
 export { utils } ;
 export { cam };
+export { rules };

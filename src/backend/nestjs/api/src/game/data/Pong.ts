@@ -1,7 +1,7 @@
 import { Ball } from "./ball";
 import { Effect } from "./effect";
 import { Field } from "./field";
-import { cam, colors, params, window } from "./opts";
+import { cam, colors, params, window, rules } from "./opts";
 import { Player } from "./player";
 
 class Pong {
@@ -60,7 +60,7 @@ class Pong {
 			this.ball.moove(this.players, this.field, this.effect);
 			this.effect.moove(this.field);
 			for (let i = 0; i < this.players.length; ++i) {
-				if (this.players[i].score == 1)
+				if (this.players[i].score == rules.WIN_SCORE)
 					this.finished = true;
 			}
 		}
