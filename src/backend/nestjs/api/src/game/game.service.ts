@@ -9,7 +9,7 @@ export class GameService {
 	constructor(private userService: UserService) {}
 
 	initParams() {
-		return (new Pong().initParams());
+		return (new Pong("classic").initParams());
 	}
 
 	getFont() {

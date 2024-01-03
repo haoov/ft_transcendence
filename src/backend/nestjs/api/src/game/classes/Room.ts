@@ -1,5 +1,6 @@
 import { Socket } from "socket.io";
 import { Pong } from "../data/Pong";
+import { Player } from "../data/player";
 
 export class Room {
 	private name: string;
@@ -28,7 +29,7 @@ export class Room {
 		this.sockets.forEach(socket => {socket.join(name)});
 
 		// Create game
-		this.game = new Pong();
+		this.game = new Pong(p1[0].data.mode);
 	};
 
 	getName(): string {
@@ -43,19 +44,25 @@ export class Room {
 		return this.sockets;
 	}
 
-	// getP1score(): number {
-	// 	return this.game.score_p1;
-	// }
+	getP1score(): number {
+		return this.game.getPlayers()[0].score;
+	}
 
-	// getP2score(): number {
-	// 	return this.game.score_p2;
-	// }
+	getP2score(): number {
+		return this.game.getPlayers()[1].score;
+	}
 
-	// getWinner() {
-	// 	var winner: string;
-	// 	this.game.score_p1 > this.game.score_p2 ? winner = this.p1_name : winner = this.p2_name;
-	// 	return winner;
-	// }
+	getWinner() : string {
+		let winner: Player;
+		if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
+			winner = this.game.getPlayers()[0];
+		else
+			winner = this.game.getPlayers()[1];
+		if (winner.side == "right")
+			return this.p1_name;
+		else
+			return this.p2_name;
+	}
 
 	addSocket(socket: Socket): void {
 		socket.data.room = this.name;
@@ -75,7 +82,6 @@ export class Room {
 		socket.data.side = "";
 		socket.data.mode = "";
 		socket.data.room = "";
-
 	}
 
 }
