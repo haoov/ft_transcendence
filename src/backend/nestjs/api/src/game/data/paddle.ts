@@ -27,6 +27,20 @@ class Paddle {
 		this.effect = new Effect("none");
 	}
 
+	move(direction: string, field: Field) {
+		if (direction == "up") {
+			if (this.position.y + this.speed <= field.borders.top - this.height / 2)
+				this.position.y += this.speed;
+			else
+				this.position.y = field.borders.top - this.height / 2;
+		}
+		if (direction == "down")
+			if (this.position.y - this.speed >= field.borders.bottom + this.height / 2)
+				this.position.y -= this.speed;
+			else
+				this.position.y = field.borders.bottom + this.height / 2;
+	}
+
 	resetEffect() {
 		this.scale.y = 1;
 		this.speed = params.PADDLE_SPEED;
