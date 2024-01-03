@@ -1,18 +1,20 @@
 import { Socket } from "socket.io";
 import { Pong } from "../data/Pong";
+import { Player } from "../data/player";
+import { User } from "src/user/user.interface";
 
 export class Room {
 	private name: string;
-	private p1_name: string;
-	private p2_name: string;
+	private p1_id: number;
+	private p2_id: number;
 	private sockets: Socket[];
 	public game: Pong;
 
 	constructor(name: string, p1: Socket[], p2: Socket) {
 		this.sockets = [];
 		this.name = name;
-		this.p1_name = p1[0].data.user.username;
-		this.p2_name = p2.data.user.username;
+		this.p1_id = p1[0].data.user.id;
+		this.p2_id = p2.data.user.id;
 
 		// Update the socket infos
 		p1.forEach(socket => socket.data.room = name);
@@ -43,25 +45,57 @@ export class Room {
 		return this.sockets;
 	}
 
-	// getP1score(): number {
-	// 	return this.game.score_p1;
-	// }
+	getP1score(): number {
+        return this.game.getPlayers()[0].score;
+    }
 
-	// getP2score(): number {
-	// 	return this.game.score_p2;
-	// }
+    getP2score(): number {
+        return this.game.getPlayers()[1].score;
+    }
 
-	// getWinner() {
-	// 	var winner: string;
-	// 	this.game.score_p1 > this.game.score_p2 ? winner = this.p1_name : winner = this.p2_name;
-	// 	return winner;
-	// }
+	getWinner() : number {
+        let winner: Player;
+        if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
+            winner = this.game.getPlayers()[0];
+        else
+            winner = this.game.getPlayers()[1];
+        if (winner.side == "right")
+            return this.p1_id;
+        else
+            return this.p2_id;
+    }
+
+	getLoser() : number {
+        let loser: Player;
+        if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
+            loser = this.game.getPlayers()[1];
+        else
+            loser = this.game.getPlayers()[0];
+        if (loser.side == "right")
+            return this.p1_id
+        else
+            return this.p2_id;
+    }
+
+	getWinnerScore() : number {
+        if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
+			return this.game.getPlayers()[0].score
+        else
+			return this.game.getPlayers()[1].score
+	}
+
+	getLoserScore() : number {
+        if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
+			return this.game.getPlayers()[1].score
+        else
+			return this.game.getPlayers()[0].score
+	}
 
 	addSocket(socket: Socket): void {
 		socket.data.room = this.name;
-		if (this.p1_name === socket.data.user.username)
+		if (this.p1_id === socket.data.user.id)
 			socket.data.side = "right";
-		else if (this.p2_name === socket.data.user.username)
+		else if (this.p2_id === socket.data.user.id)
 			socket.data.side = "left";
 		this.sockets.push(socket);
 		socket.join(this.name);

@@ -47,6 +47,10 @@ class Pong {
 		};
 	}
 
+	getPlayers(): Player[] {
+		return this.players;
+	}
+
 	start() {
 		this.started = true;
 	}
@@ -56,7 +60,7 @@ class Pong {
 			this.ball.moove(this.players, this.field, this.effect);
 			this.effect.moove(this.field);
 			for (let i = 0; i < this.players.length; ++i) {
-				if (this.players[i].score == 10)
+				if (this.players[i].score == 1)
 					this.finished = true;
 			}
 		}
@@ -73,6 +77,7 @@ class Pong {
 			effectPosition: this.effect.position,
 			effectRotationSpeed: this.effect.rotationSpeed,
 			effectOn: this.effect.on,
+			finished: this.finished,
 		};
 	}
 

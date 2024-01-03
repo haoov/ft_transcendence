@@ -4,13 +4,13 @@ import { ServerEvents } from "./enum";
 import { UserStatus } from "src/user/enum/userStatus.enum";
 import { Room } from "./classes";
 import { UserService } from "src/user/user.service";
-import { Pong } from "./data/Pong";
-import { RouterModule } from "@nestjs/core";
+import { GameService } from "./game.service";
 
 @Injectable()
 export class GameGatewayService {
 
-	constructor(private readonly userService: UserService) {}
+	constructor(private readonly userService: UserService,
+				private readonly gameService: GameService) {}
 
 	assignMode(client: Socket, data:string, classic_r: Room[], classic_w: Socket[], super_r: Room[], super_w: Socket[], server:Server) {
 		client.data.mode = data;
@@ -63,19 +63,6 @@ export class GameGatewayService {
 		return rooms.find((currentRoom) => {return (currentRoom.getName() == client.data.room);});
 	}
 
-	// getRoomSocketCount(client: Socket, rooms: Room[]) : number {
-	// 	const room: Room = this.findRoom(client, rooms);
-	// 	if (!room)
-	// 		return 0;
-	// 	const sockets = room.getSockets();
-	// 	var count: number = 0;
-	// 	for (var i = 0; i < sockets.length; i++) {
-	// 		if (sockets[i].data.user.id === client.data.user.id)
-	// 			count++;
-	// 	}
-	// 	return count;
-	// }
-
 
 	move(client: Socket, direction: string, rooms: Room[]) {
 		const room: Room = this.findRoom(client, rooms);
@@ -83,18 +70,31 @@ export class GameGatewayService {
 	}
 
 
-	// finishGame(room: Room, rooms: Room[], server: Server) {
-	// 	server.to(room.getName()).emit(ServerEvents.finished,
-	// 									room.getWinner(),
-	// 									room.getP1score(),
-	// 									room.getP2score());
-	// 	room.getSockets().forEach(async (socket) => {
-	// 		await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
-	// 		socket.data.side = "";
-	// 	});
-	// 	rooms.splice(rooms.indexOf(room), 1);
-	// 	// Database management
-	// }
+	async finishGame(room: Room, rooms: Room[], server: Server) {
+		// Emit finish event
+		server.to(room.getName()).emit(ServerEvents.finished);
+		
+		// Add game in database
+		var winnerUser = await this.userService.getUserById(room.getWinner());
+		var loserUser = await this.userService.getUserById(room.getLoser());
+		await this.gameService.createGame({
+			mode: room.getSockets()[0].data.mode,
+			winner: winnerUser,
+			loser: loserUser,
+			winner_score: room.getWinnerScore(),
+			loser_score: room.getLoserScore(),
+		});
+		console.log("game added to db");
+
+		// Reset status for user
+		room.getSockets().forEach(async (socket) => {
+			await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
+			this.resetSocket(socket);
+		});
+
+		// Delete room
+		rooms.splice(rooms.indexOf(room), 1);
+	}
 
 	socketCount(client: Socket, room: Room) {
 		let count: number = 0;
@@ -106,27 +106,29 @@ export class GameGatewayService {
 		return count;
 	}
 
+	resetSocket(socket: Socket) {
+		socket.data.mode = "";
+		socket.data.side = "";
+		socket.data.room = "";
+	}
+
 	async handleUserDisconnection(client: Socket, rooms: Room[], waiting: Socket[], server: Server) {
 		if (client.data.user && client.data.user.status === UserStatus.playing) {
 			const room: Room = this.findRoom(client, rooms);
-			// A REMETTRE APRES POUR FINISH GAME
+			// A DECOMMENTER APRES
 			// if (room && this.socketCount(client, room) === 1) {
 			// 	this.finishGame(room, rooms, server);
 			// }
 			// else if (room) {
 			// 	room.removeSocket(client);
 			// }
-			if (room) {
-				room.getSockets().forEach(async (socket) => {
-					await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
-					room.removeSocket(socket);
-				});
-				rooms.splice(rooms.indexOf(room), 1);
-			}
+			// A ENLEVER APRES
+			this.finishGame(room, rooms, server)
 		}
 		else if (client.data.user && client.data.user.status === UserStatus.waiting) {
-			waiting = [];
+			waiting.length = 0;
 			await this.userService.updateUserStatus(client.data.user, UserStatus.undefined);
+			this.resetSocket(client);
 		}
 	}
 }

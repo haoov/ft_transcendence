@@ -32,7 +32,6 @@ class Ball {
 		for (let i = 0; i < players.length; ++i) {
 			if (players[i].hitBall(this)) {
 				this.paddleBounce(players[i].paddle);
-				players[i].scored();
 				this.lastHit = players[i].paddle;
 			}
 		}
@@ -41,8 +40,13 @@ class Ball {
 		}
 		if (this.position.y >= field.borders.top || this.position.y <= field.borders.bottom)
 			this.vecSpeed.y *= -1;
-		if (this.position.x >= field.borders.right || this.position.x <= field.borders.left)
+		if (this.position.x >= field.borders.right || this.position.x <= field.borders.left) {
+			if (this.position.x >= field.borders.right)
+				players[1].scored();
+			else
+				players[0].scored();
 			this.reset();
+		}
 	}
 
 	paddleBounce(paddle: Paddle) {

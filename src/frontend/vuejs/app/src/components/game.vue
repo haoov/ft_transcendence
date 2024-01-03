@@ -20,7 +20,7 @@ socket.on(ServerEvents.waiting, () => {
 	state.value = "Waiting for a game...";
 });
 
-socket.on(ServerEvents.finished, (win: string, p1: number, p2: number) => {
+socket.on(ServerEvents.finished, () => {
 	state.value = "Finished";
 });
 
@@ -51,7 +51,7 @@ onMounted(() => {
 
 	function animate() {
 		requestAnimationFrame(animate);
-		if (game.hasStarted())
+		if (game.hasStarted() && state.value !== "Finished")
 			socket.emit("update");
 		game.renderer.render(game.scene, game.camera);
 		game.cssRenderer.render(game.scene, game.camera);
