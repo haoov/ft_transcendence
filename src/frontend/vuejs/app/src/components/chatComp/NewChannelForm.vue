@@ -2,17 +2,20 @@
 	<div class="new-channel-form-container">
 		<form class="form" @submit.prevent="submitForm">
 			<div class="form-group">
-				<label for="channelName">Channel Name</label>
+				<label for="channelName">Channel Name :</label>
+				<p v-if="nameError" style="color: red;">Name missing</p>
 				<input 
 					v-model="channelName"
 					name="channelName"
 					id="channelName"
 					type="text"
 					autocomplete="off"
+					:class="{ 'is-invalid': nameError }"
+					placeholder="Channel Name"
 				>
 			</div>
 			<div class="form-group">
-				<label for="channelMode">Channel Mode</label>
+				<label for="channelMode">Channel Mode :</label>
 				<div class="radio-inputs" id="channelMode">
 					<label
 						class="radio"
@@ -28,7 +31,20 @@
 					<span class="name">{{ option }}</span>
 					</label>
 				</div>
-				<SeachBar v-if="selectedOption !== 'Public'" ></SeachBar>
+				<SeachBar v-if="selectedOption !== 'Public'" :userIds="userIds"></SeachBar>
+				<div v-if="selectedOption === 'Protected'">
+					<label for="password">Password :</label>
+					<p v-if="passwordError" style="color: red;">Password missing</p>
+					<input 
+						v-model="password"
+						name="password"
+						id="password"
+						type="password"
+						placeholder="Password"
+						autocomplete="off"
+						:class="{ 'is-invalid': passwordError }"
+					>
+				</div>
 			</div>
 			<button 
 				type="submit" 
@@ -48,29 +64,38 @@ const options = ['Public', 'Private', 'Protected', 'Secret'];
 const $data : any = inject('$data');
 const socket = $data.getSocket();
 const currentUser = await $data.getCurrentUser();
-const emit = defineEmits();
 const channelName = ref('');
-const channelNameError = ref(false);
+const password = ref('');
+const nameError = ref(false);
+const passwordError = ref(false);
+const userIds = ref<number[]>([]);
 
 const isSubmitDisabled = computed(() => {
-  return !channelName.value || channelNameError.value;
+  return !channelName.value || nameError.value || passwordError.value;
 });
 
 const submitForm = () => {
+	userIds.value.push(currentUser.id);
 	if (!channelName.value) {
-		channelNameError.value = true;
+		nameError.value = true;
+		return;
+	}
+	if (selectedOption.value === 'Protected' && !password.value) {
+		passwordError.value = true;
 		return;
 	}
 	const newChannel = {
-		id: $data.getNewId(),
 		name: channelName.value,
 		mode: selectedOption,
 		creatorId: currentUser.id,
+		password: password.value,
+		users: userIds.value,
 	};
-	$data.addChannel(newChannel);
+	nameError.value = false;
+	passwordError.value = false;
 	$data.closeModalNewChannelForm();
-	socket.emit('newChannel', newChannel);
-}
+	socket.emit('createNewChannel', newChannel);
+};
 
 </script>
 
@@ -212,4 +237,9 @@ const submitForm = () => {
   background-color: #fff;
   font-weight: 600;
 }
+
+.is-invalid {
+  border-color: #ff0000;
+}
+
 </style>

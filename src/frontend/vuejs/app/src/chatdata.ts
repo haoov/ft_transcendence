@@ -40,7 +40,7 @@ async function fetchChannels() : Promise<Channel[]> {
 	return axios.get('http://localhost:3000/api/chat/channels').then((res) => { return res.data });
 };
 
-async function fetchChannelById(id: number) : Promise<Channel> {
+async function fetchCurrentUserChannels(id: number) : Promise<Channel []> {
 	return axios.get(`http://localhost:3000/api/chat/channels/${id}`).then((res) => { return res.data });
 }
 
@@ -49,7 +49,6 @@ async function fetchMessages() : Promise<Message[]> {
 };
 
 async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
-	console.log('channel id =', id);
 	return axios.get(`http://localhost:3000/api/chat/messages/${id}`).then((res) => { return res.data });
 };
 
@@ -90,8 +89,11 @@ export default {
 		return store;
 	},
 
-	loadChannels() {
-		fetchChannels().then((channels) => {
+	loadChannels(id: number) {
+		// fetchChannels().then((channels) => {
+		// 	store.channels = channels.slice().reverse();
+		// });
+		fetchCurrentUserChannels(id).then((channels) => {
 			store.channels = channels.slice().reverse();
 		});
 	},

@@ -1,5 +1,6 @@
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
+import { Channel } from "./chat.interface";
 interface Message {
     id: number;
     sender: {
@@ -18,6 +19,6 @@ export declare class ChatController {
     getAllMessages(): Promise<Message[]>;
     getAllMessagesByChannel(idChannel: string): Promise<Message[]>;
     getAllChannels(): Promise<Channel[]>;
-    getChannelById(id: string): Promise<Channel>;
+    getCurrentUserChannels(userId: string): Promise<Channel[]>;
 }
 export {};

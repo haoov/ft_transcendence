@@ -1,3 +1,4 @@
+import { User } from 'src/user/user.interface';
 export declare class MessageEntity {
     id: number;
     senderId: number;
@@ -11,4 +12,6 @@ export declare class ChannelEntity {
     name: string;
     creatorId: number;
     mode: 'public' | 'private' | 'protected' | 'secret';
+    password: string;
+    users: User[];
 }

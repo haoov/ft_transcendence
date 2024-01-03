@@ -48,10 +48,10 @@ export class ChatGateway implements OnModuleInit {
 		this.chatService.createMessage(message);
 	}
 
-	@SubscribeMessage('newChannel')
+	@SubscribeMessage('createNewChannel')
 	async onNewChannel(@MessageBody() channel: any) {
-		console.log(channel);
-		this.chatService.createChannel(channel);
+		const newChannelCreated = await this.chatService.createChannel(channel);
+		this.server.emit('newChannelCreated', newChannelCreated);
 	}
 
 }
