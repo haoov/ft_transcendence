@@ -1,3 +1,5 @@
+import { User } from "src/user/user.interface";
+
 export class MessageDTO {
 	senderId: number;
 	channelId: number;
@@ -11,4 +13,6 @@ export class ChannelDTO {
 	name: string;
 	creatorId: number;
 	modeChanel: string;
+	password: string;
+	users: User [];
 }

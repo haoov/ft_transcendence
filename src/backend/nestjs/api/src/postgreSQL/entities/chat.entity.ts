@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import { UserEntity } from './user.entity';
+import { User } from 'src/user/user.interface';
 
 @Entity()
 export class MessageEntity {
@@ -34,4 +36,10 @@ export class ChannelEntity {
 
 	@Column()
 	mode: 'public' | 'private' | 'protected' | 'secret';
+
+	@Column({ nullable: true}) 
+	password: string;
+
+	@ManyToMany(() => UserEntity) @JoinTable()
+	users: User [];
 }

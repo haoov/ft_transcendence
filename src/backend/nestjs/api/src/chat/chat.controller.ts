@@ -2,7 +2,7 @@ import { Controller, Get, Post, Param } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
-
+import { MessageRaw, Channel } from "./chat.interface";
 
 interface Message {
 	id: number;
@@ -59,18 +59,14 @@ export class ChatController {
 		return messages;
 	}
 
-	@Get('/Channels')
+	@Get('/channels')
 	async getAllChannels(): Promise<Channel []> {
 		return await this.chatService.getAllChannels();
 	}
 
-	@Get('/Channels/:id')
-	async getChannelById(@Param('id') id: string): Promise<Channel> {
-		return await this.chatService.getChannelById(parseInt(id));
+	@Get('/channels/:userId')
+	async getCurrentUserChannels(@Param('userId') userId: string): Promise<Channel []> {
+		return await this.chatService.getCurrentUserChannels(parseInt(userId));
 	}
 
-	// @Post('/Channels')
-	// async createChannel(): Promise<Channel> {
-	// 	return await this.chatService.createChannel();
-	// }
 }

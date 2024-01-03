@@ -56,8 +56,8 @@ let ChatController = class ChatController {
     async getAllChannels() {
         return await this.chatService.getAllChannels();
     }
-    async getChannelById(id) {
-        return await this.chatService.getChannelById(parseInt(id));
+    async getCurrentUserChannels(userId) {
+        return await this.chatService.getCurrentUserChannels(parseInt(userId));
     }
 };
 exports.ChatController = ChatController;
@@ -75,18 +75,18 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "getAllMessagesByChannel", null);
 __decorate([
-    (0, common_1.Get)('/Channels'),
+    (0, common_1.Get)('/channels'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "getAllChannels", null);
 __decorate([
-    (0, common_1.Get)('/Channels/:id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)('/channels/:userId'),
+    __param(0, (0, common_1.Param)('userId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], ChatController.prototype, "getChannelById", null);
+], ChatController.prototype, "getCurrentUserChannels", null);
 exports.ChatController = ChatController = __decorate([
     (0, common_1.Controller)('chat'),
     __metadata("design:paramtypes", [chat_service_1.ChatService,

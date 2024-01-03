@@ -1,3 +1,5 @@
+import { User } from '../user/user.interface';
+
 interface MessageRaw {
 	id: number;
 	senderId: number;
@@ -12,4 +14,8 @@ interface Channel {
 	name: string;
 	creatorId: number;
 	mode: 'public' | 'private' | 'protected' | 'secret';
+	password: string;
+	users: User [];
 }
+
+export { MessageRaw, Channel };

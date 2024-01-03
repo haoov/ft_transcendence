@@ -44,7 +44,7 @@ const activeChannel = computed(() => store.activeChannel);
 const messages = computed(() => store.messages);
 
 watch(activeChannel, () => {
-	data.loadMessagesByChannel(activeChannel.value.id);
+	data.loadMessagesByChannel(activeChannel?.value.id);
 });
 
 onMounted(() => {

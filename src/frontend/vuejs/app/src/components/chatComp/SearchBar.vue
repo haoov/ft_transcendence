@@ -46,6 +46,12 @@ function isAlreadyAdded(user : User) {
 	return false;
 }
 
+const props = defineProps ({
+	userIds: {
+		type: Array,
+	},
+});
+
 const $data : any = inject('$data');
 const usersList : User [] = await $data.getUsers();
 const myUSer : User = await $data.getCurrentUser();
@@ -54,6 +60,7 @@ const listUsersToAdd = ref<User[]>([]);
 const firstSixUsers = computed(() => listUsersToAdd.value.slice(0, 6));
 const userFound = ref(true);
 const userAlreadyAdded = ref(false);
+const userIds = props.userIds;
 
 const searchValue = () => {
 	for (const user of usersList) {
@@ -64,6 +71,7 @@ const searchValue = () => {
 				return ;
 			}
 			listUsersToAdd.value.push(user);
+			props.userIds?.push(user.id);
 			inputVal.value = '';
 			userFound.value = true;
 			userAlreadyAdded.value = false;
@@ -79,6 +87,7 @@ const searchValue = () => {
 
 const removeUserFromList = (index : number) => {
 	listUsersToAdd.value.splice(index, 1);
+	props.userIds?.splice(index, 1);
 };
 
 </script>

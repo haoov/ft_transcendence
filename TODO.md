@@ -3,6 +3,7 @@
 - [DONE] Faire en sorte qu'on soit toujours sur le dernier message et pas le premier
 
 - [DONE] Implementer les channels
+- [DONE] LoadChannel via id User
 
 - Implementer la creation des channels
 	- [DONE] Implementer le widget pour creer un channel (Modal Wrapper)
@@ -15,4 +16,4 @@
 
 - Implementer les differents etats des channels
 
-- Probleme ID Channel a fix
+- [DONE] Probleme ID Channel a fix

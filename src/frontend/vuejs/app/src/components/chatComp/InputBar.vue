@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { Socket, io } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { ref, inject, computed, watch } from "vue";
 
 type Message = {
@@ -42,7 +42,7 @@ const sendMessage = () => {
 		timestamp: DateRawStamp.substring(12, 19)
 	};
 	input.value = "";
-	socket.emit("newMessage", newMessage);
+	socket.emit('newMessage', newMessage);
 };
 
 </script>
