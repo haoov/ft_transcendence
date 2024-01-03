@@ -11,14 +11,17 @@ class Pong {
 	private effect: Effect;
 	private started: boolean;
 	private finished: boolean;
+	private mode: string;
 
-	constructor() {
+	constructor(mode: string) {
+		this.mode = mode;
 		this.players = [];
 		this.field = new Field();
 		this.players.push(new Player("right", this.field));
 		this.players.push(new Player("left", this.field));
 		this.ball = new Ball();
-		this.effect = new Effect();
+		if (this.mode == "super")
+			this.effect = new Effect();
 		this.started = false;
 		this.finished = false;
 	}
@@ -26,9 +29,9 @@ class Pong {
 	movePaddle(side: string, direction: string) {
 		const player: Player = this.players.find((currentPlayer) => {return (currentPlayer.side == side);});
 		if (direction == "up")
-			player.paddle.position.y += player.paddle.speed;
+			player.paddle.move(direction, this.field);
 		if (direction == "down")
-			player.paddle.position.y -= player.paddle.speed;
+			player.paddle.move(direction, this.field);
 	}
 
 	initParams() {
@@ -85,6 +88,10 @@ class Pong {
 		this.ball.reset();
 		for (let i = 0; i < this.players.length; ++i)
 			this.players[i].paddle.reset();
+	}
+
+	getPlayers(): Player[] {
+		return this.players;
 	}
 };
 

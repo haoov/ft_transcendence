@@ -1,6 +1,7 @@
 <script setup lang="ts">
 	import NavigationBar from "@/components/navigationBar.vue";
 	import Game from "../components/game.vue"
+	import GameMenu from "@/game/components/gameMenu.vue";
 </script>
 
 <template>
