@@ -34,13 +34,13 @@ export class GameGateway
 	}
 
 	handleDisconnect(client: Socket) {
-		if (client.data.mode === "classic")
+		if (client.data.game === "classic")
 			this.gameGtwService.handleUserDisconnection(
 											client,
 											this.classic_rooms,
 											this.classic_waiting,
 											this.server);
-		else if (client.data.mode === "super")
+		else if (client.data.game === "super")
 			this.gameGtwService.handleUserDisconnection(
 											client,
 											this.super_rooms,
@@ -48,8 +48,8 @@ export class GameGateway
 											this.server);
 	}
 
-	@SubscribeMessage('mode')
-	assignMode(client: Socket, params : string[]) {
+	@SubscribeMessage('gameParams')
+	assignMode(client: Socket, params: {game: string, mode: string, difficulty: string}) {
 		this.gameGtwService.assignMode(client,
 										params,
 										this.classic_rooms,
@@ -62,33 +62,33 @@ export class GameGateway
 	@SubscribeMessage('update')
 	update(client: Socket) {
 		let room: Room;
-		if (client.data.mode === "classic")
+		if (client.data.game === "classic")
 			room = this.gameGtwService.findRoom(client, this.classic_rooms);
 		else
 			room = this.gameGtwService.findRoom(client, this.super_rooms);
 		if (room) {
 			let update = room.getGame().update();
 			this.server.to(room.getName()).emit("updated", update);
-			if (update.finished && client.data.mode === "classic")
+			if (update.finished && client.data.game === "classic")
 				this.gameGtwService.finishGame(room, this.classic_rooms, this.server);
-			else if (update.finished && client.data.mode === "super")
+			else if (update.finished && client.data.game === "super")
 				this.gameGtwService.finishGame(room, this.super_rooms, this.server);
 		}
 	}
 	
 	@SubscribeMessage('move')
 	move(client: Socket, data: string){
-		if (client.data.mode === "classic")
+		if (client.data.game === "classic")
 			this.gameGtwService.move(client, data, this.classic_rooms);
-		else if (client.data.mode === "super")
+		else if (client.data.game === "super")
 			this.gameGtwService.move(client, data, this.super_rooms);
 	}
 
 	@SubscribeMessage('stop_wait')
 	async stopWaiting(client: Socket) {
-		if (client.data.mode === "classic")
+		if (client.data.game === "classic")
 			this.classic_waiting.length = 0;
-		else if (client.data.mode === "super")
+		else if (client.data.game === "super")
 			this.super_waiting.length = 0;
 		await this.userService.updateUserStatus(client.data.user, UserStatus.undefined);
 		this.gameGtwService.resetSocket(client);

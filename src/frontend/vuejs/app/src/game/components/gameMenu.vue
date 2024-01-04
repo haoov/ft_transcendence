@@ -19,7 +19,10 @@
 	const emit = defineEmits(['click']);
 
 	function play() {
-		emit("click", selectedGame.value, selectedMode.value, selectedDifficulty.value);
+		emit("click", {
+			game: selectedGame.value,
+			mode: selectedMode.value,
+			difficulty: selectedDifficulty.value});
 	}
 
 </script>

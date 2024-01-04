@@ -27,8 +27,8 @@ socket.on(ServerEvents.finished, () => {
 	state.value = "Finished";
 });
 
-function assignMode(selectedGame: string, selectedMode: string, selectedDifficulty: string) {
-	socket.emit("mode", selectedGame, selectedMode, selectedDifficulty);
+function assignMode(params: {game: string, mode: string, difficulty: string}) {
+	socket.emit("gameParams", params);
 	displayMenu.value = false;
 }
 
