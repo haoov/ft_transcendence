@@ -30,6 +30,7 @@ onMounted(() => {
 });
 
 const setActiveChannel = (channel : any) => {
+	socket.emit('join', channel);
 	$data.setActiveChannel(channel);
 };
 
