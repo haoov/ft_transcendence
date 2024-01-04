@@ -1,7 +1,7 @@
 import { User } from "src/user/user.interface";
 
 export interface Game {
-	mode: string;
+	game: string;
 	winner: User;
 	loser: User;
 	winner_score: number;

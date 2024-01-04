@@ -13,17 +13,21 @@ export class GameGatewayService {
 				private readonly gameService: GameService) {}
 
 	assignMode(client: Socket,
-				params: string[],
+				params: {
+					game: string,
+					mode: string,
+					difficulty: string
+				},
 				classic_r: Room[],
 				classic_w: Socket[],
 				super_r: Room[],
 				super_w: Socket[],
 				server:Server) {
-		client.data.mode = params[0];
+		client.data.game = params.game;
 		console.log(params)
-		if (params[0] === "classic")
+		if (params.game === "classic")
 			this.manageUserGame(client, classic_r, classic_w, server);
-		else if (params[0] === "super") {
+		else if (params.game === "super") {
 			console.log("ici");
 			this.manageUserGame(client, super_r, super_w, server);
 		}
@@ -60,7 +64,7 @@ export class GameGatewayService {
 
 			
 			// Start game
-			const name: string = rooms.length.toString() + client.data.mode;
+			const name: string = rooms.length.toString() + client.data.game;
 			const room: Room = new Room(name, opponent, client)
 			rooms.push(room);
 			room.getGame().start();
@@ -87,7 +91,7 @@ export class GameGatewayService {
 		var winnerUser = await this.userService.getUserById(room.getWinner());
 		var loserUser = await this.userService.getUserById(room.getLoser());
 		await this.gameService.createGame({
-			mode: room.getSockets()[0].data.mode,
+			game: room.getSockets()[0].data.game,
 			winner: winnerUser,
 			loser: loserUser,
 			winner_score: room.getWinnerScore(),
@@ -116,7 +120,7 @@ export class GameGatewayService {
 	}
 
 	resetSocket(socket: Socket) {
-		socket.data.mode = "";
+		socket.data.game = "";
 		socket.data.side = "";
 		socket.data.room = "";
 	}

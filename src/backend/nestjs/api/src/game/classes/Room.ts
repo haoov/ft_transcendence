@@ -30,7 +30,7 @@ export class Room {
 		this.sockets.forEach(socket => {socket.join(name)});
 
 		// Create game
-		this.game = new Pong(p1[0].data.mode);
+		this.game = new Pong(p1[0].data.game);
 	};
 
 	getName(): string {
@@ -107,7 +107,7 @@ export class Room {
 		this.sockets.splice(index, 1);
 		socket.leave(this.name);
 		socket.data.side = "";
-		socket.data.mode = "";
+		socket.data.game = "";
 		socket.data.room = "";
 	}
 

@@ -7,7 +7,7 @@ export class GameEntity {
 	id: number;
 
 	@Column()
-	mode: string;
+	game: string;
 
 	@ManyToOne(
 		() => UserEntity,
