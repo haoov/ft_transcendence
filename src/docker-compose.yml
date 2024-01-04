@@ -26,6 +26,8 @@ volumes:
     #   type: none
   #!comment end
 
+  pgadmin_data:
+
 #------------------------------------#
 #              Services              #
 #------------------------------------#
@@ -97,3 +99,17 @@ services:
     depends_on:
       nestjs:
         condition: service_healthy
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - 5050:80
+    networks:
+      - ft_transcendence
+    volumes:
+      - pgadmin_data:/pgadmin4
