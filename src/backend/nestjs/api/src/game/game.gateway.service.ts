@@ -27,11 +27,8 @@ export class GameGatewayService {
 		console.log(params)
 		if (params.game === "classic")
 			this.manageUserGame(client, classic_r, classic_w, server);
-		else if (params.game === "super") {
-			console.log("ici");
+		else if (params.game === "super")
 			this.manageUserGame(client, super_r, super_w, server);
-		}
-
 	}
 
 	async manageUserGame(client: Socket, rooms: Room[], waiting: Socket[], server: Server) {
@@ -87,6 +84,12 @@ export class GameGatewayService {
 		// Emit finish event
 		server.to(room.getName()).emit(ServerEvents.finished);
 		
+		// Reset user status
+		room.getSockets().forEach(async (socket) => {
+			await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
+			this.resetSocket(socket);
+		});
+
 		// Add game in database
 		var winnerUser = await this.userService.getUserById(room.getWinner());
 		var loserUser = await this.userService.getUserById(room.getLoser());
@@ -98,12 +101,6 @@ export class GameGatewayService {
 			loser_score: room.getLoserScore(),
 		});
 		console.log("game added to db");
-
-		// Reset status for user
-		room.getSockets().forEach(async (socket) => {
-			await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
-			this.resetSocket(socket);
-		});
 
 		// Delete room
 		rooms.splice(rooms.indexOf(room), 1);
