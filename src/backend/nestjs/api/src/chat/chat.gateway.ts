@@ -3,6 +3,7 @@ import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { UserService } from '../user/user.service';
 import { 
+	ConnectedSocket,
 	MessageBody,
 	SubscribeMessage,
 	WebSocketGateway,
@@ -31,6 +32,7 @@ export class ChatGateway implements OnModuleInit {
 
 	@WebSocketServer()
 	server: Server;
+	private usersSocketList : Map<number, Socket> = new Map<number, Socket>();
 
 	onModuleInit() {
 		this.server.on('connection', (socket: Socket) => {
@@ -43,8 +45,10 @@ export class ChatGateway implements OnModuleInit {
 				socket.join(channel.id.toString());
 				currentChannel = channel.id.toString();
 			});
-
-			
+			this.server.emit('NewConnection');
+			socket.on('userConnected', (user: any) => {
+				this.usersSocketList.set(user.id, socket);
+			});
 		});
 	}
 
@@ -62,7 +66,9 @@ export class ChatGateway implements OnModuleInit {
 	@SubscribeMessage('createNewChannel')
 	async onNewChannel(@MessageBody() channel: any) {
 		const newChannelCreated = await this.chatService.createChannel(channel);
-		this.server.emit('newChannelCreated', newChannelCreated);
+		for (const userId of channel.users) {
+			this.usersSocketList.get(userId).emit('newChannelCreated', newChannelCreated);
+		}
 	}
 
 }
