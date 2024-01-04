@@ -11,6 +11,7 @@
 				spellcheck="false"
 				v-model="inputVal"
 				@keyup.enter="searchValue"
+				@keydown.enter.prevent
 				:class="{ 'is-invalid': inputVal.length > 0 && (!userFound || userAlreadyAdded)}"
 			>
 		<div>

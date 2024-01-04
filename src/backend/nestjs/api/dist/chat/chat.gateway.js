@@ -37,11 +37,19 @@ let ChatGateway = class ChatGateway {
     }
     onModuleInit() {
         this.server.on('connection', (socket) => {
+            let currentChannel = null;
+            socket.on('join', (channel) => {
+                if (currentChannel) {
+                    socket.leave(currentChannel);
+                }
+                socket.join(channel.id.toString());
+                currentChannel = channel.id.toString();
+            });
         });
     }
     async onNewMessage(message) {
         const sender = await this.userService.getUserById(message.senderId);
-        this.server.emit('newMessage', buildMsg(sender.username, sender.avatar, message));
+        this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(sender.username, sender.avatar, message));
         this.chatService.createMessage(message);
     }
     async onNewChannel(channel) {

@@ -34,13 +34,24 @@ export class ChatGateway implements OnModuleInit {
 
 	onModuleInit() {
 		this.server.on('connection', (socket: Socket) => {
+			let currentChannel : string = null;
+
+			socket.on('join', (channel: any ) => {
+				if (currentChannel) {
+					socket.leave(currentChannel);
+				}
+				socket.join(channel.id.toString());
+				currentChannel = channel.id.toString();
+			});
+
+			
 		});
 	}
 
 	@SubscribeMessage('newMessage')
 	async onNewMessage(@MessageBody() message: any) {
 		const sender = await this.userService.getUserById(message.senderId);
-		this.server.emit('newMessage', buildMsg(
+		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
 			sender.username,
 			sender.avatar,
 			message

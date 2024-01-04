@@ -89,11 +89,8 @@ export default {
 		return store;
 	},
 
-	loadChannels(id: number) {
-		// fetchChannels().then((channels) => {
-		// 	store.channels = channels.slice().reverse();
-		// });
-		fetchCurrentUserChannels(id).then((channels) => {
+	loadChannels(idUser: number) {
+		fetchCurrentUserChannels(idUser).then((channels) => {
 			store.channels = channels.slice().reverse();
 		});
 	},
