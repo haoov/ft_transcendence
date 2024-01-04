@@ -1,5 +1,6 @@
 <script setup lang="ts">
-	import navigationBar from '@/components/navigationBar.vue';
+	import Leaderboard from '@/components/leaderboard.vue';
+import navigationBar from '@/components/navigationBar.vue';
 
 	// import axios from "axios";
     // import io from "socket.io-client";
@@ -16,6 +17,7 @@
 
 <template>
 	<navigationBar></navigationBar>
+    <Leaderboard></Leaderboard>
 </template>
 
 <style>
