@@ -52,7 +52,13 @@ async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
 	return axios.get(`http://localhost:3000/api/chat/messages/${id}`).then((res) => { return res.data });
 };
 
-const socket = io('http://localhost:3000');
+const socket = io('http://localhost:3000', {autoConnect: false});
+socket.connect();
+socket.on('NewConnection', async () => {
+	const user = await fetchCurrentUser();
+	socket.emit('userConnected', user);
+});
+
 const store = reactive({
 	channels: [] as Channel[],
 	messages: [] as Message [],
@@ -61,8 +67,6 @@ const store = reactive({
 	isModalNewChannelFormOpen: false,
 	activeChannel: null as Channel | null,
 });
-
-let nbChannel = 0;
 
 export default {
 	getSocket() {
@@ -101,7 +105,7 @@ export default {
 
 	setActiveChannel(channel: Channel) {
 		store.activeChannel = channel;
-		localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString());
+		// localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString()); // Permet de stocker la dernier channel active dans le local storage
 	},
 
 	loadMessages() {
@@ -124,10 +128,6 @@ export default {
 		fetchUsers().then((users) => {
 			store.users = users;
 		});
-	},
-
-	getNewId() {
-		return ++nbChannel;
 	},
 
 	openModalNewChannelForm() {

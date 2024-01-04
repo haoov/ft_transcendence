@@ -34,6 +34,7 @@ let ChatGateway = class ChatGateway {
     constructor(chatService, userService) {
         this.chatService = chatService;
         this.userService = userService;
+        this.usersSocketList = new Map();
     }
     onModuleInit() {
         this.server.on('connection', (socket) => {
@@ -45,6 +46,10 @@ let ChatGateway = class ChatGateway {
                 socket.join(channel.id.toString());
                 currentChannel = channel.id.toString();
             });
+            this.server.emit('NewConnection');
+            socket.on('userConnected', (user) => {
+                this.usersSocketList.set(user.id, socket);
+            });
         });
     }
     async onNewMessage(message) {
@@ -54,7 +59,9 @@ let ChatGateway = class ChatGateway {
     }
     async onNewChannel(channel) {
         const newChannelCreated = await this.chatService.createChannel(channel);
-        this.server.emit('newChannelCreated', newChannelCreated);
+        for (const userId of channel.users) {
+            this.usersSocketList.get(userId).emit('newChannelCreated', newChannelCreated);
+        }
     }
 };
 exports.ChatGateway = ChatGateway;
