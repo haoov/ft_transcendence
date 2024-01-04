@@ -11,6 +11,8 @@ let state = ref("");
 
 let displayMenu = ref(true);
 
+let map = ref("random");
+
 const socket: Socket = io("http://localhost:3000/game");
 const currentUser = await axios.get("http://localhost:3000/api/user/me").then((response) => {
 		socket.emit(ClientEvents.connected, response.data);
@@ -20,16 +22,16 @@ const currentUser = await axios.get("http://localhost:3000/api/user/me").then((r
 const initParams = (await axios.get("http://localhost:3000/api/game/params")).data;
 
 socket.on(ServerEvents.waiting, () => {
-	state.value = "Waiting for a game...";
+	state.value = "Waiting for a game";
 });
 
 socket.on(ServerEvents.finished, () => {
 	state.value = "Finished";
 });
 
-function assignMode(params: {game: string, mode: string, difficulty: string}) {
+function assignMode(params: {game: string, mode: string, difficulty: string, map: string}) {
+	map.value = params.map;
 	socket.emit("gameParams", params);
-	displayMenu.value = false;
 }
 
 onMounted(() => {
@@ -42,7 +44,12 @@ onMounted(() => {
 			socket.emit("move", "down");
 	})
 
-	socket.on("started", () => {game.started = true; state.value = "";})
+	socket.on("started", () => {
+		game.assignMap(map.value);
+		game.started = true;
+		state.value = "";
+		displayMenu.value = false;
+	})
 
 	socket.on("updated", (data) => {game.update(data);});
 
@@ -59,8 +66,22 @@ onMounted(() => {
 
 <template>
 	<div id="game">
-		<gameMenu v-if="displayMenu == true" v-on:click="assignMode"></gameMenu>
+		<gameMenu v-if="displayMenu == true" v-on:click="assignMode" :state="state"></gameMenu>
 	</div>
+
+	<video
+		id="video"
+		playinline
+		webkit-playsinline
+		muted
+		loop
+		autoplay
+		width="720"
+		height="480"
+		src="../assets/videos/space.mp4"
+		style="display: none;"
+	></video>
+
 </template>
 
 <style>

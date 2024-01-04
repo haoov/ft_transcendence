@@ -25,7 +25,7 @@ class Ball {
 		this.vecSpeed.x = params.BALL_SPEED * direction;
 	}
 
-	moove(players: Player[], field: Field, effect: Effect) {
+	moove(players: Player[], field: Field, effect?: Effect) {
 		this.position.x += this.vecSpeed.x;
 		this.position.y += this.vecSpeed.y;
 
@@ -35,7 +35,7 @@ class Ball {
 				this.lastHit = players[i].paddle;
 			}
 		}
-		if (effect.on == true && effect.hitBall(this)) {
+		if (effect && effect.on && effect.hitBall(this)) {
 			effect.apply(this, this.lastHit);
 		}
 		if (this.position.y >= field.borders.top || this.position.y <= field.borders.bottom)
@@ -53,6 +53,7 @@ class Ball {
 		const normIntersect = this.position.y - paddle.position.y;
 		const bouceAngle = normIntersect * params.MAX_BOUNCE_ANGLE;
 
+		this.speed += 0.002;
 		this.vecSpeed.x = -this.speed * Math.cos(bouceAngle);
 		this.vecSpeed.y = this.speed * Math.sin(bouceAngle);
 		if (this.position.x < 0)

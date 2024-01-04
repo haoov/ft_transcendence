@@ -2,6 +2,7 @@ import { Socket } from "socket.io";
 import { Pong } from "../data/Pong";
 import { Player } from "../data/player";
 import { User } from "src/user/user.interface";
+import { selectedParams } from "../interfaces/selectedParams";
 
 export class Room {
 	private name: string;
@@ -10,27 +11,30 @@ export class Room {
 	private sockets: Socket[];
 	public game: Pong;
 
-	constructor(name: string, p1: Socket[], p2: Socket) {
+	constructor(	name: string, params: selectedParams, p1: Socket[], p2?: Socket) {
 		this.sockets = [];
 		this.name = name;
 		this.p1_id = p1[0].data.user.id;
-		this.p2_id = p2.data.user.id;
+		this.p2_id = (p2 ? p2.data.user.id : "computer");
 
 		// Update the socket infos
 		p1.forEach(socket => socket.data.room = name);
 		p1.forEach(socket => {socket.data.side = "right";});
-		p2.data.room = name;
-		p2.data.side = "left";
+		if (p2) {
+			p2.data.room = name;
+			p2.data.side = "left";
+		}
 
 		// Add sockets in socket tab
 		p1.forEach((socket) => this.sockets.push(socket));
-		this.sockets.push(p2);
+		if (p2)
+			this.sockets.push(p2);
 
 		// Join same room
 		this.sockets.forEach(socket => {socket.join(name)});
 
 		// Create game
-		this.game = new Pong(p1[0].data.game);
+		this.game = new Pong(params);
 	};
 
 	getName(): string {
