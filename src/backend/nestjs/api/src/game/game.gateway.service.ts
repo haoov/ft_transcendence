@@ -5,6 +5,7 @@ import { UserStatus } from "src/user/enum/userStatus.enum";
 import { Room } from "./classes";
 import { UserService } from "src/user/user.service";
 import { GameService } from "./game.service";
+import { selectedParams } from "./interfaces/selectedParams";
 
 @Injectable()
 export class GameGatewayService {
@@ -12,29 +13,21 @@ export class GameGatewayService {
 	constructor(private readonly userService: UserService,
 				private readonly gameService: GameService) {}
 
-	assignMode(client: Socket,
-				params: {
-					game: string,
-					mode: string,
-					difficulty: string
-				},
-				classic_r: Room[],
-				classic_w: Socket[],
-				super_r: Room[],
-				super_w: Socket[],
-				server:Server) {
+	assignMode(	client: Socket, classic_r: Room[], classic_w: Socket[],
+							super_r: Room[], super_w: Socket[], server:Server,
+							params: selectedParams) {
 		client.data.game = params.game;
 		console.log(params)
 		if (params.game === "classic")
-			this.manageUserGame(client, classic_r, classic_w, server);
+			this.manageUserGame(client, classic_r, classic_w, server, params);
 		else if (params.game === "super") {
-			console.log("ici");
-			this.manageUserGame(client, super_r, super_w, server);
+			this.manageUserGame(client, super_r, super_w, server, params);
 		}
 
 	}
 
-	async manageUserGame(client: Socket, rooms: Room[], waiting: Socket[], server: Server) {
+	async manageUserGame(		client: Socket, rooms: Room[], waiting: Socket[], server: Server,
+													params: selectedParams) {
 		// if (client.data.user.status === UserStatus.playing) {
 		// 	const room: Room = this.findRoom(client, rooms);
 		// 	room.addSocket(client);
@@ -47,28 +40,37 @@ export class GameGatewayService {
 		// 	client.emit(ServerEvents.waiting);
 		// }
 		// A COMMENTER
-		if (waiting.length < 1) {
-			await this.userService.updateUserStatus(client.data.user, UserStatus.waiting);
-			waiting.push(client);
-			client.emit(ServerEvents.waiting);
-		}
-		else {
-			// Empty the 'waiting' tab
-			const opponent: Socket[] = [...waiting];
-			waiting.length = 0;
-
-			// Define the status for the 2 players
-			await this.userService.updateUserStatus(client.data.user, UserStatus.playing);
-			opponent.forEach(async (socket) => {
-				await this.userService.updateUserStatus(socket.data.user, UserStatus.playing);})
-
-			
-			// Start game
+		if (params.mode === "singlePlayer") {
 			const name: string = rooms.length.toString() + client.data.game;
-			const room: Room = new Room(name, opponent, client)
+			const room: Room = new Room(name, params, [client]);
 			rooms.push(room);
 			room.getGame().start();
 			server.to(name).emit("started");
+		}
+		else {
+			if (waiting.length < 1) {
+				await this.userService.updateUserStatus(client.data.user, UserStatus.waiting);
+				waiting.push(client);
+				client.emit(ServerEvents.waiting);
+			}
+			else {
+				// Empty the 'waiting' tab
+				const opponent: Socket[] = [...waiting];
+				waiting.length = 0;
+
+				// Define the status for the 2 players
+				await this.userService.updateUserStatus(client.data.user, UserStatus.playing);
+				opponent.forEach(async (socket) => {
+					await this.userService.updateUserStatus(socket.data.user, UserStatus.playing);})
+
+				
+				// Start game
+				const name: string = rooms.length.toString() + client.data.game;
+				const room: Room = new Room(name, params, opponent, client)
+				rooms.push(room);
+				room.getGame().start();
+				server.to(name).emit("started");
+			}
 		}
 	}
 
@@ -88,16 +90,18 @@ export class GameGatewayService {
 		server.to(room.getName()).emit(ServerEvents.finished);
 		
 		// Add game in database
-		var winnerUser = await this.userService.getUserById(room.getWinner());
-		var loserUser = await this.userService.getUserById(room.getLoser());
-		await this.gameService.createGame({
-			game: room.getSockets()[0].data.game,
-			winner: winnerUser,
-			loser: loserUser,
-			winner_score: room.getWinnerScore(),
-			loser_score: room.getLoserScore(),
-		});
-		console.log("game added to db");
+		if (room.getGame().getMode() == "multiPlayer") {
+			var winnerUser = await this.userService.getUserById(room.getWinner());
+			var loserUser = await this.userService.getUserById(room.getLoser());
+			await this.gameService.createGame({
+				game: room.getSockets()[0].data.game,
+				winner: winnerUser,
+				loser: loserUser,
+				winner_score: room.getWinnerScore(),
+				loser_score: room.getLoserScore(),
+			});
+			console.log("game added to db");
+		}
 
 		// Reset status for user
 		room.getSockets().forEach(async (socket) => {

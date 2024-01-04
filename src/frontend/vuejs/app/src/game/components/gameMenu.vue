@@ -1,28 +1,37 @@
 <script setup lang="ts">
 
-	import { ref, computed} from "vue";
+	import { ref, computed } from "vue";
+	import loader from "@/components/loader.vue"
+	import selector from "@/components/selector.vue"
+
+	defineProps(["state"]);
 
 	const games: string[] = ["classic", "super"];
 	const difficulties: string[] = ["easy", "medium", "hard"];
 	const modes: string[] = ["singlePlayer", "multiPlayer"];
-
-	
+	const maps: string[] = ["tennis", "space"];
 
 	const selectedGame = ref("");
 	const selectedMode = ref("");
 	const selectedDifficulty = ref("");
+	const selectedMap = ref("random");
 
 	const isDisabled = computed(() => {
-		return !selectedGame.value || !selectedMode.value || (selectedMode.value == "singlePlayer" && !selectedDifficulty.value);
+		return 	!selectedGame.value || !selectedMode.value
+						|| (selectedMode.value == "singlePlayer" && (!selectedDifficulty.value || !selectedMap.value));
 	});
 
 	const emit = defineEmits(['click']);
 
+	let playClick = ref(false);
+
 	function play() {
+		playClick.value = true;
 		emit("click", {
 			game: selectedGame.value,
 			mode: selectedMode.value,
-			difficulty: selectedDifficulty.value});
+			difficulty: selectedDifficulty.value,
+			map: selectedMap.value});
 	}
 
 </script>
@@ -30,34 +39,34 @@
 <template>
 
 	<div class="menu">
-		<div class="selection">
-			<label for="Game">Game</label>
-			<div class="radio-inputs" id="Game">
-				<label class="radio" v-for="game in games">
-					<input type="radio" v-model="selectedGame" :value="game" name="game">
-					<span class="name">{{ game }}</span>
-				</label>
-			</div>
+		<div v-if="playClick == false" class="menu-box">
+			<selector
+				:label="'Game'"
+				:values="games"
+				@select="(value) => {selectedGame = value}"
+			></selector>
+			<selector
+				:label="'Mode'"
+				:values="modes"
+				@select="(value) => {selectedMode = value}"
+			></selector>
+			<selector
+				v-if="selectedMode == 'singlePlayer'"
+				:label="'Difficulty'"
+				:values="difficulties"
+				@select="(value) => {selectedDifficulty = value}"
+			></selector>
+			<selector
+				v-if="selectedMode == 'singlePlayer' && selectedGame == 'super'"
+				:label="'Map'"
+				:values="maps"
+				@select="(value) => {selectedMap = value}"
+			></selector>
+			<button id="playButton" type="submit" :disabled="isDisabled" v-on:click="play">Play</button>
 		</div>
-		<div class="selection">
-			<label for="mode">Mode</label>
-			<div class="radio-inputs" id="mode">
-				<label class="radio" v-for="mode in modes">
-					<input type="radio" v-model="selectedMode" :value="mode" name="mode">
-					<span class="name">{{ mode }}</span>
-				</label>
-			</div>
+		<div v-else class="menu-box">
+			<loader :text="state"></loader>
 		</div>
-		<div class="selection" v-if="selectedMode == 'singlePlayer'">
-			<label for="difficulty">Difficulty</label>
-			<div class="radio-inputs" id="difficulty">
-				<label class="radio" v-for="difficulty in difficulties">
-					<input type="radio" v-model="selectedDifficulty" :value="difficulty" name="difficulty">
-					<span class="name">{{ difficulty }}</span>
-				</label>
-			</div>
-		</div>
-		<button id="playButton" type="submit" :disabled="isDisabled" v-on:click="play">Play</button>
 	</div>
 
 </template>
@@ -68,58 +77,24 @@
 		position: absolute;
 		width: 720px;
 		height: 480px;
+		background: var(--c-black);
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
 	}
 
-	.selection {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.radio-inputs {
-		display: flex;
-		flex-wrap: wrap;
-		border-radius: 0.5rem;
-		background-color: linear-gradient(var(--c-black), var(--c-black)) padding-box;
-		box-sizing: border-box;
-		box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
-		padding: 0.25rem;
-		width: 100%;
-		font-size: 14px;
-		justify-content: center;
-}
-
-	.radio-inputs .radio {
-		display: flex;
-		margin: 5px;
+	.menu-box {
 		text-align: center;
-	}
-
-	.radio-inputs .radio input {
-		display: none;
-	}
-
-	.radio-inputs .radio .name {
-		width: 100px;
-		cursor: pointer;
+		border: 1px solid var(--c-white);
 		border-radius: 0.5rem;
-		border: none;
-		padding: .5rem 0.5rem;
-		background-color: var(--c-grey);
-		transition: all .15s ease-in-out;
-	}
-
-	.radio-inputs .radio input:checked + .name {
-		background-color: var(--c-pink);
-		font-weight: 600;
+		padding: 10px;
+		background-color: var(--c-black-light);
 	}
 
 	#playButton {
 		width: 100px;
+		margin-top: 50px;
 		border-radius: 0.5rem;
 		border: none;
 		padding: .5rem;
@@ -129,7 +104,7 @@
 
 	#playButton:not(:disabled) {
 		background-color: var(--c-pink);
-		font-weight: 600;
+		font-size: medium;
 	}
 
 </style>

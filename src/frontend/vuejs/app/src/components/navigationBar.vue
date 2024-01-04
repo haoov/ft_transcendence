@@ -6,10 +6,10 @@
 	<div class="navBar">
 		<div class="pages">
 			<div class="inline">
-				<mainTitle class="page" :text="'HOME'"></mainTitle>
+				<RouterLink to="/"><mainTitle class="page" :text="'HOME'"></mainTitle></RouterLink>
 			</div>
 			<div class="inline">
-				<mainTitle class="page" :text="'GAME'"></mainTitle>
+				<RouterLink to="game"><mainTitle class="page" :text="'GAME'"></mainTitle></RouterLink>
 			</div>
 			<div class="inline">
 				<mainTitle class="page" :text="'CHAT'"></mainTitle>
@@ -23,9 +23,10 @@
 
 <style>
 	.navBar {
-		background-color: var(--c-blue-dark);
+		background: transparent;
 		display: flex;
 		justify-content: center;
+		margin: 20px;
 	}
 
 	.inline {

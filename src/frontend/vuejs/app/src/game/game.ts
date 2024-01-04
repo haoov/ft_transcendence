@@ -1,6 +1,5 @@
 import * as th from "three";
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
-import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
 interface Vec3 {
 	x: number,
@@ -102,7 +101,7 @@ export class Game {
 			questionMark: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=questionMark"),
 			ice: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=ice"),
 			fire: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=fire"),
-		}
+		};
 
 		//init lights
 		const ambiantLight = new th.AmbientLight(init.colors.WHITE, 0.5);
@@ -116,7 +115,6 @@ export class Game {
 		this.paddle1 = this.createPaddle(init);
 		this.paddle2 = this.createPaddle(init);
 		this.field = this.createField(init.params.FIELD_WIDTH, init.params.FIELD_HEIGHT);
-		this.field.material.map = this.textures.tennisCourt;
 		this.effect = this.createEffect();
 
 		this.scene.add(this.ball, this.field, this.paddle1, this.paddle2);
@@ -146,11 +144,29 @@ export class Game {
 
 	createField(width: number, height: number) {
 		const geometry = new th.PlaneGeometry(width, height);
-		const material = new th.MeshPhongMaterial();
+		let material = new th.MeshPhongMaterial({color: 0x000000});
 		const field = new th.Mesh(geometry, material);
 		field.position.set(0, 0, -1);
 		field.receiveShadow = true;
 		return field;
+	}
+
+	assignMap(map: string) {
+		if (map == "space") {
+			console.log("space");
+			const spaceVideo = document.getElementById("video") as HTMLVideoElement;
+			spaceVideo.play();
+			const spaceTexture = new th.VideoTexture(spaceVideo);
+			spaceTexture.minFilter = th.LinearFilter;
+			spaceTexture.magFilter = th.LinearFilter;
+			this.field.material.map = spaceTexture;
+			this.field.material.side = th.FrontSide
+			this.field.receiveShadow = false;
+		}
+		else if (map == "tennis") {
+			this.field.material.map = this.textures.tennisCourt;
+		}
+		this.field.material.needsUpdate = true;
 	}
 
 	createEffect() {

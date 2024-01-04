@@ -6,6 +6,7 @@ import { User } from 'src/user/user.interface';
 import { Room } from './classes/Room';
 import { UserService } from 'src/user/user.service';
 import { UserStatus } from 'src/user/enum/userStatus.enum';
+import { selectedParams } from './interfaces/selectedParams';
 
 
 // Outil de gestion des web socket events
@@ -49,14 +50,10 @@ export class GameGateway
 	}
 
 	@SubscribeMessage('gameParams')
-	assignMode(client: Socket, params: {game: string, mode: string, difficulty: string}) {
-		this.gameGtwService.assignMode(client,
-										params,
-										this.classic_rooms,
-										this.classic_waiting,
-										this.super_rooms,
-										this.super_waiting,
-										this.server)
+	assignMode(client: Socket, params: selectedParams) {
+		this.gameGtwService.assignMode(	client, this.classic_rooms, this.classic_waiting,
+																		this.super_rooms, this.super_waiting, this.server,
+																		params)
 	}
 
 	@SubscribeMessage('update')
