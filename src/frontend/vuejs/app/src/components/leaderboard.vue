@@ -1,19 +1,32 @@
 <script setup lang="ts">
 
 import axios from "axios";
-import type { Leaders } from "@/utils";
+import type { Leaders, User } from "@/utils";
 import { onMounted, ref } from "vue";
 
 let customers = ref<Leaders[]>([]);
+let me = ref<User>();
+let rank = ref<number>(-1);
 
-function  fetchCustomers() {
-      axios
-        .get("http://localhost:3000/api/home/leaderboard")
-        .then(data => { customers.value = data.data;});
+function fetchLeaderboard() {
+  axios
+    .get("http://localhost:3000/api/home/leaderboard")
+    .then(data => { customers.value = data.data;});
+}
+
+function fetchMe() {
+  axios
+    .get("http://localhost:3000/api/user/me")
+    .then(data => { 
+      me.value = data.data;
+      const url: string = "http://localhost:3000/api/home/rank/" + data.data.username;
+      axios.get(url).then( data => {
+        rank.value = data.data;})
+      });
 }
 
 function  getRankClass(index: number) : string {
-  let className = 'c-flag c-place u-bg--transparent'
+  let className = "c-flag c-place u-bg--transparent"
   switch (index) {
     case 0:
       className += " u-text--dark u-bg--yellow";
@@ -32,45 +45,39 @@ function  getAvatarSrc(index: number) : string {
   return customers.value[index].avatar;
 }
 
+function  getMyAvatarSrc() : string | undefined {
+  return me.value?.avatar;
+}
+
   onMounted(() => {
-    fetchCustomers();
+    fetchMe();
+    fetchLeaderboard();
   });
 </script>
 
 <template>
-    <!-- <div class="container-fluid">
-      <div class="text-center">
-        <h1>Leaderbord</h1>
-       <div v-if="customers.length === 0">
-            <h2> No user found at the moment </h2>
-        </div>
-      </div>
-
-        <div class="">
-            <table class="table">
-              <thead class="thead-dark">
-                <tr>
-                  <th scope="col">Username</th>
-                  <th scope="col">Wins</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="customer in customers" :key="customer.id">
-                  <td>{{ customer.username }}</td>
-                  <td>{{ customer.wins }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-    </div> -->
-
-
-
 <div class="l-wrapper">
   <div class="l-grid">
     <div class="l-grid__item l-grid__item--sticky">
-      <div class="c-card u-bg--light-gradient u-text--dark">
+      <div class="c-card">
         <div class="c-card__body">
+          <div class="u-display--flex u-justify--space-between">
+            <div class="u-text--left">
+              <img class="c-avatar c-avatar--lg" :src="getMyAvatarSrc()"/>
+              <div class="u-text--medium u-mt--16">{{ me?.username }}</div>
+              <span class="u-text--teal u-text--small">{{ me?.email}} </span>
+            </div>
+            <div class="u-text--right">
+                <div class="u-mt--16 u-text--small">My Rank</div>
+                <h2>{{ rank }}</h2>
+                <div class="u-mt--24 u-text--small">My Wins</div>
+                <h2>24</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="c-card u-bg--light-gradient u-text--dark">
+        <div class="c-card__body" id="myrank">
           <div class="u-display--flex u-justify--space-between">
             <div class="u-text--left">
               <div class="u-text--small">My Rank</div>
@@ -81,11 +88,6 @@ function  getAvatarSrc(index: number) : string {
               <h2>24</h2>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="c-card">
-        <div class="c-card__body">
-          <div class="u-text--center" id="winner"></div>
         </div>
       </div>
     </div>
@@ -124,26 +126,6 @@ function  getAvatarSrc(index: number) : string {
                 </div>
               </div>
             </li>
-
-
-
-            <!-- <li class="c-list__item">
-              <div class="c-list__grid">
-                <div class="c-flag c-place u-text--dark u-bg--yellow u-bg--transparent">1</div>
-                <div class="c-media">
-                  <img class="c-avatar c-media__img" src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" />
-                  <div class="c-media__content">
-                    <div class="c-media__title">avast</div>
-                    <a class="c-media__link u-text--small" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
-                  </div>
-                </div>
-                <div class="u-text--right c-kudos">
-                  <div class="u-mt--8">
-                    <strong>145</strong>
-                  </div>
-                </div>
-              </div>
-            </li> -->
           </ul>
         </div>
       </div>
@@ -217,7 +199,7 @@ body {
   background: var(--bg);
   color: var(--color);
   font-size: 1.6rem;
-  font-family: "Overpass Mono", system-ui;
+  font-family: "Overpass Mono", system-ui !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -226,7 +208,7 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.05em;
   margin-top: 0.8rem;
   margin-bottom: 0.8rem;
-  font-family: "Oswald", system-ui;
+  font-family: "Oswald", system-ui !important;
 }
 
 a {
@@ -243,7 +225,7 @@ a:hover {
 }
 
 button, textarea, input, select {
-  font-family: inherit;
+  font-family: inherit !important;
   color: inherit;
 }
 button:active, button:focus, textarea:active, textarea:focus, input:active, input:focus, select:active, select:focus {
@@ -252,6 +234,14 @@ button:active, button:focus, textarea:active, textarea:focus, input:active, inpu
 
 button, select {
   cursor: pointer;
+}
+
+#me {
+  background-color: var(--c-pink);
+  border-radius: 0.8rem;
+  width: 100%;
+  margin-bottom: 1.6rem;
+  box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.12);
 }
 
 .l-wrapper {
@@ -263,7 +253,7 @@ button, select {
 
 .l-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr 1.5fr;
   grid-column-gap: 1.6rem;
   grid-row-gap: 1.6rem;
   position: relative;
@@ -273,24 +263,6 @@ button, select {
     grid-template-columns: 1fr;
   }
 }
-
-/* .c-header {
-  padding: 1.6rem 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2.4rem;
-  position: relative;
-}
-.c-header:before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  height: 0.2rem;
-  background: var(--primary-trans);
-} */
 
 .c-card {
   border-radius: 0.8rem;
@@ -324,16 +296,6 @@ button, select {
     transform: translateY(4px);
   }
 }
-
-/* .c-logo {
-  display: inline-block;
-  width: 100%;
-  max-width: 17.6rem;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-} */
 
 .c-list {
   margin: 0;
@@ -547,6 +509,7 @@ button, select {
 }
 
 .u-text--medium {
+  font-size: 2rem;
   color: var(--medium) !important;
 }
 
