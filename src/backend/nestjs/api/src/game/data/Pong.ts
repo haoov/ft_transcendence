@@ -86,6 +86,8 @@ class Pong {
 			effectPosition: this.effect.position,
 			effectRotationSpeed: this.effect.rotationSpeed,
 			effectOn: this.effect.on,
+			p1Score: this.players[0].score,
+			p2Score: this.players[1].score,
 			finished: this.finished,
 		};
 	}

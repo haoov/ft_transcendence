@@ -13,7 +13,7 @@ class Effect {
 	on: boolean;
 
 	constructor(type?: string) {
-		this.position = {x: 0, y: 1, z: 0};
+		this.position = {x: 0, y: 0, z: 0};
 		this.rotationSpeed = 0.005;
 		this.size = 0.2;
 		this.speed = 0.005;
@@ -28,7 +28,7 @@ class Effect {
 					|| this.position.y <= field.borders.bottom + this.size)
 			this.speed *= -1;
 		if (this.on == false) {
-			if (Math.random() > 0.999) {
+			if (Math.random() > 0.99) {
 				this.type = this.types[Math.floor(Math.random() * this.types.length)];
 				this.on = true;
 			}
@@ -68,6 +68,7 @@ class Effect {
 			case "small":
 				ball.effect.type = this.type;
 				ball.scale = {x: 0.5, y: 0.5, z: 0.5};
+				ball.radius *= ball.scale.x;
 				break;
 			default: break;
 		}
@@ -78,7 +79,7 @@ class Effect {
 		paddle.effect.type = this.type;
 		switch (this.type) {
 			case "ice":
-				paddle.speed *= 0.3;
+				paddle.speed *= 0.5;
 				break;
 			case "fire":
 				paddle.speed *= 2;

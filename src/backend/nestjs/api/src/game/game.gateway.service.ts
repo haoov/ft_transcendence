@@ -43,6 +43,7 @@ export class GameGatewayService {
 		if (params.mode === "singlePlayer") {
 			const name: string = rooms.length.toString() + client.data.game;
 			const room: Room = new Room(name, params, [client]);
+			server.to(name).emit("room", client.data.user);
 			rooms.push(room);
 			room.getGame().start();
 			server.to(name).emit("started");
@@ -67,6 +68,7 @@ export class GameGatewayService {
 				// Start game
 				const name: string = rooms.length.toString() + client.data.game;
 				const room: Room = new Room(name, params, opponent, client)
+				server.to(name).emit("room", opponent[0].data.user, client.data.user);
 				rooms.push(room);
 				room.getGame().start();
 				server.to(name).emit("started");

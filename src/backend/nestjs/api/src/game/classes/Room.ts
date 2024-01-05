@@ -49,6 +49,10 @@ export class Room {
 		return this.sockets;
 	}
 
+	getIds(): number[] {
+		return [this.p1_id, this.p2_id];
+	}
+
 	getP1score(): number {
         return this.game.getPlayers()[0].score;
     }

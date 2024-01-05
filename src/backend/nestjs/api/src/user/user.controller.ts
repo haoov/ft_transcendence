@@ -19,6 +19,11 @@ export class UserController {
 		return this.userService.getCurrentUser(req);
 	}
 
+	@Get(":id")
+	getUser(@Param("id") id: number): Promise<User> {
+		return this.userService.getUserById(id);
+	}
+
 	@Delete(":username")
 	deleteUser(@Param("username") username: string) {
 		this.userService.deleteUser(username);
