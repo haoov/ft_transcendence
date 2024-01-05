@@ -1,23 +1,40 @@
-<script lang="ts">
+<script setup lang="ts">
+
 import axios from "axios";
 import type { Leaders } from "@/utils";
-export default {
-  data() {
-    return {
-      customers: [] as Leaders[],
-    };
-  },
-  created() {
-    this.fetchCustomers();
-  },
-  methods: {
-    fetchCustomers() {
+import { onMounted, ref } from "vue";
+
+let customers = ref<Leaders[]>([]);
+
+function  fetchCustomers() {
       axios
         .get("http://localhost:3000/api/home/leaderboard")
-        .then(data => { this.customers = data.data;});
-    },
+        .then(data => { customers.value = data.data;});
+}
+
+function  getRankClass(index: number) : string {
+  let className = 'c-flag c-place u-bg--transparent'
+  switch (index) {
+    case 0:
+      className += " u-text--dark u-bg--yellow";
+      break;
+    case 1:
+      className += " u-text--dark u-bg--teal"
+      break;
+    case 2:
+      className += " u-text--dark u-bg--orange"
+      break;
   }
-};
+  return className;
+}
+
+function  getAvatarSrc(index: number) : string {
+  return customers.value[index].avatar;
+}
+
+  onMounted(() => {
+    fetchCustomers();
+  });
 </script>
 
 <template>
@@ -57,7 +74,7 @@ export default {
           <div class="u-display--flex u-justify--space-between">
             <div class="u-text--left">
               <div class="u-text--small">My Rank</div>
-              <h2>rd Place</h2>
+              <h2>3rd Place</h2>
             </div>
             <div class="u-text--right">
               <div class="u-text--small">My Score</div>
@@ -75,7 +92,7 @@ export default {
     <div class="l-grid__item">
       <div class="c-card">
         <div class="c-card__header">
-          <h3>Received Kudos</h3>
+          <h3>Leaderboard</h3>
           <select class="c-select">
             <!-- <option selected="selected">Sunday, Feb. 23 - Sunday, Feb. 30</option> -->
           </select>
@@ -85,14 +102,34 @@ export default {
             <li class="c-list__item">
               <div class="c-list__grid">
                 <div class="u-text--left u-text--small u-text--medium">Rank</div>
-                <div class="u-text--left u-text--small u-text--medium">Team Member</div>
-                <div class="u-text--right u-text--small u-text--medium"># of Kudos</div>
+                <div class="u-text--left u-text--small u-text--medium">Username</div>
+                <div class="u-text--right u-text--small u-text--medium"># of Wins</div>
               </div>
             </li>
-                <!-- prenmier element -->
-            <li class="c-list__item">
+                <!-- premier element -->
+            <li v-for="(customer, index) in customers" :key="customer.id">
               <div class="c-list__grid">
-                <div class="c-flag c-place u-bg--transparent">1</div>
+                <div :class="getRankClass(0)">{{ index + 1 }}</div>
+                <div class="c-media">
+                  <img class="c-avatar c-media__img" :src="getAvatarSrc(index)"/>
+                  <div class="c-media__content">
+                    <div class="c-media__title">{{ customer.username }}</div>
+                    <a class="c-media__link u-text--small" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
+                  </div>
+                </div>
+                <div class="u-text--right c-kudos">
+                  <div class="u-mt--8">
+                    <strong>{{ customer.wins }}</strong>
+                  </div>
+                </div>
+              </div>
+            </li>
+
+
+
+            <!-- <li class="c-list__item">
+              <div class="c-list__grid">
+                <div class="c-flag c-place u-text--dark u-bg--yellow u-bg--transparent">1</div>
                 <div class="c-media">
                   <img class="c-avatar c-media__img" src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" />
                   <div class="c-media__content">
@@ -106,7 +143,7 @@ export default {
                   </div>
                 </div>
               </div>
-            </li>
+            </li> -->
           </ul>
         </div>
       </div>
