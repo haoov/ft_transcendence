@@ -9,6 +9,7 @@ class Ball {
 	position: Vec3;
 	vecSpeed: Vec3;
 	scale: Vec3;
+	radius: number;
 	effect: Effect;
 	lastHit: Paddle;
 
@@ -17,6 +18,7 @@ class Ball {
 		this.speed = params.BALL_SPEED;
 		this.vecSpeed = {x: this.speed, y: 0, z: 0};
 		this.effect = new Effect("none");
+		this.radius = params.BALL_RADIUS;
 		this.scale = {x: 1, y: 1, z: 1};
 	}
 
@@ -36,9 +38,9 @@ class Ball {
 			}
 		}
 		if (effect && effect.on && effect.hitBall(this)) {
-			effect.apply(this, this.lastHit);
+				effect.apply(this, this.lastHit);
 		}
-		if (this.position.y >= field.borders.top || this.position.y <= field.borders.bottom)
+		if (this.position.y + this.scale.y * params.BALL_RADIUS >= field.borders.top || this.position.y - this.scale.y * params.BALL_RADIUS <= field.borders.bottom)
 			this.vecSpeed.y *= -1;
 		if (this.position.x >= field.borders.right || this.position.x <= field.borders.left) {
 			if (this.position.x >= field.borders.right)
@@ -56,8 +58,13 @@ class Ball {
 		this.speed += 0.002;
 		this.vecSpeed.x = -this.speed * Math.cos(bouceAngle);
 		this.vecSpeed.y = this.speed * Math.sin(bouceAngle);
-		if (this.position.x < 0)
+		if (this.position.x < 0) {
 			this.vecSpeed.x *= -1;
+			this.position.x = paddle.position.x + params.BALL_RADIUS + paddle.width / 2 + 0.001;
+		}
+		else {
+			this.position.x = paddle.position.x - params.BALL_RADIUS - paddle.width / 2 - 0.001;
+		}
 		if (this.effect.type != "none") {
 			this.effect.transmit(paddle);
 			this.resetEffect();
@@ -68,6 +75,7 @@ class Ball {
 
 	resetEffect() {
 		this.scale = {x: 1, y: 1, z: 1};
+		this.radius = params.BALL_RADIUS;
 		this.effect.type = "none";
 	}
 

@@ -47,11 +47,11 @@ class Paddle {
 		let placementFactor: number = 1;
 
 		if (difficulty == "easy")
-			reactivityFactor = 0.075;
+			reactivityFactor = 0.04;
 		else if (difficulty == "medium")
-			reactivityFactor = 0.09;
+			reactivityFactor = 0.06;
 		else
-			reactivityFactor = 0.1;
+			reactivityFactor = 0.08;
 
 		// Calculate the distance between the ball and the paddle
 		const distance = ball.position.y - this.position.y;
@@ -60,7 +60,7 @@ class Paddle {
 		if (distance > 0)
 				this.position.y += Math.min(distance, this.speed * reactivityFactor);
 		else if (distance < 0)
-				this.position.y += Math.max(distance, -this.speed * reactivityFactor);
+				this.position.y -= Math.max(distance, this.speed * reactivityFactor);
 	}
 
 	resetEffect() {

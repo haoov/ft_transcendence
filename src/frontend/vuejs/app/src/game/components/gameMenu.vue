@@ -9,12 +9,12 @@
 	const games: string[] = ["classic", "super"];
 	const difficulties: string[] = ["easy", "medium", "hard"];
 	const modes: string[] = ["singlePlayer", "multiPlayer"];
-	const maps: string[] = ["tennis", "space"];
+	const maps: string[] = ["classic", "tennis", "space", "random"];
 
 	const selectedGame = ref("");
 	const selectedMode = ref("");
 	const selectedDifficulty = ref("");
-	const selectedMap = ref("random");
+	const selectedMap = ref("classic");
 
 	const isDisabled = computed(() => {
 		return 	!selectedGame.value || !selectedMode.value

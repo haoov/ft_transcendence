@@ -74,7 +74,7 @@ export class Game {
 	ball;
 	paddle1;
 	paddle2;
-	field;
+	field: any;
 	effect;
 	started: boolean;
 
@@ -111,13 +111,13 @@ export class Game {
 		this.scene.add(ambiantLight, directionalLight);
 
 		//init objects
+		this.field = null;
 		this.ball = this.createBall(init.params.BALL_RADIUS);
 		this.paddle1 = this.createPaddle(init);
 		this.paddle2 = this.createPaddle(init);
-		this.field = this.createField(init.params.FIELD_WIDTH, init.params.FIELD_HEIGHT);
 		this.effect = this.createEffect();
 
-		this.scene.add(this.ball, this.field, this.paddle1, this.paddle2);
+		this.scene.add(this.ball, this.paddle1, this.paddle2);
 
 		this.started = false;
 	};
@@ -142,31 +142,48 @@ export class Game {
 		return paddle;
 	}
 
-	createField(width: number, height: number) {
+	createField(width: number, height: number, mapOption: string) {
+		const maps: string[] = ["space", "tennis", "classic"];
+		let material;
+		let map;
+
+		//select random map if option is "random"
+		if (mapOption == "random")
+			map = maps[Math.floor(Math.random() * maps.length)];
+		else
+			map = mapOption;
+
+		//create material according to map
+		switch (map) {
+			case "classic":
+				material = new th.MeshPhongMaterial({color: 0x000000});
+				break;
+			case "tennis":
+				material = new th.MeshPhongMaterial({
+					map: this.textures.tennisCourt,
+				});
+				break;
+			case "space":
+				const spaceVideo = document.getElementById("video") as HTMLVideoElement;
+				spaceVideo.play();
+				const spaceTexture = new th.VideoTexture(spaceVideo);
+				spaceTexture.minFilter = th.LinearFilter;
+				spaceTexture.magFilter = th.LinearFilter;
+				material = new th.MeshPhongMaterial({
+					map: spaceTexture,
+					side: th.FrontSide,
+				});
+				break;
+		}
+
+		//create field and 
 		const geometry = new th.PlaneGeometry(width, height);
-		let material = new th.MeshPhongMaterial({color: 0x000000});
 		const field = new th.Mesh(geometry, material);
 		field.position.set(0, 0, -1);
-		field.receiveShadow = true;
-		return field;
-	}
-
-	assignMap(map: string) {
-		if (map == "space") {
-			console.log("space");
-			const spaceVideo = document.getElementById("video") as HTMLVideoElement;
-			spaceVideo.play();
-			const spaceTexture = new th.VideoTexture(spaceVideo);
-			spaceTexture.minFilter = th.LinearFilter;
-			spaceTexture.magFilter = th.LinearFilter;
-			this.field.material.map = spaceTexture;
-			this.field.material.side = th.FrontSide
-			this.field.receiveShadow = false;
-		}
-		else if (map == "tennis") {
-			this.field.material.map = this.textures.tennisCourt;
-		}
-		this.field.material.needsUpdate = true;
+		if (map != "space")
+			field.receiveShadow = true;
+		this.field = field;
+		this.scene.add(this.field);
 	}
 
 	createEffect() {

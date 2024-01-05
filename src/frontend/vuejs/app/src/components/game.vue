@@ -6,20 +6,27 @@ import io from "socket.io-client";
 import { Socket } from "socket.io-client";
 import { ClientEvents, ServerEvents } from '@/utils';
 import gameMenu from '@/game/components/gameMenu.vue';
+import score from '@/game/components/score.vue';
 
-let state = ref("");
-
-let displayMenu = ref(true);
-
-let map = ref("random");
-
-const socket: Socket = io("http://localhost:3000/game");
-const currentUser = await axios.get("http://localhost:3000/api/user/me").then((response) => {
-		socket.emit(ClientEvents.connected, response.data);
-		return response.data;
-	});
-
+const state = ref("");
+const displayMenu = ref(true);
+const displayScore = ref(false);
+const map = ref("random");
+const difficulty = ref("");
+const p1 = ref({username: "", avatar: "", score: 0});
+const p2 = ref({username: "", avatar: "", score: 0});
 const initParams = (await axios.get("http://localhost:3000/api/game/params")).data;
+const socket: Socket = io("http://localhost:3000/game");
+
+function assignMode(gameParams: {game: string, mode: string, difficulty: string, map: string}) {
+	difficulty.value = gameParams.difficulty;
+	map.value = gameParams.map;
+	socket.emit("gameParams", gameParams);
+}
+
+await axios.get("http://localhost:3000/api/user/me").then((response) => {
+		socket.emit(ClientEvents.connected, response.data);
+});
 
 socket.on(ServerEvents.waiting, () => {
 	state.value = "Waiting for a game";
@@ -29,10 +36,19 @@ socket.on(ServerEvents.finished, () => {
 	state.value = "Finished";
 });
 
-function assignMode(params: {game: string, mode: string, difficulty: string, map: string}) {
-	map.value = params.map;
-	socket.emit("gameParams", params);
-}
+socket.on("room", (p1User, p2User?) => {
+	p1.value.username = p1User.username;
+	p1.value.avatar = p1User.avatar;
+	console.log(p1User);
+	if (p2User) {
+		p2.value.username = p2User.username;
+		p2.value.avatar = p2User.avatar;
+	}
+	else {
+		p2.value.username = "Computer" + ": " + difficulty.value;
+	}
+	displayScore.value = true;
+});
 
 onMounted(() => {
 	const game: Game = new Game("game", initParams);
@@ -45,13 +61,17 @@ onMounted(() => {
 	})
 
 	socket.on("started", () => {
-		game.assignMap(map.value);
+		game.createField(initParams.params.FIELD_WIDTH, initParams.params.FIELD_HEIGHT, map.value);
 		game.started = true;
 		state.value = "";
 		displayMenu.value = false;
 	})
 
-	socket.on("updated", (data) => {game.update(data);});
+	socket.on("updated", (data) => {
+		game.update(data);
+		p1.value.score = data.p1Score;
+		p2.value.score = data.p2Score;
+	});
 
 	function animate() {
 		requestAnimationFrame(animate);
@@ -68,6 +88,7 @@ onMounted(() => {
 	<div id="game">
 		<gameMenu v-if="displayMenu == true" v-on:click="assignMode" :state="state"></gameMenu>
 	</div>
+	<score v-if="displayScore == true" :p1="p1" :p2="p2"></score>
 
 	<video
 		id="video"
@@ -81,11 +102,9 @@ onMounted(() => {
 		src="../assets/videos/space.mp4"
 		style="display: none;"
 	></video>
-
 </template>
 
 <style>
-
 	#game {
 		display: flex;
 		width: 720px;
@@ -110,5 +129,4 @@ onMounted(() => {
 			background-position: 0% 50%;
 		}
 	}
-
 </style>
