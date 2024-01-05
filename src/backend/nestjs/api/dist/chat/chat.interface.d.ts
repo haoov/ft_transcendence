@@ -14,5 +14,6 @@ interface Channel {
     mode: 'public' | 'private' | 'protected' | 'secret';
     password: string;
     users: User[];
+    messages: MessageRaw[];
 }
 export { MessageRaw, Channel };

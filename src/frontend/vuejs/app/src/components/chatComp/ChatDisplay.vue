@@ -29,6 +29,7 @@ const store = data.getStore();
   align-content: stretch;
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
 }

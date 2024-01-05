@@ -12,36 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChannelEntity = exports.MessageEntity = void 0;
 const typeorm_1 = require("typeorm");
 const user_entity_1 = require("./user.entity");
-let MessageEntity = class MessageEntity {
-};
-exports.MessageEntity = MessageEntity;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
-], MessageEntity.prototype, "id", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", Number)
-], MessageEntity.prototype, "senderId", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", Number)
-], MessageEntity.prototype, "channelId", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], MessageEntity.prototype, "text", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", Date)
-], MessageEntity.prototype, "datestamp", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], MessageEntity.prototype, "timestamp", void 0);
-exports.MessageEntity = MessageEntity = __decorate([
-    (0, typeorm_1.Entity)()
-], MessageEntity);
 let ChannelEntity = class ChannelEntity {
 };
 exports.ChannelEntity = ChannelEntity;
@@ -70,7 +40,45 @@ __decorate([
     (0, typeorm_1.JoinTable)(),
     __metadata("design:type", Array)
 ], ChannelEntity.prototype, "users", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => MessageEntity, message => message.channel),
+    __metadata("design:type", Array)
+], ChannelEntity.prototype, "messages", void 0);
 exports.ChannelEntity = ChannelEntity = __decorate([
     (0, typeorm_1.Entity)()
 ], ChannelEntity);
+let MessageEntity = class MessageEntity {
+};
+exports.MessageEntity = MessageEntity;
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
+], MessageEntity.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", Number)
+], MessageEntity.prototype, "senderId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", Number)
+], MessageEntity.prototype, "channelId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], MessageEntity.prototype, "text", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", Date)
+], MessageEntity.prototype, "datestamp", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], MessageEntity.prototype, "timestamp", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => ChannelEntity, channel => channel.messages),
+    __metadata("design:type", ChannelEntity)
+], MessageEntity.prototype, "channel", void 0);
+exports.MessageEntity = MessageEntity = __decorate([
+    (0, typeorm_1.Entity)()
+], MessageEntity);
 //# sourceMappingURL=chat.entity.js.map

@@ -8,7 +8,7 @@
 - Implementer la creation des channels
 	- [DONE] Implementer le widget pour creer un channel (Modal Wrapper)
 	- [DONE] Implementer recherche des user a ajouter
-	- Implementer le set du MDP
+	- [DONE] Implementer le set du MDP
 
 - Implementer l'edit des channels
 

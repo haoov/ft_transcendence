@@ -44,10 +44,6 @@ async function fetchCurrentUserChannels(id: number) : Promise<Channel []> {
 	return axios.get(`http://localhost:3000/api/chat/channels/${id}`).then((res) => { return res.data });
 }
 
-async function fetchMessages() : Promise<Message[]> {
-	return axios.get('http://localhost:3000/api/chat/messages').then((res) => { return res.data });
-};
-
 async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
 	return axios.get(`http://localhost:3000/api/chat/messages/${id}`).then((res) => { return res.data });
 };
@@ -85,10 +81,6 @@ export default {
 		return fetchChannels();
 	},
 
-	getRawMessages() : Promise<any[]> {
-		return fetchMessages();
-	},
-
 	getStore() : Object {
 		return store;
 	},
@@ -106,12 +98,6 @@ export default {
 	setActiveChannel(channel: Channel) {
 		store.activeChannel = channel;
 		// localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString()); // Permet de stocker la dernier channel active dans le local storage
-	},
-
-	loadMessages() {
-		fetchMessages().then((messages) => {
-			store.messages = messages;
-		});
 	},
 
 	loadMessagesByChannel(idChannel: number) {

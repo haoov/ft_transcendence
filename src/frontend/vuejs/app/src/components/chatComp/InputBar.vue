@@ -8,6 +8,7 @@
 				class="input"
 				placeholder="messages"
 				v-model="input"
+				:disabled="!activeChannel"
 			>
 		</form>
 	</div>
@@ -76,7 +77,7 @@ const sendMessage = () => {
 
 .input:not(:disabled):focus {
   color : black;
-  background-color: white;
+  background-color: #cacaca;
   transform: scale(1.05);
   box-shadow: 13px 13px 100px #969696, -13px -13px 100px #ffffff;
 }
