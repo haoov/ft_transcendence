@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { Leaders } from './interfaces';
 import { HomeService } from './home.service';
 
@@ -9,5 +9,10 @@ export class HomeController {
 	@Get("/leaderboard")
 	getLeaderboard(): Promise<Leaders[]> {
 	  return this.homeService.getLeaderboard();
+	}
+
+	@Get("/rank/:username")
+	getUserRank(@Param('userrname') username :string): Promise<number> {
+		return this.homeService.getUserRank(username);
 	}
 }
