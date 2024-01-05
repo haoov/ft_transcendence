@@ -33,8 +33,8 @@ export class ChatService {
 	
 	//Permet de charger les messages d'une conversation
 	async getAllMessagesByChannel(channelId: number): Promise<MessageRaw []> {
-		const MessageList = await this.messagesRepository.findBy({ channelId: channelId }) as MessageRaw [];
-		return MessageList;
+		const messages = await this.messagesRepository.find({ where: { channelId: channelId }});
+		return messages as MessageRaw [];
 	}
 
 	//Permet de créer un message dans la base de données

@@ -4,7 +4,7 @@
 		<ChatCard></ChatCard>
 		<Modal v-if="store.isModalNewChannelFormOpen">
 			<Suspense>
-				<NewChannelForm></NewChannelForm>
+				<ChannelModal></ChannelModal>
 			</Suspense>
 		</Modal>
 	</div>
@@ -14,14 +14,13 @@
 
 import ChatCard from './ChatCard.vue';
 import Modal from './Modal.vue';
-import NewChannelForm from './NewChannelForm.vue';
+import ChannelModal from './ChannelModal.vue';
 import { Suspense, inject } from 'vue';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
 
 </script>
-
 
 <style scoped>
 .chat {

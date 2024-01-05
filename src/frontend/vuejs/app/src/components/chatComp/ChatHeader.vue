@@ -26,6 +26,7 @@ watch(activeChannel, () => {
   justify-content: center;
   background: transparent;
   border-bottom: 2px solid #fe019973;
+  box-sizing: border-box;
 }
 
 /*Need to change that */

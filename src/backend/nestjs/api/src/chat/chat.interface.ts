@@ -9,6 +9,7 @@ interface MessageRaw {
 	timestamp: string;
 }
 
+
 interface Channel {
 	id: number;
 	name: string;
@@ -16,6 +17,7 @@ interface Channel {
 	mode: 'public' | 'private' | 'protected' | 'secret';
 	password: string;
 	users: User [];
+	messages: MessageRaw [];
 }
 
 export { MessageRaw, Channel };

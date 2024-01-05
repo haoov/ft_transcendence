@@ -1,128 +1,101 @@
 <template>
-	<div class="new-channel-form-container">
+	<div class="join-channel-form-container">
 		<form class="form" @submit.prevent="submitForm">
 			<div class="form-group">
-				<label for="channelName">Channel Name :</label>
+				<label for="searchChannel">Search :</label>
 				<p v-if="nameError" style="color: red;">Name missing</p>
 				<input 
-					v-model="channelName"
-					name="channelName"
-					id="channelName"
+					v-model="search"
+					name="searchChannel"
+					id="searchChannel"
 					type="text"
 					autocomplete="off"
+					placeholder="Search"
 					:class="{ 'is-invalid': nameError }"
-					placeholder="Channel Name"
 				>
+				<ul v-show="searchResults.length">
+					<li v-for="result in searchResults" :key="result.name"> {{ result.name }}</li>
+				</ul>
 			</div>
-			<div class="form-group">
-				<label for="channelMode">Channel Mode :</label>
-				<div class="radio-inputs" id="channelMode">
-					<label
-						class="radio"
-						v-for="option in options"
-					>
-					<input
-						autocomplete="off"
-						type="radio"
-						v-model="selectedOption"
-						:value="option"
-						name="channelMode"
-					>
-					<span class="name">{{ option }}</span>
-					</label>
-				</div>
-				<SeachBar v-if="selectedOption !== 'Public'" :userIds="userIds"></SeachBar>
-				<div v-if="selectedOption === 'Protected'">
-					<label for="password">Password :</label>
-					<p v-if="passwordError" style="color: red;">Password missing</p>
-					<input 
-						v-model="password"
-						name="password"
-						id="password"
-						type="password"
-						placeholder="Password"
-						autocomplete="off"
-						:class="{ 'is-invalid': passwordError }"
-					>
-				</div>
+			<div v-if="channelMode === 'Protected'">
+				<label for="password">Password :</label>
+				<p v-if="passwordError" style="color: red;">Password missing</p>
+				<input 
+					v-model="password"
+					name="password"
+					id="password"
+					type="password"
+					placeholder="Password"
+					autocomplete="off"
+					:class="{ 'is-invalid': passwordError }"
+				>
 			</div>
 			<button 
 				type="submit" 
-				class="form-submit-btn"
+				class="form-join-btn"
 				:disabled="isSubmitDisabled"
-			>Submit</button>
+			>Join</button>
 		</form>
 	</div>
 </template>
 
 <script setup lang="ts">
-import SeachBar from './SearchBar.vue';
 import { ref, computed, inject } from 'vue';
 
-const selectedOption = ref('Public');
-const options = ['Public', 'Private', 'Protected', 'Secret'];
 const $data : any = inject('$data');
 const socket = $data.getSocket();
 const currentUser = await $data.getCurrentUser();
-const channelName = ref('');
+const channelList = await $data.getChannels();
+const channelMode = ref('');
+const channelToJoin = ref('');
 const password = ref('');
 const nameError = ref(false);
 const passwordError = ref(false);
-const userIds = ref<number[]>([]);
+
+const search = ref('');
+const searchResults = computed(() => {
+	if (search.value.length === 0) {
+		return [];
+	}
+	return channelList.value.filter((channel : any) => {
+		return channel.name.toLowerCase().includes(search.value.toLowerCase());
+	});
+});
 
 const isSubmitDisabled = computed(() => {
-  return !channelName.value || nameError.value || passwordError.value;
+  return !channelToJoin.value || nameError.value || passwordError.value;
 });
 
 const submitForm = () => {
-	userIds.value.push(currentUser.id);
-	if (!channelName.value) {
-		nameError.value = true;
-		return;
-	}
-	if (selectedOption.value === 'Protected' && !password.value) {
-		passwordError.value = true;
-		return;
-	}
-	const newChannel = {
-		name: channelName.value,
-		mode: selectedOption,
-		creatorId: currentUser.id,
-		password: password.value,
-		users: userIds.value,
-	};
-	nameError.value = false;
-	passwordError.value = false;
-	$data.closeModalNewChannelForm();
-	socket.emit('createNewChannel', newChannel);
+
 };
 
 </script>
 
 <style scoped>
 
-.new-channel-form-container {
+.join-channel-form-container {
   width: 100%;
   height: 100%;
 }
 
-.new-channel-form-container button:not(:disabled):active {
+.join-channel-form-container button:not(:disabled):active {
   scale: 0.95;
 }
 
-.new-channel-form-container .form {
+.join-channel-form-container .form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.new-channel-form-container .form-group {
+.join-channel-form-container .form-group {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.new-channel-form-container .form-group label {
+.join-channel-form-container .form-group label {
   display: block;
   margin-bottom: 5px;
   color: #717171;
@@ -130,7 +103,7 @@ const submitForm = () => {
   font-size: 12px;
 }
 
-.new-channel-form-container .form-group input {
+.join-channel-form-container .form-group input {
   width: 80%;
   padding: 3% 7%;
   border-radius: 8px;
@@ -140,16 +113,16 @@ const submitForm = () => {
   border: 1px solid #414141;
 }
 
-.new-channel-form-container .form-group input::placeholder {
+.join-channel-form-container .form-group input::placeholder {
   opacity: 0.5;
 }
 
-.new-channel-form-container .form-group input:focus {
+.join-channel-form-container .form-group input:focus {
   outline: none;
   border-color: #e81cff;
 }
 
-.new-channel-form-container .form-submit-btn {
+.join-channel-form-container .form-join-btn {
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -168,7 +141,7 @@ const submitForm = () => {
   border-radius: 6px;
 }
 
-.new-channel-form-container .form-submit-btn:not(:disabled):hover {
+.join-channel-form-container .form-join-btn:not(:disabled):hover {
   background-color: #fff;
   border-color: #fff;
 }

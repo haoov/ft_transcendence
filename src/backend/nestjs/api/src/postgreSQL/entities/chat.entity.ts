@@ -1,30 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany, ManyToOne } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { User } from 'src/user/user.interface';
 
 @Entity()
-export class MessageEntity {
-	@PrimaryGeneratedColumn()
-	id: number;
-
-	@Column()
-	senderId: number;
-
-	@Column()
-	channelId: number;
-
-	@Column()
-	text: string;
-
-	@Column()
-	datestamp: Date;
-
-	@Column()
-	timestamp: string;
-}
-
-@Entity()
-export class ChannelEntity {
+class ChannelEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
@@ -42,4 +21,34 @@ export class ChannelEntity {
 
 	@ManyToMany(() => UserEntity) @JoinTable()
 	users: User [];
+
+	@OneToMany(() => MessageEntity, message => message.channel)
+	messages: MessageEntity [];
 }
+
+@Entity()
+class MessageEntity {
+	@PrimaryGeneratedColumn()
+	id: number;
+
+	@Column()
+	senderId: number;
+
+	@Column()
+	channelId: number;
+
+	@Column()
+	text: string;
+
+	@Column()
+	datestamp: Date;
+
+	@Column()
+	timestamp: string;
+
+	@ManyToOne(() => ChannelEntity, channel => channel.messages)
+	channel: ChannelEntity;
+
+}
+
+export { MessageEntity, ChannelEntity };

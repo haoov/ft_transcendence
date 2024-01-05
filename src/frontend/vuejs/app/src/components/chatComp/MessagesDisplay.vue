@@ -44,7 +44,11 @@ const activeChannel = computed(() => store.activeChannel);
 const messages = computed(() => store.messages);
 
 watch(activeChannel, () => {
-	data.loadMessagesByChannel(activeChannel?.value.id);
+	if (activeChannel) {
+		data.loadMessagesByChannel(activeChannel.value.id);
+		return;
+	}
+	return [];
 });
 
 onMounted(() => {
@@ -68,6 +72,7 @@ socket.on("newMessage", (message : any) => {
   flex-direction: column;
   width: 100%;
   height: auto;
+  margin-top: 2px;
   overflow-x: hidden;
   overflow-y: auto;
 }
