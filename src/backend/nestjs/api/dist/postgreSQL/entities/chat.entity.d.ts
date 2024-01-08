@@ -3,7 +3,7 @@ declare class ChannelEntity {
     id: number;
     name: string;
     creatorId: number;
-    mode: 'public' | 'private' | 'protected' | 'secret';
+    mode: string;
     password: string;
     users: User[];
     messages: MessageEntity[];

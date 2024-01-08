@@ -9,12 +9,11 @@ interface MessageRaw {
 	timestamp: string;
 }
 
-
 interface Channel {
 	id: number;
 	name: string;
 	creatorId: number;
-	mode: 'public' | 'private' | 'protected' | 'secret';
+	mode: string;
 	password: string;
 	users: User [];
 	messages: MessageRaw [];

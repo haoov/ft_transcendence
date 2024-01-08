@@ -71,4 +71,16 @@ export class ChatGateway implements OnModuleInit {
 		}
 	}
 
+	@SubscribeMessage('joinChannel')
+	async onJoinChannel(@MessageBody() channel: any) {
+		const channelToJoin = await this.chatService.getChannelById(channel.id);
+		if (channelToJoin.mode === 'private' && channelToJoin.password !== channel.password) {
+			this.usersSocketList.get(channel.userId).emit('channelJoined', false);
+			return;
+		}
+		//need to add user into channel users
+		this.usersSocketList.get(channel.userId).emit('channelJoined', true);
+		this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
+	}
+
 }

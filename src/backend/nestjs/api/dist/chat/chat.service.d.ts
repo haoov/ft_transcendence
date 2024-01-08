@@ -12,5 +12,6 @@ export declare class ChatService {
     createMessage(message: MessageRaw): Promise<MessageRaw>;
     getAllChannels(): Promise<Channel[]>;
     getCurrentUserChannels(userId: number): Promise<Channel[]>;
+    getChannelById(channelId: number): Promise<Channel>;
     createChannel(channel: any): Promise<Channel>;
 }

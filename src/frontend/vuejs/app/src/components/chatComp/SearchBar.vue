@@ -1,10 +1,12 @@
 <template>
 	<div  class="form-group">
-			<label for="channelUsers">Add Users</label>
-			<p v-if="!userFound" style="color: red;">User not found</p>
-			<p v-if="userAlreadyAdded" style="color: red;">User already added</p>
+		<label for="channelUsers">Add Users</label>
+		<p v-if="!userFound" style="color: red;">User not found</p>
+		<p v-if="userAlreadyAdded" style="color: red;">User already added</p>
+		<div class="input-container">
+			<img class="search-icon" src="../../assets/images/search-alt-1-svgrepo-com.svg" alt="Search Icon">
 			<input
-				type="search"
+				type="text"
 				id="channelUsers"
 				placeholder="Search users"
 				autocomplete="off"
@@ -13,7 +15,9 @@
 				@keyup.enter="searchValue"
 				@keydown.enter.prevent
 				:class="{ 'is-invalid': inputVal.length > 0 && (!userFound || userAlreadyAdded)}"
-			>
+				>
+				<img v-if="inputVal" class="cancel-icon" src="../../assets/images/cross-svgrepo-com.svg" alt="Cancel Icon" @click=resetInputVal>
+		</div>
 		<div>
 			<ul>
 				<li
@@ -63,6 +67,12 @@ const userFound = ref(true);
 const userAlreadyAdded = ref(false);
 const userIds = props.userIds;
 
+const resetInputVal = () => {
+	inputVal.value = '';
+	userFound.value = true;
+	userAlreadyAdded.value = false;
+};
+
 const searchValue = () => {
 	for (const user of usersList) {
 		if (myUSer.username !== user.username && user.username === inputVal.value) {
@@ -78,9 +88,6 @@ const searchValue = () => {
 			userAlreadyAdded.value = false;
 			return ;
 		}
-		// if (user.username === inputVal.value) {
-		// 	listUsersToAdd.value.push(user);
-		// }
 	}
 	userAlreadyAdded.value = false;
 	userFound.value = false;
@@ -155,4 +162,22 @@ li {
   cursor: pointer;
 }
 
+.input-container {
+    position: relative;
+}
+
+.search-icon, .cancel-icon {
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+}
+
+.search-icon {
+    left: 7px;
+}
+
+.cancel-icon {
+    right: 25px;
+	cursor: pointer;
+}
 </style>

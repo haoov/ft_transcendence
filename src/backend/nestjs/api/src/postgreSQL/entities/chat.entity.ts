@@ -14,7 +14,7 @@ class ChannelEntity {
 	creatorId: number;
 
 	@Column()
-	mode: 'public' | 'private' | 'protected' | 'secret';
+	mode: string;
 
 	@Column({ nullable: true}) 
 	password: string;

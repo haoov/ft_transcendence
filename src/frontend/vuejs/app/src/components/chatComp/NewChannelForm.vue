@@ -31,7 +31,7 @@
 					<span class="name">{{ option }}</span>
 					</label>
 				</div>
-				<SeachBar v-if="selectedOption !== 'Public'" :userIds="userIds"></SeachBar>
+				<SeachBar :userIds="userIds"></SeachBar>
 				<div v-if="selectedOption === 'Protected'">
 					<label for="password">Password :</label>
 					<p v-if="passwordError" style="color: red;">Password missing</p>
@@ -86,7 +86,7 @@ const submitForm = () => {
 	}
 	const newChannel = {
 		name: channelName.value,
-		mode: selectedOption,
+		mode: selectedOption.value,
 		creatorId: currentUser.id,
 		password: password.value,
 		users: userIds.value,
