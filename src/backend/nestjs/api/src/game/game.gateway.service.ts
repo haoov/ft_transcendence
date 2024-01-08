@@ -89,7 +89,13 @@ export class GameGatewayService {
 
 	async finishGame(room: Room, rooms: Room[], server: Server) {
 		// Emit finish event
-		server.to(room.getName()).emit(ServerEvents.finished);
+		server.to(room.getName()).emit(ServerEvents.finished, room.getWinnerUsername());
+
+		// Reset status for user
+		room.getSockets().forEach(async (socket) => {
+			await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
+			this.resetSocket(socket);
+		});
 		
 		// Add game in database
 		if (room.getGame().getMode() == "multiPlayer") {
@@ -104,12 +110,6 @@ export class GameGatewayService {
 			});
 			console.log("game added to db");
 		}
-
-		// Reset status for user
-		room.getSockets().forEach(async (socket) => {
-			await this.userService.updateUserStatus(socket.data.user, UserStatus.undefined);
-			this.resetSocket(socket);
-		});
 
 		// Delete room
 		rooms.splice(rooms.indexOf(room), 1);
@@ -149,8 +149,12 @@ export class GameGatewayService {
 			this.finishGame(room, rooms, server)
 		}
 		else if (client.data.user && client.data.user.status === UserStatus.waiting) {
-			waiting.length = 0;
-			await this.userService.updateUserStatus(client.data.user, UserStatus.undefined);
+			if (waiting.length == 1) {
+				waiting.length = 0;
+				await this.userService.updateUserStatus(client.data.user, UserStatus.undefined);
+			}
+			else
+				waiting.splice(waiting.indexOf(client), 1);
 			this.resetSocket(client);
 		}
 	}

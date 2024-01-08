@@ -13,8 +13,9 @@ const displayMenu = ref(true);
 const displayScore = ref(false);
 const map = ref("random");
 const difficulty = ref("");
-const p1 = ref({username: "", avatar: "", score: 0});
-const p2 = ref({username: "", avatar: "", score: 0});
+const p1 = ref({username: "Player1", avatar: "", score: 0});
+const p2 = ref({username: "Player2", avatar: "", score: 0});
+const winner = ref("");
 const initParams = (await axios.get("http://localhost:3000/api/game/params")).data;
 const socket: Socket = io("http://localhost:3000/game");
 
@@ -24,16 +25,23 @@ function assignMode(gameParams: {game: string, mode: string, difficulty: string,
 	socket.emit("gameParams", gameParams);
 }
 
+function stopWait() {
+	socket.emit("stop_wait");
+	state.value = "";
+}
+
 await axios.get("http://localhost:3000/api/user/me").then((response) => {
 		socket.emit(ClientEvents.connected, response.data);
 });
 
 socket.on(ServerEvents.waiting, () => {
-	state.value = "Waiting for a game";
+	state.value = "waiting";
 });
 
-socket.on(ServerEvents.finished, () => {
-	state.value = "Finished";
+socket.on(ServerEvents.finished, (winnerUsername) => {
+	state.value = "finished";
+	displayMenu.value = true;
+	winner.value = winnerUsername;
 });
 
 socket.on("room", (p1User, p2User?) => {
@@ -47,7 +55,6 @@ socket.on("room", (p1User, p2User?) => {
 	else {
 		p2.value.username = "Computer" + ": " + difficulty.value;
 	}
-	displayScore.value = true;
 });
 
 onMounted(() => {
@@ -85,10 +92,11 @@ onMounted(() => {
 </script>
 
 <template>
+	<score :p1="p1" :p2="p2"></score>
 	<div id="game">
-		<gameMenu v-if="displayMenu == true" v-on:click="assignMode" :state="state"></gameMenu>
+		<gameMenu v-if="displayMenu == true" v-on:click="assignMode" v-on:stopWaiting="stopWait" :state="state" :winner="winner"></gameMenu>
 	</div>
-	<score v-if="displayScore == true" :p1="p1" :p2="p2"></score>
+	<div class="ball-effect"></div>
 
 	<video
 		id="video"
@@ -105,28 +113,24 @@ onMounted(() => {
 </template>
 
 <style>
+	canvas {
+		border: 1px solid;
+		border-radius: 1rem;
+	}
+
 	#game {
 		display: flex;
 		width: 720px;
 		height: 480px;
-		background: linear-gradient(var(--c-black), var(--c-black)) padding-box,
-								linear-gradient(145deg, transparent 35%, var(--c-pink), var(--c-blue-light)) border-box;
-		border: 2px solid transparent;
-		background-size: 200% 100%;
-		animation: gradient 10s ease infinite;
 	}
 
-	@keyframes gradient {
-		0% {
-			background-position: 0% 50%;
-		}
-
-		50% {
-			background-position: 100% 50%;
-		}
-
-		100% {
-			background-position: 0% 50%;
-		}
+	.ball-effect {
+		width: 700px;
+		height: 50px;
+		border-radius: 5rem;
+		background: linear-gradient(145deg, var(--c-grey), transparent 35%);
+		background-size: 200% 100%;
+		padding: 0px 10px 0px 10px;
+		margin-top: 2px;
 	}
 </style>

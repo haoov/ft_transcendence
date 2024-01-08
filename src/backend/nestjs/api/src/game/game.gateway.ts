@@ -66,8 +66,9 @@ export class GameGateway
 		if (room) {
 			let update = room.getGame().update();
 			this.server.to(room.getName()).emit("updated", update);
-			if (update.finished && client.data.game === "classic")
+			if (update.finished && client.data.game === "classic") {
 				this.gameGtwService.finishGame(room, this.classic_rooms, this.server);
+			}
 			else if (update.finished && client.data.game === "super")
 				this.gameGtwService.finishGame(room, this.super_rooms, this.server);
 		}
@@ -83,12 +84,14 @@ export class GameGateway
 
 	@SubscribeMessage('stop_wait')
 	async stopWaiting(client: Socket) {
-		if (client.data.game === "classic")
+		if (client.data.game === "classic") {
+			this.classic_waiting.forEach((socket) => { this.gameGtwService.resetSocket(socket)});
 			this.classic_waiting.length = 0;
-		else if (client.data.game === "super")
+		}
+		else if (client.data.game === "super") {
+			this.super_waiting.forEach((socket) => { this.gameGtwService.resetSocket(socket)});
 			this.super_waiting.length = 0;
+		}
 		await this.userService.updateUserStatus(client.data.user, UserStatus.undefined);
-		this.gameGtwService.resetSocket(client);
-
 	}
 }
