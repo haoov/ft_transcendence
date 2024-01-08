@@ -7,13 +7,14 @@
 <div class="score-container">
 		<div class="score-div p2">
 			<span class="score p2">{{ p2.score }}</span>
-			<img class="avatar">
+			<img v-if="p2.avatar" class="avatar" :src="p2.avatar">
+			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
 			<span class="username">{{ p2.username }}</span>
 		</div>
-		<span>VS</span>
 		<div class="score-div p1">
 			<span class="username">{{ p1.username }}</span>
-			<img class="avatar" :src="p1.avatar">
+			<img v-if="p1.avatar" class="avatar" :src="p1.avatar">
+			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
 			<span class="score p1">{{ p1.score }}</span>
 		</div>
 	</div>
@@ -23,7 +24,12 @@
 <style scoped>
 	.score-container {
 		display: flex;
-		width: 720px;
+		width: 700px;
+		border-radius: 5rem;
+		background: padding-box,
+								linear-gradient(145deg, transparent 15%, var(--c-grey),transparent);
+		background-size: 200% 100%;
+		padding: 0px 10px 0px 10px;
 		margin-top: 20px;
 		justify-content: space-between;
 		align-items: center;

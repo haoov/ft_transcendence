@@ -3,8 +3,9 @@
 	import { ref, computed } from "vue";
 	import loader from "@/components/loader.vue"
 	import selector from "@/components/selector.vue"
+import router from "@/router";
 
-	defineProps(["state"]);
+	defineProps(["state", "winner"]);
 
 	const games: string[] = ["classic", "super"];
 	const difficulties: string[] = ["easy", "medium", "hard"];
@@ -21,12 +22,9 @@
 						|| (selectedMode.value == "singlePlayer" && (!selectedDifficulty.value || !selectedMap.value));
 	});
 
-	const emit = defineEmits(['click']);
-
-	let playClick = ref(false);
+	const emit = defineEmits(['click', 'stopWaiting']);
 
 	function play() {
-		playClick.value = true;
 		emit("click", {
 			game: selectedGame.value,
 			mode: selectedMode.value,
@@ -34,12 +32,24 @@
 			map: selectedMap.value});
 	}
 
+	function reloadMenu() {
+		window.location.reload();
+	}
+
+	function stopWaiting() {
+		emit("stopWaiting");
+		selectedGame.value = "";
+		selectedMap.value = "classic";
+		selectedMode.value = "";
+		selectedDifficulty.value = "";
+	}
+
 </script>
 
 <template>
 
 	<div class="menu">
-		<div v-if="playClick == false" class="menu-box">
+		<div v-if="!state" class="menu-box">
 			<selector
 				:label="'Game'"
 				:values="games"
@@ -62,10 +72,15 @@
 				:values="maps"
 				@select="(value) => {selectedMap = value}"
 			></selector>
-			<button id="playButton" type="submit" :disabled="isDisabled" v-on:click="play">Play</button>
+			<button class="custumButton" id="play" type="submit" :disabled="isDisabled" v-on:click="play">Play</button>
+		</div>
+		<div v-else-if="state != 'finished'" class="menu-box">
+			<loader :text="state"></loader>
+			<button v-if="state == 'waiting'" class="custumButton" id="stopWaiting" v-on:click="stopWaiting">Stop waiting</button>
 		</div>
 		<div v-else class="menu-box">
-			<loader :text="state"></loader>
+			<span>{{ winner }} won!</span>
+			<button class="custumButton" id="reset" v-on:click="reloadMenu()">New game</button>
 		</div>
 	</div>
 
@@ -77,7 +92,10 @@
 		position: absolute;
 		width: 720px;
 		height: 480px;
-		background: var(--c-black);
+		margin: 1px;
+		background: transparent;
+		backdrop-filter: blur(3px);
+		border-radius: 1rem;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -85,26 +103,44 @@
 	}
 
 	.menu-box {
-		text-align: center;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
 		border: 1px solid var(--c-white);
 		border-radius: 0.5rem;
-		padding: 10px;
+		padding: 15px;
 		background-color: var(--c-black-light);
 	}
 
-	#playButton {
+	.custumButton {
 		width: 100px;
-		margin-top: 50px;
 		border-radius: 0.5rem;
 		border: none;
 		padding: .5rem;
-		background-color: var(--c-grey);
 		cursor: pointer;
+		font-size: medium;
 	}
 
-	#playButton:not(:disabled) {
+	#play {
+		margin-top: 50px;
+		background-color: var(--c-grey);
+	}
+
+	#play:not(:disabled) {
 		background-color: var(--c-pink);
 		font-size: medium;
+	}
+
+	#reset {
+		margin-top: 20px;
+		background-color: var(--c-pink);
+	}
+
+	#stopWaiting {
+		width: auto;
+		margin-top: 20px;
+		background-color: var(--c-pink);
 	}
 
 </style>

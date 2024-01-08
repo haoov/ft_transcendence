@@ -7,7 +7,9 @@ import { selectedParams } from "../interfaces/selectedParams";
 export class Room {
 	private name: string;
 	private p1_id: number;
+	private p1_username: string;
 	private p2_id: number;
+	private p2_username: string;
 	private sockets: Socket[];
 	public game: Pong;
 
@@ -15,7 +17,9 @@ export class Room {
 		this.sockets = [];
 		this.name = name;
 		this.p1_id = p1[0].data.user.id;
-		this.p2_id = (p2 ? p2.data.user.id : "computer");
+		this.p2_id = (p2 ? p2.data.user.id : 0);
+		this.p1_username = p1[0].data.user.username;
+		this.p2_username = (p2 ? p2.data.user.username : "computer");
 
 		// Update the socket infos
 		p1.forEach(socket => socket.data.room = name);
@@ -85,18 +89,25 @@ export class Room {
             return this.p2_id;
     }
 
+	getWinnerUsername() : string {
+		if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
+			return this.p1_username;
+		else
+			return this.p2_username;
+	}
+
 	getWinnerScore() : number {
-        if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
+    if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
 			return this.game.getPlayers()[0].score
-        else
+    else
 			return this.game.getPlayers()[1].score
 	}
 
 	getLoserScore() : number {
-        if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
-			return this.game.getPlayers()[1].score
-        else
-			return this.game.getPlayers()[0].score
+  	if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
+			return this.game.getPlayers()[1].score;
+  	else
+			return this.game.getPlayers()[0].score;
 	}
 
 	addSocket(socket: Socket): void {
