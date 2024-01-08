@@ -58,6 +58,11 @@ export class ChatService {
         .getMany();
 	}
 
+	//Permet de fetch un channel par son id
+	async getChannelById(channelId: number): Promise<Channel> {
+		return await this.channelRepository.findOne({ where: { id: channelId }});
+	}
+
 	//Permet de créer un channel dans la base de données
 	async createChannel(channel: any): Promise<Channel> {
 		const users : User [] = [];

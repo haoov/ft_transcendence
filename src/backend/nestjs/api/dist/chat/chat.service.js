@@ -53,6 +53,9 @@ let ChatService = class ChatService {
             .innerJoinAndSelect("channel.users", "user", "user.id = :userId", { userId })
             .getMany();
     }
+    async getChannelById(channelId) {
+        return await this.channelRepository.findOne({ where: { id: channelId } });
+    }
     async createChannel(channel) {
         const users = [];
         for (const idUser of channel.users) {

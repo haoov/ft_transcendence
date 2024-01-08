@@ -43,7 +43,10 @@ const switchForm = (option: string) => {
   background: linear-gradient(#212121, #212121) padding-box,
               linear-gradient(145deg, transparent 35%,#e81cff, #40c9ff) border-box;
   border: 2px solid transparent;
-  padding: 32px 24px;
+  padding-top: 32px;
+  padding-right: 24px;
+  padding-bottom: 32px;
+  padding-left: 28px;
   font-size: 14px;
   font-family: inherit;
   color: white;

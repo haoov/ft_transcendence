@@ -63,6 +63,15 @@ let ChatGateway = class ChatGateway {
             this.usersSocketList.get(userId).emit('newChannelCreated', newChannelCreated);
         }
     }
+    async onJoinChannel(channel) {
+        const channelToJoin = await this.chatService.getChannelById(channel.id);
+        if (channelToJoin.mode === 'private' && channelToJoin.password !== channel.password) {
+            this.usersSocketList.get(channel.userId).emit('channelJoined', false);
+            return;
+        }
+        this.usersSocketList.get(channel.userId).emit('channelJoined', true);
+        this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
+    }
 };
 exports.ChatGateway = ChatGateway;
 __decorate([
@@ -83,6 +92,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ChatGateway.prototype, "onNewChannel", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('joinChannel'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "onJoinChannel", null);
 exports.ChatGateway = ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(),
     __metadata("design:paramtypes", [chat_service_1.ChatService,

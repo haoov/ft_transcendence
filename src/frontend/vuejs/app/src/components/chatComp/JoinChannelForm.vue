@@ -3,24 +3,35 @@
 		<form class="form" @submit.prevent="submitForm">
 			<div class="form-group">
 				<label for="searchChannel">Search :</label>
-				<p v-if="nameError" style="color: red;">Name missing</p>
-				<input 
+				<div class="input-container">
+				<img class="search-icon" src="../../assets/images/search-alt-1-svgrepo-com.svg" alt="Search Icon">
+					<input 
 					v-model="search"
 					name="searchChannel"
 					id="searchChannel"
 					type="text"
 					autocomplete="off"
 					placeholder="Search"
-					:class="{ 'is-invalid': nameError }"
-				>
-				<ul v-show="searchResults.length">
-					<li v-for="result in searchResults" :key="result.name"> {{ result.name }}</li>
+					>
+					<img v-if="search" class="cancel-icon" src="../../assets/images/cross-svgrepo-com.svg" alt="Cancel Icon" @click=resetChannelToJoin>
+				</div>
+				<ul>
+					<li
+						v-for="result in searchResults"
+						:key="result.name"
+						@click="setSelectedResult(result)"
+						id = "searchResult"
+						:class="{'is-selected': result?.id === channelToJoin?.id }"
+					>
+						{{ result.name }}
+						<span v-if="result.mode === 'Protected'"> <img src="../../assets/images/lock-svgrepo-com.svg" alt="Lock Icon"> #{{ result.id }}</span>
+  						<span v-else>#{{ result.id }}</span>
+					</li>
 				</ul>
-			</div>
-			<div v-if="channelMode === 'Protected'">
-				<label for="password">Password :</label>
-				<p v-if="passwordError" style="color: red;">Password missing</p>
-				<input 
+				<div v-if="channelToJoin?.mode === 'Protected'">
+					<label for="password">Password :</label>
+					<p v-if="passwordError" style="color: red;">Password missing</p>
+					<input 
 					v-model="password"
 					name="password"
 					id="password"
@@ -28,7 +39,8 @@
 					placeholder="Password"
 					autocomplete="off"
 					:class="{ 'is-invalid': passwordError }"
-				>
+					>
+				</div>
 			</div>
 			<button 
 				type="submit" 
@@ -42,33 +54,75 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue';
 
+interface Channel {
+  creatorId: string;
+  id: string;
+  name: string;
+  mode: string;
+  password: string;
+}
+
 const $data : any = inject('$data');
 const socket = $data.getSocket();
 const currentUser = await $data.getCurrentUser();
 const channelList = await $data.getChannels();
-const channelMode = ref('');
-const channelToJoin = ref('');
+const channelToJoin = ref<Channel>();
 const password = ref('');
-const nameError = ref(false);
 const passwordError = ref(false);
 
 const search = ref('');
 const searchResults = computed(() => {
-	if (search.value.length === 0) {
-		return [];
-	}
-	return channelList.value.filter((channel : any) => {
-		return channel.name.toLowerCase().includes(search.value.toLowerCase());
-	});
+    if (channelToJoin.value) {
+        return [channelToJoin.value];
+    } else if (search.value.length === 0) {
+        return [] as Channel [];
+    } else {
+        return channelList.filter((channel: Channel) => {
+            return channel.name.toLowerCase().includes(search.value.toLowerCase());
+        });
+    }
 });
 
 const isSubmitDisabled = computed(() => {
-  return !channelToJoin.value || nameError.value || passwordError.value;
+  return !channelToJoin.value || 
+	(channelToJoin?.value.mode === 'Protected' && !password) || 
+	passwordError.value;
 });
 
+const setSelectedResult = (channel: Channel) => {
+	channelToJoin.value = channel;
+	search.value = channelToJoin.value.name;
+}
+
+const resetChannelToJoin = () => {
+	channelToJoin.value = undefined;
+	search.value = '';
+}
+
 const submitForm = () => {
+	if (!channelToJoin.value) {
+		return;
+	}
+	if (channelToJoin.value.mode === 'Protected' && password.value.length === 0) {
+		passwordError.value = true;
+		return;
+	}
+	socket.emit('joinChannel', {
+		channelId: channelToJoin.value.id,
+		password: password.value,
+		userId: currentUser.id,
+	});
 
 };
+
+socket.on('channelJoined', (ret : boolean) => {
+	if (ret) {
+		$data.closeModalNewChannelForm();
+		passwordError.value = false;
+	} else {
+		passwordError.value = true;
+	}
+});
 
 </script>
 
@@ -188,4 +242,82 @@ const submitForm = () => {
   border-color: #ff0000;
 }
 
+ul {
+  list-style: none;
+  padding: 0;
+  padding-right: 10px;
+  margin: 0;
+  width: 100%;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+ul::-webkit-scrollbar {
+  width: 6px;
+}
+
+ul::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 8px;
+}
+
+ul::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+ul::-webkit-scrollbar-thumb:hover,
+ul::-webkit-scrollbar-thumb:active {
+  background-color: #e81cff;
+  box-shadow:0 0 6px #e81cff;
+}
+
+ul::-webkit-scrollbar-track:hover,
+ul::-webkit-scrollbar-track:active {
+  background-color: transparent;
+}
+
+#searchResult {
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  width: 91%;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: #313131;
+  color: #fff;
+  margin: 5px 0;
+}
+
+#searchResult:hover {
+  background-color: #fff;
+  color: #313131;
+}
+
+.is-selected {
+  border: solid 0.5px #e81cff;
+}
+
+span {
+  color: #717171;
+}
+
+.input-container {
+    position: relative;
+}
+
+.search-icon, .cancel-icon {
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+}
+
+.search-icon {
+    left: 7px;
+}
+
+.cancel-icon {
+    right: 25px;
+	cursor: pointer;
+}
 </style>
