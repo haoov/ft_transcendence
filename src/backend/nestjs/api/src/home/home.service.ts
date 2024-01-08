@@ -46,8 +46,11 @@ export class HomeService {
 		// Map as UserStat type
 		const userStats = usersWithGames.map((user) => {
 			// Filter won games
+			console.log("for user " + user.username + ", id: " + user.id);
 			const wonGames = user.games.filter(
-			(game) => game.winner && game.winner.id === user.id
+			(game) => {
+				// A CREUSER
+				return game.winner && game.winner.id === user.id}
 			);
 
 			// Calculate win rate
