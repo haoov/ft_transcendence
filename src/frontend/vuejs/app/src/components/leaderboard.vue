@@ -49,6 +49,13 @@ function  getMyAvatarSrc() : string | undefined {
   return me.value?.avatar;
 }
 
+function getPieProportions() : string {
+  let loses: number = 0;
+  if (myStats.value)
+    loses = 100 - myStats.value.win_rate; 
+  return myStats.value?.win_rate.toString() + " " + loses.toString();
+}
+
   onMounted(() => {
     fetchMyStats();
     fetchLeaderboard();
@@ -79,10 +86,22 @@ function  getMyAvatarSrc() : string | undefined {
       <div class="c-card">
         <div class="c-card__body">
           <div class="u-display--flex u-justify--space-between">
-            <div id="donut">
-              <div class="donut-cat donut-cat-wins"></div>
-              <div class="donut-cat donut-cat-defeats"></div>
-              <div class="donut-text">Games: <span class="donut-total">0</span></div>
+            <div class="svg-pie">
+              <svg width="100%" height="100%" viewBox="0 0 40 40" class="donut">
+                <!-- <circle class="donut-hole" cx="20" cy="20" r="15.91549430918954" fill="#fff"></circle> -->
+                <circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
+                <circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
+                        stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"
+                        :style="{ animation: 'donut 1s', '--end-dash': getPieProportions()}"></circle>
+                <g class="donut-text">
+                  <text y="50%" transform="translate(0, 2)">
+                    <tspan x="50%" text-anchor="middle" class="donut-percent">{{ myStats?.win_rate}}%</tspan>   
+                  </text>
+                  <text y="60%" transform="translate(0, 2)">
+                    <tspan x="50%" text-anchor="middle" class="donut-data">{{ myStats?.wins}} wins</tspan>   
+                  </text>
+                </g>
+              </svg>
             </div>
           </div>
         </div>
@@ -216,60 +235,95 @@ button, select {
   cursor: pointer;
 }
 
-
-#donut-chart {
-    /* background: #000; */
-    display: block;
-    width: 130px;
-    height: 130px;
-    /* position: fixed; */
-    top: 50%;
-    /* left: 50%; */
-    /* transform: translate(-50%,-50%); */
-    border: 35px solid var(--c-pink);
-    display: flex;
-    border-radius: 100%;
+.svg-pie {
+    width: 100%;
+    font-size: 16px;
+    margin: 0 auto;
+    animation: donutfade 1s;
 }
 
-#donut {
-  position: relative;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background-color: conic-gradient(black);
+@keyframes donutfade {
+  /* this applies to the whole svg item wrapper */
+    0% {
+        opacity: .2;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
-.donut-cat {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  clip: rect(0, 200px, 200px, 100px);
+@media (min-width: 992px) {
+    .svg-pie {
+        width: 80%;
+    }
 }
 
-.donut-cat-wins {
-  border: 35px solid var(--c-pink);
-  transform: rotate(90deg);
+.donut-ring {
+    stroke: #EBEBEB;
 }
 
-.donut-cat-defeats {
-  border: 20px solid #36a2eb;
-  transform: rotate(270deg);
+.donut-segment {
+    transform-origin: center;
+    stroke: #ed1e79;
+    animation: donut 1s;
+}
+
+.segment-1{fill:#ed1e79;}
+
+.donut-percent {
+    animation: donutfadelong 1s;
+}
+
+@keyframes donutfadelong {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes donut {
+    0% {
+        stroke-dasharray: 0, 100;
+    }
+    100% {
+        stroke-dasharray: var(--end-dash);
+    }
 }
 
 .donut-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  font-family: Arial, sans-serif;
-  font-size: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    fill: #ed1e79;
 }
 
-.donut-total {
-  font-weight: bold;
+.donut-label {
+    font-size: 0.28em;
+    font-weight: 700;
+    line-height: 1;
+    fill: #000;
+    transform: translateY(0.25em);
 }
+
+.donut-percent {
+    font-size: 0.5em;
+    line-height: 1;
+    transform: translateY(0.5em);
+    font-weight: bold;
+}
+
+.donut-data {
+    font-size: 0.12em;
+    line-height: 1;
+    transform: translateY(0.5em);
+    text-align: center;
+    text-anchor: middle;
+    color:#666;
+    fill: #666;
+    animation: donutfadelong 1s;
+}
+
+
 
 .l-wrapper {
   width: 100%;
