@@ -24,7 +24,6 @@ export class GameGatewayService {
 				super_w: Socket[],
 				server:Server) {
 		client.data.game = params.game;
-		console.log(params)
 		if (params.game === "classic")
 			this.manageUserGame(client, classic_r, classic_w, server);
 		else if (params.game === "super")
@@ -100,7 +99,6 @@ export class GameGatewayService {
 			winner_score: room.getWinnerScore(),
 			loser_score: room.getLoserScore(),
 		});
-		console.log("game added to db");
 
 		// Delete room
 		rooms.splice(rooms.indexOf(room), 1);
