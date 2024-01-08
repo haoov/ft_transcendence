@@ -8,14 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
-const user_module_1 = require("../user/user.module");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
-const auth_sessionSerializer_1 = require("./auth.sessionSerializer");
-const auth_42strategy_1 = require("./auth.42strategy");
-const passport_1 = require("@nestjs/passport");
 const typeorm_1 = require("@nestjs/typeorm");
+const user_module_1 = require("../user/user.module");
 const user_entity_1 = require("../postgreSQL/entities/user.entity");
+const jwt_1 = require("@nestjs/jwt");
+const passport_1 = require("@nestjs/passport");
+const auth_42strategy_1 = require("./stategies/auth.42strategy");
+const auth_jwtstrategy_1 = require("./stategies/auth.jwtstrategy");
+const auth_sessionSerializer_1 = require("./auth.sessionSerializer");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -24,10 +26,14 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [
             user_module_1.UserModule,
             passport_1.PassportModule.register({ session: true }),
-            typeorm_1.TypeOrmModule.forFeature([user_entity_1.UserEntity])
+            typeorm_1.TypeOrmModule.forFeature([user_entity_1.UserEntity]),
+            jwt_1.JwtModule.register({
+                secret: 'secret',
+                signOptions: { expiresIn: '1d' },
+            })
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, auth_42strategy_1.Auth42Strategy, auth_sessionSerializer_1.SessionSerializer]
+        providers: [auth_service_1.AuthService, auth_42strategy_1.Auth42Strategy, auth_jwtstrategy_1.Jwt2faStrategy, auth_sessionSerializer_1.SessionSerializer]
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

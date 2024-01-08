@@ -12,19 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const user_service_1 = require("../user/user.service");
-const axios_1 = require("axios");
-const nodemailer = require("nodemailer");
-const transporter = nodemailer.createTransport({
-    host: "smtp.eu.mailgun.org",
-    port: 587,
-    auth: {
-        user: "postmaster@42.hololive.fr",
-        pass: "97b8427ee2308cff00119feb5f389b51-07f37fca-d3cbaaab",
-    },
-});
+const otplib_1 = require("otplib");
+const qrcode_1 = require("qrcode");
+const jwt_1 = require("@nestjs/jwt");
 let AuthService = class AuthService {
-    constructor(userService) {
+    constructor(userService, jwtService) {
         this.userService = userService;
+        this.jwtService = jwtService;
     }
     async validateUser(dto) {
         const user = await this.userService.getUser(dto.email);
@@ -37,53 +31,55 @@ let AuthService = class AuthService {
             throw new common_1.ForbiddenException("No code provided");
         res.status(302).redirect("/");
     }
+    async login(user) {
+        const payload = {
+            email: user.email
+        };
+        return {
+            email: payload.email,
+            access_token: this.jwtService.sign(payload)
+        };
+    }
     logout(req, res) {
         req.session.destroy(() => {
             res.clearCookie("connect.sid");
             res.status(302).redirect("/login");
         });
     }
-    async getRandomCode() {
-        const opts = {
-            "jsonrpc": "2.0",
-            "method": "generateStrings",
-            "params": {
-                "apiKey": "",
-                "n": 8,
-                "length": 6,
-                "characters": "0123456789",
-                "replacement": true
-            },
-            "id": 42
-        };
-        try {
-            const res = await axios_1.default.post("https://api.random.org/json-rpc/4/invoke", opts);
-            return res.data.result.random.data[0];
-        }
-        catch (err) {
-            throw err;
-        }
+    async get2faQRcode(otpAuthUrl) {
+        return (0, qrcode_1.toDataURL)(otpAuthUrl);
     }
-    async sendEmail(email) {
-        try {
-            const code = await this.getRandomCode();
-            await this.userService.add2FACode(email, code);
-            const info = await transporter.sendMail({
-                from: '"Transcendence Authentification Process" <2fa@42.hololive.fr>',
-                to: "jopadova@student.42.fr ",
-                subject: `${code} is your login passcode`,
-                text: `${code} is your login passcode`,
-                html: `<b>${code} is your login passcode</b>`,
-            });
-        }
-        catch (err) {
-            throw err;
-        }
+    async get2faCode(user) {
+        const secret = otplib_1.authenticator.generateSecret();
+        const optAuthUrl = otplib_1.authenticator.keyuri(user.email, process.env.otpURL, secret);
+        await this.userService.set2faSecret(secret, user.email);
+        return {
+            secret,
+            optAuthUrl
+        };
+    }
+    is2faValid(code, user) {
+        return otplib_1.authenticator.verify({
+            token: code,
+            secret: user.twofa_secret,
+        });
+    }
+    async loginWith2fa(user) {
+        const payload = {
+            email: user.email,
+            is_2fa_enabled: !!user.twofa_enabled,
+            is_2fa_auth: true,
+        };
+        return {
+            email: payload.email,
+            access_token: this.jwtService.sign(payload),
+        };
     }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [user_service_1.UserService])
+    __metadata("design:paramtypes", [user_service_1.UserService,
+        jwt_1.JwtService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

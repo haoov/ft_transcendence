@@ -17,13 +17,15 @@ const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const auth_Intra42Guard_1 = require("./guards/auth.Intra42Guard");
 const auth_AuthentificatedGuard_1 = require("./guards/auth.AuthentificatedGuard");
+const user_service_1 = require("../user/user.service");
 let AuthController = class AuthController {
-    constructor(authService) {
+    constructor(authService, userService) {
         this.authService = authService;
+        this.userService = userService;
     }
     checkAuth() { }
-    async login(response) {
-        return response;
+    async login(res) {
+        return res;
     }
     async redirect(code, res) {
         this.authService.redirect(code, res);
@@ -31,12 +33,30 @@ let AuthController = class AuthController {
     async get2FA(response) {
         return response;
     }
+    async swithOn2fa(req, body) {
+        const user = req.user;
+        console.log(body);
+        const isCodeValid = this.authService.is2faValid(body.twofaCode, user);
+        if (!isCodeValid)
+            throw new common_1.UnauthorizedException('Wrong Auth Code');
+        await this.userService.set2faMode(user.email, true);
+    }
+    async generateQRCode(req) {
+        const user = req.user;
+        return this.authService.get2faQRcode(user.twofa_secret);
+    }
+    async authentificate(req, body) {
+        const user = req.user;
+        const isCodeValid = this.authService.is2faValid(body.twofaCode, user);
+        if (!isCodeValid)
+            throw new common_1.UnauthorizedException('Wrong Auth Code');
+        return this.authService.loginWith2fa(user.email);
+    }
     logout(req, res) {
         this.authService.logout(req, res);
     }
     async random(req) {
         const user = req.user;
-        await this.authService.sendEmail(user.email);
         return { 'message': `email sent to ${user.email}` };
     }
 };
@@ -74,6 +94,32 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "get2FA", null);
 __decorate([
+    (0, common_1.Post)('2fa/turn-on'),
+    (0, common_1.UseGuards)(auth_AuthentificatedGuard_1.AuthentificatedGuard),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "swithOn2fa", null);
+__decorate([
+    (0, common_1.Get)('2fa/generate'),
+    (0, common_1.UseGuards)(auth_AuthentificatedGuard_1.AuthentificatedGuard),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "generateQRCode", null);
+__decorate([
+    (0, common_1.Post)('2fa/authentificated'),
+    (0, common_1.UseGuards)(auth_AuthentificatedGuard_1.AuthentificatedGuard),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "authentificate", null);
+__decorate([
     (0, common_1.Get)("logout"),
     (0, common_1.UseGuards)(auth_AuthentificatedGuard_1.AuthentificatedGuard),
     __param(0, (0, common_1.Req)()),
@@ -92,6 +138,7 @@ __decorate([
 ], AuthController.prototype, "random", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)("auth"),
-    __metadata("design:paramtypes", [auth_service_1.AuthService])
+    __metadata("design:paramtypes", [auth_service_1.AuthService,
+        user_service_1.UserService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

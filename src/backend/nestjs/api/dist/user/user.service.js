@@ -39,13 +39,24 @@ let UserService = class UserService {
         }
         return null;
     }
-    async add2FACode(email, code) {
+    async set2faSecret(email, secret) {
         try {
             const user = await this.getUser(email);
-            user.twofa_code = code;
+            user.twofa_secret = secret;
             return this.usersRepository.save(user);
         }
         catch (err) {
+            throw err;
+        }
+    }
+    async set2faMode(email, mode) {
+        try {
+            const user = await this.getUser(email);
+            user.twofa_enabled = mode;
+            return this.usersRepository.save(user);
+        }
+        catch (err) {
+            throw err;
         }
     }
     async deleteUser(username) {

@@ -4,21 +4,16 @@ import { UserAuthDTO } from "src/user/dto/userAuth.dto";
 import { User } from "src/user/user.interface";
 import { UserService } from "src/user/user.service";
 
-import axios, { AxiosResponse } from 'axios';
-
-const nodemailer = require("nodemailer");
-const transporter = nodemailer.createTransport({
-	host: "smtp.eu.mailgun.org",
-	port: 587,
-	auth: {
-	  user: "postmaster@42.hololive.fr",
-	  pass: process.env.MAILGUN_KEY,
-	},
-});
+import { authenticator } from "otplib";
+import { toDataURL } from 'qrcode'
+import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
 export class AuthService {
-	constructor(private userService: UserService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly jwtService: JwtService,
+	) {}
 
 	async validateUser(dto: UserAuthDTO): Promise<User> {
 		const user: User = await this.userService.getUser(dto.email);
@@ -33,6 +28,17 @@ export class AuthService {
 		res.status(302).redirect("/");
 	}
 
+	async login(user: Partial<User>) {
+		const payload = {
+			email: user.email
+		}
+
+		return {
+			email: payload.email,
+			access_token: this.jwtService.sign(payload)
+		}
+	}
+
 	logout(req: Request, res: Response) {
 		req.session.destroy(() => {
 			res.clearCookie("connect.sid");
@@ -40,45 +46,38 @@ export class AuthService {
 		});
 	}
 
-	async getRandomCode(): Promise<string> {
-
-		const opts: any = {
-			"jsonrpc": "2.0",
-			"method": "generateStrings",
-			"params": {
-				"apiKey": process.env.RANDOM_ORG_KEY,
-				"n": 8,
-				"length": 6,
-				"characters": "0123456789",
-				"replacement": true
-			},
-			"id": 42
-		}
-
-		try {
-			const res: AxiosResponse = await axios.post("https://api.random.org/json-rpc/4/invoke", opts);
-			return res.data.result.random.data[0];
-
-		} catch (err) {
-			throw err;
-		}
+	async get2faQRcode(otpAuthUrl: string) {
+		return toDataURL(otpAuthUrl);
 	}
 
-	async sendEmail(email: string) {
-		try {
-			const code: string = await this.getRandomCode();
-			await this.userService.add2FACode(email, code)
-			const info: any = await transporter.sendMail({
-				from: '"Transcendence Authentification Process" <2fa@42.hololive.fr>', // sender address
-				to: "jopadova@student.42.fr ", // list of receivers
-				subject: `${code} is your login passcode`, // Subject line
-				text: `${code} is your login passcode`, // plain text body
-				html: `<b>${code} is your login passcode</b>`, // html body
-			});
-		} catch (err) {
-			throw err;
-		}
+	async get2faCode(user: User) : Promise<any> {
+		const secret: string = authenticator.generateSecret();
+		const optAuthUrl = authenticator.keyuri(user.email, process.env.otpURL, secret);
+		await this.userService.set2faSecret(secret, user.email);
+
+		return {
+			secret,
+			optAuthUrl
+		};
 	}
 
+	is2faValid(code: string, user: User) {
+		return authenticator.verify({
+			token: code,
+			secret: user.twofa_secret,
+		})
+	}
+
+	async loginWith2fa(user: Partial<User>) {
+		const payload = {
+			email: user.email,
+			is_2fa_enabled: !!user.twofa_enabled,
+			is_2fa_auth: true,
+		}
+		return {
+			email: payload.email,
+			access_token: this.jwtService.sign(payload),
+		}
+	}
 }
 

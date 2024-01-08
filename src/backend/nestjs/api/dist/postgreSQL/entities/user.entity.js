@@ -29,7 +29,11 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ default: null }),
     __metadata("design:type", String)
-], UserEntity.prototype, "twofa_code", void 0);
+], UserEntity.prototype, "twofa_secret", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], UserEntity.prototype, "twofa_enabled", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
