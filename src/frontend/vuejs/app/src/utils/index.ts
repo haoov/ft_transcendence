@@ -1,3 +1,3 @@
 export * from "./events";
-export * from "./leader.interface"
+export * from "./userstat.interface"
 export * from "./user.interface"

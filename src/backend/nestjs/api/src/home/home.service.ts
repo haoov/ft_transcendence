@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GameEntity, UserEntity } from 'src/postgreSQL/entities';
 import { Repository } from 'typeorm';
-import { Leaders } from './interfaces';
+import { UserStat } from './interfaces';
 
 @Injectable()
 export class HomeService {
@@ -11,79 +11,71 @@ export class HomeService {
 		@InjectRepository(GameEntity) private readonly gameRepository: Repository<GameEntity>,
 	  ) {}
 	
-	  async getLeaderboard(): Promise<Leaders[]> {
-		// Extract all users with related games
-		const usersWithGames = await this.userRepository.find({
-			relations: ['games', 'games.winner', 'games.loser'],
-	
-		});
-			
-		// Filter with only won games
-		const usersWithWonGames = usersWithGames.map((user) => {
-			// user.games.forEach((game) => {
-			// 	console.log(game);
-			// })
-			const wonGames = user.games.filter(
-			(game) => game.winner && game.winner.id === user.id,
-			);
-			return {
-			...user,
-			games: wonGames,
-			};
-		});
+	  // Get top best 5 players
+	  async getLeaderboard(): Promise<UserStat[]> {
+		// Get total user stats
+		let userStats = await this.getAllUserStats();
 
-	
-		// Sort according to number of won games or id
-		usersWithWonGames.sort(
-		  (userA, userB) =>
-			userB.games.length - userA.games.length || userB.id - userA.id,
-		);
-	
-		// Slice the top 10 players
-		const top10Users = usersWithWonGames.slice(0, 10).map((user) => ({
-			id: user.id,
-			username: user.username,
-			avatar: user.avatar,
-			wins: user.games.length
-		}));
-	
-		return top10Users;
+		// Slice the top 5 players
+		return userStats.slice(0, 5);
 	  }
 
-	  async getUserRank(username: string): Promise<number> {
+	  // Get user stats according to their username
+	  async getOneUserStats(username: string): Promise<UserStat> {
+		// Get total user stats
+		const userStats = await this.getAllUserStats();
+	
+		// Find the corresponding user
+		const target = userStats.filter((user) => {
+			return user.username === username});
+
+		if (target.length)
+			return target[0];
+		else
+			return null;
+	  }
+
+	  // Get all user stats
+	  async getAllUserStats(): Promise<UserStat[]> {
 		// Extract all users with related games
 		const usersWithGames = await this.userRepository.find({
 			relations: ['games', 'games.winner', 'games.loser'],
 	
 		});
 			
-		// Filter with only won games
-		const usersWithWonGames = usersWithGames.map((user) => {
+		// Map as UserStat type
+		const userStats = usersWithGames.map((user) => {
+			// Filter won games
 			const wonGames = user.games.filter(
-			(game) => game.winner && game.winner.id === user.id,
+			(game) => game.winner && game.winner.id === user.id
 			);
+
+			// Calculate win rate
+			let rate: number;
+			if (user.games.length)
+				rate = Math.round((wonGames.length / user.games.length) * 100);
+			else
+				rate = 0;
+
 			return {
-			...user,
-			games: wonGames,
+				id: user.id,
+				username: user.username,
+				avatar: user.avatar,
+				wins: wonGames.length,
+				win_rate: rate,
+				games: user.games.length,
+				rank: 0
 			};
 		});
 
-	
-		// Sort according to number of won games or id
-		usersWithWonGames.sort(
-		  (userA, userB) =>
-			userB.games.length - userA.games.length || userB.id - userA.id,
-		);
-	
-		// Find the index of the target user in the sorted list
-		const targetUserIndex = usersWithWonGames.findIndex((user) => user.username === username);
+		// Sort users based on wins or win rate
+		userStats.sort((a, b) => b.wins - a.wins || b.win_rate - a.win_rate || a.id - b.id);
 
-		if (targetUserIndex !== -1) {
-			// Add 1 to get the rank (as indexing starts from 0)
-			const userRank = targetUserIndex + 1;
-			return userRank;
-		}
-		// If the user was not found, return a value indicating they're not ranked
-		return -1;
+		// Assign ranks based on the sorted order
+		userStats.forEach((user, index) => {
+			user.rank = index + 1;
+		});
+		
+		return userStats;
 	  }
 }
