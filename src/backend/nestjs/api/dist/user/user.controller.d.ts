@@ -4,5 +4,4 @@ export declare class UserController {
     private readonly userService;
     constructor(userService: UserService);
     getAllUsers(): Promise<User[]>;
-    deleteUser(username: string): void;
 }

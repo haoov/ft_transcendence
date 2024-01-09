@@ -8,7 +8,7 @@ export declare class AuthService {
     private readonly jwtService;
     constructor(userService: UserService, jwtService: JwtService);
     validateUser(dto: UserAuthDTO): Promise<User>;
-    redirect(code: string, res: Response): void;
+    redirect(code: string, req: Request, res: Response): void;
     login(user: Partial<User>): Promise<{
         email: string;
         access_token: string;

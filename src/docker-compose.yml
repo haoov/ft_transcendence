@@ -25,6 +25,14 @@ volumes:
     #   o: bind
     #   type: none
   #!comment end
+  #!comment this when using at 42
+    # name: postgresql_data
+    # driver: local
+    # driver_opts:
+    #   device: ./backend/postgresql/data
+    #   o: bind
+    #   type: none
+  #!comment end
 
 #------------------------------------#
 #              Services              #
@@ -54,6 +62,9 @@ services:
 
       - LOCAL_ENDPOINT=http://${LOCAL_ADDRESS}:${LOCAL_PORT}
       - LOCAL_CALLBACK=http://${LOCAL_ADDRESS}:${LOCAL_PORT}/${LOCAL_CALLBACK_ENDPOINT}
+    
+      - MAILGUN_KEY=${MAILGUN_KEY}
+      - TOKEN_2FA_KEY=${TOKEN_2FA_KEY}
     depends_on:
       postgresql:
         condition: service_healthy
@@ -94,6 +105,9 @@ services:
       - 3000:80
     networks:
       - ft_transcendence
+    depends_on:
+      nestjs:
+        condition: service_healthy
     depends_on:
       nestjs:
         condition: service_healthy

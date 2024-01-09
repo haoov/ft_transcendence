@@ -26,7 +26,7 @@ let AuthService = class AuthService {
             return await this.userService.createUser(dto);
         return user;
     }
-    redirect(code, res) {
+    redirect(code, req, res) {
         if (!code)
             throw new common_1.ForbiddenException("No code provided");
         res.status(302).redirect("/");

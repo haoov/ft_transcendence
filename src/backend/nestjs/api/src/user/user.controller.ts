@@ -1,6 +1,8 @@
 import { Controller, Delete, Get, Param, Req, UseGuards } from "@nestjs/common";
+import { Controller, Delete, Get, Param, Req, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
+import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
 import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
 
 @Controller("user")
@@ -9,6 +11,8 @@ export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get()
+	async getAllUsers(): Promise<User[]> {
+		return await this.userService.getAllUsers();
 	async getAllUsers(): Promise<User[]> {
 		return await this.userService.getAllUsers();
 	}

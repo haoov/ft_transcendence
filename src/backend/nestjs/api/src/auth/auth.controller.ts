@@ -71,6 +71,7 @@ export class AuthController {
 
 	@Get("logout")
 	@UseGuards(AuthentificatedGuard)
+	@UseGuards(AuthentificatedGuard)
 	logout(@Req() req: Request, @Res() res: Response) {
 		this.authService.logout(req, res);
 	}
