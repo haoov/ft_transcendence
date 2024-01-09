@@ -5,7 +5,7 @@ import { UserStatus } from "src/user/enum/userStatus.enum";
 import { Room } from "./classes";
 import { UserService } from "src/user/user.service";
 import { GameService } from "./game.service";
-import { selectedParams } from "./interfaces/selectedParams";
+import { selectedParams } from "./interfaces/gameParams";
 
 @Injectable()
 export class GameGatewayService {

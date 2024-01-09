@@ -14,7 +14,7 @@ export class GameService {
 		@InjectRepository(GameEntity) private gameRepository: Repository<GameEntity>) {}
 
 	initParams() {
-		return (new Pong({game: "classic"}).initParams());
+		return (new Pong({game: "classic", mode: "singlePlayer", public: true}).initParams());
 	}
 
 	getFont() {
