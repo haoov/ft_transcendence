@@ -22,7 +22,7 @@ export class AuthService {
 		return user;
 	}
 
-	redirect(code: string, res: Response) {
+	redirect(code: string, req: Request, res: Response) {
 		if (!code)
 			throw new ForbiddenException("No code provided");
 		res.status(302).redirect("/");

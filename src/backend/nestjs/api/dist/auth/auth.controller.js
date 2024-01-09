@@ -122,6 +122,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)("logout"),
     (0, common_1.UseGuards)(auth_AuthentificatedGuard_1.AuthentificatedGuard),
+    (0, common_1.UseGuards)(auth_AuthentificatedGuard_1.AuthentificatedGuard),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
