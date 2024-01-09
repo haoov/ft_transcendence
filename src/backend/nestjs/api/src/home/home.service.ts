@@ -39,24 +39,20 @@ export class HomeService {
 	  async getAllUserStats(): Promise<UserStat[]> {
 		// Extract all users with related games
 		const usersWithGames = await this.userRepository.find({
-			relations: ['games', 'games.winner', 'games.loser'],
+			relations: ['games_won', 'games_lost'],
 	
 		});
+		//console.log(usersWithGames);
 			
 		// Map as UserStat type
 		const userStats = usersWithGames.map((user) => {
-			// Filter won games
-			console.log("for user " + user.username + ", id: " + user.id);
-			const wonGames = user.games.filter(
-			(game) => {
-				// A CREUSER
-				return game.winner && game.winner.id === user.id}
-			);
-
+			// console.log(user.username + ", id:" + user.id);
+			// console.log(user.games.length);
 			// Calculate win rate
+			const game_count: number = user.games_won.length + user.games_lost.length;
 			let rate: number;
-			if (user.games.length)
-				rate = Math.round((wonGames.length / user.games.length) * 100);
+			if (game_count)
+				rate = Math.round((user.games_won.length / game_count) * 100);
 			else
 				rate = 0;
 
@@ -64,9 +60,9 @@ export class HomeService {
 				id: user.id,
 				username: user.username,
 				avatar: user.avatar,
-				wins: wonGames.length,
+				wins: user.games_won.length,
 				win_rate: rate,
-				games: user.games.length,
+				games: game_count,
 				rank: 0
 			};
 		});

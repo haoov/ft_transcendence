@@ -5,5 +5,6 @@ export interface User {
 	avatar: string,
 	email: string,
 	status: string,
-	games: Game[]
+	games_won: Game[]
+	games_lost: Game[]
 }
