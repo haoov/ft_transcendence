@@ -93,7 +93,7 @@ const submitForm = () => {
 	};
 	nameError.value = false;
 	passwordError.value = false;
-	$data.closeModalNewChannelForm();
+	$data.closeModalForm();
 	socket.emit('createNewChannel', newChannel);
 };
 

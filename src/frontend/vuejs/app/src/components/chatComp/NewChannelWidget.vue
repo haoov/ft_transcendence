@@ -14,7 +14,7 @@ const $data: any = inject('$data');
 
 const emit = defineEmits();
 const openNewChannelForm = () => {
-	$data.openModalNewChannelForm();
+	$data.openModalForm();
 };
 
 </script>

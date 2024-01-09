@@ -4,7 +4,7 @@
 			<div class="form-group">
 				<label for="searchChannel">Search :</label>
 				<div class="input-container">
-				<img class="search-icon" src="../../assets/images/search-alt-1-svgrepo-com.svg" alt="Search Icon">
+				<img class="search-icon" src="@/assets/images/chat-svg/search-alt-1-svgrepo-com.svg" alt="Search Icon">
 					<input 
 					v-model="search"
 					name="searchChannel"
@@ -13,7 +13,7 @@
 					autocomplete="off"
 					placeholder="Search"
 					>
-					<img v-if="search" class="cancel-icon" src="../../assets/images/cross-svgrepo-com.svg" alt="Cancel Icon" @click=resetChannelToJoin>
+					<img v-if="search" class="cancel-icon" src="@/assets/images/chat-svg/cross-svgrepo-com.svg" alt="Cancel Icon" @click=resetChannelToJoin>
 				</div>
 				<ul>
 					<li
@@ -24,13 +24,13 @@
 						:class="{'is-selected': result?.id === channelToJoin?.id }"
 					>
 						{{ result.name }}
-						<span v-if="result.mode === 'Protected'"> <img src="../../assets/images/lock-svgrepo-com.svg" alt="Lock Icon"> #{{ result.id }}</span>
+						<span v-if="result.mode === 'Protected'"> <img src="@/assets/images/chat-svg/lock-svgrepo-com.svg" alt="Lock Icon"> #{{ result.id }}</span>
   						<span v-else>#{{ result.id }}</span>
 					</li>
 				</ul>
 				<div v-if="channelToJoin?.mode === 'Protected'">
 					<label for="password">Password :</label>
-					<p v-if="passwordError" style="color: red;">Password missing</p>
+					<p v-if="passwordError" style="color: red;">{{ errorMessagePassword }}</p>
 					<input 
 					v-model="password"
 					name="password"
@@ -69,6 +69,7 @@ const channelList = await $data.getChannels();
 const channelToJoin = ref<Channel>();
 const password = ref('');
 const passwordError = ref(false);
+const errorMessagePassword = ref('');
 
 const search = ref('');
 const searchResults = computed(() => {
@@ -105,6 +106,7 @@ const submitForm = () => {
 	}
 	if (channelToJoin.value.mode === 'Protected' && password.value.length === 0) {
 		passwordError.value = true;
+		errorMessagePassword.value = 'Password is required';
 		return;
 	}
 	socket.emit('joinChannel', {
@@ -116,11 +118,13 @@ const submitForm = () => {
 };
 
 socket.on('channelJoined', (ret : boolean) => {
+	console.log(ret);
 	if (ret) {
-		$data.closeModalNewChannelForm();
+		$data.closeModalForm();
 		passwordError.value = false;
 	} else {
 		passwordError.value = true;
+		errorMessagePassword.value = 'Wrong password';
 	}
 });
 

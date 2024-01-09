@@ -65,11 +65,11 @@ let ChatGateway = class ChatGateway {
     }
     async onJoinChannel(channel) {
         const channelToJoin = await this.chatService.getChannelById(channel.id);
-        if (channelToJoin.mode === 'private' && channelToJoin.password !== channel.password) {
+        if (channelToJoin.mode === 'Protected' && channelToJoin.password !== channel.password) {
             this.usersSocketList.get(channel.userId).emit('channelJoined', false);
             return;
         }
-        console.log(channel);
+        console.log('ici');
         if (await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
             this.usersSocketList.get(channel.userId).emit('channelJoined', true);
             this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);

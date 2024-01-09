@@ -4,7 +4,7 @@
 		<p v-if="!userFound" style="color: red;">User not found</p>
 		<p v-if="userAlreadyAdded" style="color: red;">User already added</p>
 		<div class="input-container">
-			<img class="search-icon" src="../../assets/images/search-alt-1-svgrepo-com.svg" alt="Search Icon">
+			<img class="search-icon" src="@/assets/images/chat-svg/search-alt-1-svgrepo-com.svg" alt="Search Icon">
 			<input
 				type="text"
 				id="channelUsers"
@@ -16,7 +16,7 @@
 				@keydown.enter.prevent
 				:class="{ 'is-invalid': inputVal.length > 0 && (!userFound || userAlreadyAdded)}"
 				>
-				<img v-if="inputVal" class="cancel-icon" src="../../assets/images/cross-svgrepo-com.svg" alt="Cancel Icon" @click=resetInputVal>
+				<img v-if="inputVal" class="cancel-icon" src="@/assets/images/chat-svg/cross-svgrepo-com.svg" alt="Cancel Icon" @click=resetInputVal>
 		</div>
 		<div>
 			<ul>
