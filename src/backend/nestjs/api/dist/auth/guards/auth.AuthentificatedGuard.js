@@ -21,19 +21,14 @@ let AuthentificatedGuard = class AuthentificatedGuard {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
         if (!user) {
-            console.log("user is null");
-            return request.isAuthenticated();
+            console.log(request.isAuthenticated());
+            return true;
         }
         const userDB = await this.userService.getUser(user.email);
         if (userDB.twofa_enabled == false) {
             console.log("2fa is false");
             return request.isAuthenticated() || true;
         }
-        if (userDB.twofa_code == userDB.twofa_secret) {
-            console.log("nice code");
-            return request.isAuthenticated() || true;
-        }
-        console.log(`${userDB.twofa_code} == ${userDB.twofa_secret}`);
         return false;
     }
 };
