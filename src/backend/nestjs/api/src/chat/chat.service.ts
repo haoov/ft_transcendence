@@ -77,19 +77,10 @@ export class ChatService {
 
 	//Permet d'ajouter un utilisateur à un channel
 	async addUserToChannel(channelId: number, userId: number): Promise<boolean> {
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }});
-		const newChnnel = new ChannelEntity();
-		const user = await this.userRepository.findOne({ where: { id: userId }});
-
-
-
-		// console.log('channel ->', channel);
-		console.log('channel ->', channel);
-		// console.log('user ->', user);
+		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+		const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
 		channel.users.push(user);
-		// console.log(this.channelRepository);
-		// await this.channelRepository.save(channel);
+		await this.channelRepository.save(channel);
 		return true;
-
 	}
 }

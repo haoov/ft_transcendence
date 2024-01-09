@@ -2,9 +2,14 @@
 <template>
 	<div class="chat">
 		<ChatCard></ChatCard>
-		<Modal v-if="store.isModalNewChannelFormOpen">
+		<Modal v-if="store.isModalOpen" :function="closeModal">
 			<Suspense>
 				<ChannelModal></ChannelModal>
+			</Suspense>
+		</Modal>
+		<Modal v-if="store.isEditModalOpen" :function="closeEditModal">
+			<Suspense>
+				<EditChannelForm></EditChannelForm>
 			</Suspense>
 		</Modal>
 	</div>
@@ -15,10 +20,19 @@
 import ChatCard from './ChatCard.vue';
 import Modal from './Modal.vue';
 import ChannelModal from './ChannelModal.vue';
+import EditChannelForm from './EditChannelForm.vue';
 import { Suspense, inject } from 'vue';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
+
+const closeModal = () => {
+	$data.closeModalForm()
+}
+
+const closeEditModal = () => {
+	$data.closeEditModalForm()
+}
 
 </script>
 

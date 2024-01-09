@@ -60,7 +60,8 @@ const store = reactive({
 	messages: [] as Message [],
 	users: [] as User [],
 	currentUser: null as User | null,
-	isModalNewChannelFormOpen: false,
+	isModalOpen: false,
+	isEditModalOpen: false,
 	activeChannel: null as Channel | null,
 });
 
@@ -116,12 +117,20 @@ export default {
 		});
 	},
 
-	openModalNewChannelForm() {
-		store.isModalNewChannelFormOpen = true;
+	openModalForm() {
+		store.isModalOpen = true;
 	},
 
-	closeModalNewChannelForm() {
-		store.isModalNewChannelFormOpen = false;
+	closeModalForm() {
+		store.isModalOpen = false;
+	},
+
+	openEditModalForm() {
+		store.isEditModalOpen = true;
+	},
+
+	closeEditModalForm() {
+		store.isEditModalOpen = false;
 	},
 
 };

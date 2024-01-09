@@ -1,5 +1,5 @@
 <template>
-  <div class="modal-overlay" @click="closeModalOutside">
+  <div class="modal-overlay" @click="closeModalSelected">
     <div class="modal" @click.stop>
 		<slot></slot>
     </div>
@@ -10,9 +10,14 @@
 import { inject } from 'vue';
 
 const $data: any = inject('$data');
+const props = defineProps({
+	function: Function
+});
 
-function closeModalOutside() {
-	$data.closeModalNewChannelForm();
+function closeModalSelected() {
+	if (props.function){
+		props.function();
+	}
 }
 
 </script>
