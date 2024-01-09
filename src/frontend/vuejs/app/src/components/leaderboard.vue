@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import type { UserStat, User } from "@/utils";
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 
 let customers = ref<UserStat[]>([]);
 let me = ref<User>();

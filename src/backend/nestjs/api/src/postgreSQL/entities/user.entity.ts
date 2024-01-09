@@ -20,7 +20,11 @@ export class UserEntity {
 
 	@OneToMany(
 		() => GameEntity,
-		game => (game.loser || game.winner)
-	)
-	games: GameEntity[]
+		game => game.winner)
+	games_won: GameEntity[]
+
+	@OneToMany(
+		() => GameEntity,
+		game => game.loser)
+	games_lost: GameEntity[]
 }
