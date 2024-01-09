@@ -1,4 +1,4 @@
-import { selectedParams } from "../interfaces/selectedParams";
+import { gameParams } from "../interfaces/gameParams";
 import { Ball } from "./ball";
 import { Effect } from "./effect";
 import { Field } from "./field";
@@ -16,7 +16,7 @@ class Pong {
 	private mode: string;
 	private difficulty: string;
 
-	constructor(params: selectedParams) {
+	constructor(params: gameParams) {
 		this.game = params.game;
 		this.mode = params.mode;
 		this.difficulty = params.difficulty;
