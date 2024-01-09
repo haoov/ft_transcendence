@@ -26,7 +26,7 @@ let AuthService = class AuthService {
             return await this.userService.createUser(dto);
         return user;
     }
-    redirect(code, req, res) {
+    redirect(code, res) {
         if (!code)
             throw new common_1.ForbiddenException("No code provided");
         res.status(302).redirect("/");
@@ -49,9 +49,9 @@ let AuthService = class AuthService {
     async get2faQRcode(otpAuthUrl) {
         return (0, qrcode_1.toDataURL)(otpAuthUrl);
     }
-    async get2faCode(user) {
+    async get2faSecret(user) {
         const secret = otplib_1.authenticator.generateSecret();
-        const optAuthUrl = otplib_1.authenticator.keyuri(user.email, process.env.otpURL, secret);
+        const optAuthUrl = otplib_1.authenticator.keyuri(user.email, process.env.OTP_NAME, secret);
         await this.userService.set2faSecret(secret, user.email);
         return {
             secret,

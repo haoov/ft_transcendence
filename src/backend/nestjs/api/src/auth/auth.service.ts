@@ -22,7 +22,7 @@ export class AuthService {
 		return user;
 	}
 
-	redirect(code: string, req: Request, res: Response) {
+	redirect(code: string, res: Response) {
 		if (!code)
 			throw new ForbiddenException("No code provided");
 		res.status(302).redirect("/");
@@ -50,9 +50,9 @@ export class AuthService {
 		return toDataURL(otpAuthUrl);
 	}
 
-	async get2faCode(user: User) : Promise<any> {
+	async get2faSecret(user: User) : Promise<any> {
 		const secret: string = authenticator.generateSecret();
-		const optAuthUrl = authenticator.keyuri(user.email, process.env.otpURL, secret);
+		const optAuthUrl = authenticator.keyuri(user.email, process.env.OTP_NAME, secret);
 		await this.userService.set2faSecret(secret, user.email);
 
 		return {

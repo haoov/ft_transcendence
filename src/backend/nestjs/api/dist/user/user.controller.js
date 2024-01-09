@@ -8,6 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const common_1 = require("@nestjs/common");
@@ -19,15 +22,9 @@ let UserController = class UserController {
     }
     async getAllUsers() {
         return await this.userService.getAllUsers();
-        async;
-        getAllUsers();
-        Promise < user_interface_1.User[] > {
-            return: await this.userService.getAllUsers()
-        };
-        deleteUser(, username, string);
-        {
-            this.userService.deleteUser(username);
-        }
+    }
+    deleteUser(username) {
+        this.userService.deleteUser(username);
     }
 };
 exports.UserController = UserController;
@@ -37,9 +34,16 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "getAllUsers", null);
+__decorate([
+    (0, common_1.Delete)(":username"),
+    __param(0, (0, common_1.Param)("username")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "deleteUser", null);
 exports.UserController = UserController = __decorate([
     (0, common_1.Controller)("user"),
-    (0, common_1.UseGuards)(new auth_AuthentificatedGuard_1.AuthentificatedGuard()),
+    (0, common_1.UseGuards)(auth_AuthentificatedGuard_1.AuthentificatedGuard),
     __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);
 //# sourceMappingURL=user.controller.js.map

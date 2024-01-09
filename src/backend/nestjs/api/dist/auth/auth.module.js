@@ -16,7 +16,6 @@ const user_entity_1 = require("../postgreSQL/entities/user.entity");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const auth_42strategy_1 = require("./stategies/auth.42strategy");
-const auth_jwtstrategy_1 = require("./stategies/auth.jwtstrategy");
 const auth_sessionSerializer_1 = require("./auth.sessionSerializer");
 let AuthModule = class AuthModule {
 };
@@ -33,7 +32,11 @@ exports.AuthModule = AuthModule = __decorate([
             })
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, auth_42strategy_1.Auth42Strategy, auth_jwtstrategy_1.Jwt2faStrategy, auth_sessionSerializer_1.SessionSerializer]
+        providers: [
+            auth_service_1.AuthService,
+            auth_42strategy_1.Auth42Strategy,
+            auth_sessionSerializer_1.SessionSerializer
+        ]
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

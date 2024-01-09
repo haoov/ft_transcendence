@@ -8,14 +8,14 @@ export declare class AuthService {
     private readonly jwtService;
     constructor(userService: UserService, jwtService: JwtService);
     validateUser(dto: UserAuthDTO): Promise<User>;
-    redirect(code: string, req: Request, res: Response): void;
+    redirect(code: string, res: Response): void;
     login(user: Partial<User>): Promise<{
         email: string;
         access_token: string;
     }>;
     logout(req: Request, res: Response): void;
     get2faQRcode(otpAuthUrl: string): Promise<any>;
-    get2faCode(user: User): Promise<any>;
+    get2faSecret(user: User): Promise<any>;
     is2faValid(code: string, user: User): boolean;
     loginWith2fa(user: Partial<User>): Promise<{
         email: string;

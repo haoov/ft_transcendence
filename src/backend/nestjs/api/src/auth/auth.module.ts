@@ -23,6 +23,11 @@ import { SessionSerializer } from "./auth.sessionSerializer";
 		})
 	],
 	controllers: [AuthController],
-	providers: [AuthService, Auth42Strategy, Jwt2faStrategy, SessionSerializer]
+	providers: [
+		AuthService, 
+		Auth42Strategy, 
+		/* Jwt2faStrategy, */ 
+		SessionSerializer
+	]
 })
 export class AuthModule {}
