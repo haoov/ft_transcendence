@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import type { UserStat, User } from "@/utils";
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 
 let customers = ref<UserStat[]>([]);
 let me = ref<User>();
@@ -71,13 +71,13 @@ function getPieProportions() : string {
           <div class="u-display--flex u-justify--space-between">
             <div class="u-text--left">
               <img class="c-avatar c-avatar--lg" :src="getMyAvatarSrc()"/>
-              <div class="u-text--medium u-mt--16">{{ me?.username }}</div>
-              <span class="u-text--teal u-text--small">{{ me?.email}} </span>
+              <div class="u-text--medium u-mt--16 u-text--key">{{ me?.username }}</div>
+              <span class="u-text--teal u-mt--8 u-text--key">{{ me?.email}} </span>
             </div>
             <div class="u-text--right">
-                <div class="u-mt--16 u-text--small">My Rank</div>
+                <div class="u-mt--16 u-text--small u-text--key">My Rank</div>
                 <h2>{{ myStats?.rank }}</h2>
-                <div class="u-mt--24 u-text--small">My Wins</div>
+                <div class="u-mt--24 u-text--small u-text--key">My Wins</div>
                 <h2>{{ myStats?.wins }}</h2>
             </div>
           </div>
@@ -119,10 +119,10 @@ function getPieProportions() : string {
           <ul class="c-list" id="list">
             <li class="c-list__item">
               <div class="c-list__grid">
-                <div class="u-text--left u-text--small u-text--medium">Rank</div>
-                <div class="u-text--left u-text--small u-text--medium">Username</div>
-                <div class="u-text--right u-text--small u-text--medium">Win Rate</div>
-                <div class="u-text--right u-text--small u-text--medium"># of Wins</div>
+                <div class="u-text--left u-text--small u-text--medium u-text--key">Rank</div>
+                <div class="u-text--left u-text--small u-text--medium u-text--key">Username</div>
+                <div class="u-text--right u-text--small u-text--medium u-text--key">Win Rate</div>
+                <div class="u-text--right u-text--small u-text--medium u-text--key"># of Wins</div>
               </div>
             </li>
                 <!-- premier element -->
@@ -132,7 +132,7 @@ function getPieProportions() : string {
                 <div class="c-media">
                   <img class="c-avatar c-media__img" :src="getAvatarSrc(index)"/>
                   <div class="c-media__content">
-                    <div class="c-media__title">{{ customer.username }}</div>
+                    <div class="c-media__title u-text--key">{{ customer.username }}</div>
                     <a class="c-media__link u-text--small" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
                   </div>
                 </div>
@@ -293,7 +293,7 @@ button, select {
 }
 
 .donut-text {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Oswald", system-ui;
     fill: #ed1e79;
 }
 
@@ -541,6 +541,10 @@ button, select {
 
 .u-text--title {
   font-family: "Oswald", system-ui;
+}
+
+.u-text--key {
+  font-family: Overpass, system-ui;
 }
 
 .u-text--left {
