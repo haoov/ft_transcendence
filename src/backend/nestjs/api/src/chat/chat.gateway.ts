@@ -78,9 +78,11 @@ export class ChatGateway implements OnModuleInit {
 			this.usersSocketList.get(channel.userId).emit('channelJoined', false);
 			return;
 		}
-		//need to add user into channel users
-		this.usersSocketList.get(channel.userId).emit('channelJoined', true);
-		this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
+		console.log(channel);
+		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
+			this.usersSocketList.get(channel.userId).emit('channelJoined', true);
+			this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
+		}
 	}
 
 }

@@ -66,6 +66,14 @@ let ChatService = class ChatService {
         this.channelRepository.create(newChannel);
         return await this.channelRepository.save(newChannel);
     }
+    async addUserToChannel(channelId, userId) {
+        const channel = await this.channelRepository.findOne({ where: { id: channelId } });
+        const newChnnel = new chat_entity_1.ChannelEntity();
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        console.log('channel ->', channel);
+        channel.users.push(user);
+        return true;
+    }
 };
 exports.ChatService = ChatService;
 exports.ChatService = ChatService = __decorate([

@@ -14,4 +14,5 @@ export declare class ChatService {
     getCurrentUserChannels(userId: number): Promise<Channel[]>;
     getChannelById(channelId: number): Promise<Channel>;
     createChannel(channel: any): Promise<Channel>;
+    addUserToChannel(channelId: number, userId: number): Promise<boolean>;
 }

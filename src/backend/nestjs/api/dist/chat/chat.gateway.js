@@ -69,8 +69,11 @@ let ChatGateway = class ChatGateway {
             this.usersSocketList.get(channel.userId).emit('channelJoined', false);
             return;
         }
-        this.usersSocketList.get(channel.userId).emit('channelJoined', true);
-        this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
+        console.log(channel);
+        if (await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
+            this.usersSocketList.get(channel.userId).emit('channelJoined', true);
+            this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
+        }
     }
 };
 exports.ChatGateway = ChatGateway;
