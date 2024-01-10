@@ -1,0 +1,33 @@
+import { Socket } from "socket.io";
+import { gameParams } from "../interfaces/gameParams";
+import { User } from "src/user/user.interface";
+import { Game } from "../interfaces/game.interface";
+export declare class Room {
+    private name;
+    private public;
+    private full;
+    private users;
+    private sockets;
+    private params;
+    private game;
+    constructor(name: string, params: gameParams, p1: User, p2?: User);
+    startGame(): void;
+    getUsers(): User[];
+    addSocket(socket: Socket): void;
+    removeSocket(socket: Socket): void;
+    getType(): string;
+    getName(): string;
+    isPublic(): boolean;
+    isFull(): boolean;
+    getSockets(): Socket[];
+    getWinner(): User;
+    getLoser(): User;
+    getScore(user: User): number;
+    getParams(): gameParams;
+    getGameUpdate(): any;
+    gameMove(socket: Socket, direction: string): void;
+    quitGame(socket: Socket): void;
+    isOpen(): boolean;
+    checkSockets(user: User): boolean;
+    getStats(): Game;
+}
