@@ -4,8 +4,8 @@ import { User } from 'src/user/user.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../postgreSQL/entities/user.entity';
-import { UserStatus } from './enum/userStatus.enum';
-import { ClientEvents } from '../game/enum';
+import { userStatus } from './enum/userStatus.enum';
+import { clientEvents } from '../game/enum';
 
 // DRAFT : ne fonctionne pas bien 
 
@@ -22,13 +22,13 @@ export class UserGateway
 
 	// Set the user as 'online' 
 	async handleConnection(client: Socket) {
-		client.on(ClientEvents.connected, async (data: User) => {
+		client.on(clientEvents.connected, async (data: User) => {
 			client.data.user = data;
 			this.clients.push(client);
 			try {
 				const user: User = await this.usersRepository.findOneBy({ email: data.email });
-				if (user.status === UserStatus.undefined || user.status === UserStatus.offline) {
-					user.status = UserStatus.online;
+				if (user.status === userStatus.undefined || user.status === userStatus.offline) {
+					user.status = userStatus.online;
 					await this.usersRepository.save(user);
 					//console.log("status on active pour " + user.username);
 				}
@@ -48,7 +48,7 @@ export class UserGateway
 				if (windows.length === 1) {
 					// Updating status
 					const user: User = await this.usersRepository.findOneBy({ email: client.data.user.email });
-					user.status = UserStatus.offline;
+					user.status = userStatus.offline;
 					await this.usersRepository.save(user);
 					//console.log("status on offline pour " + user.username);
 				}

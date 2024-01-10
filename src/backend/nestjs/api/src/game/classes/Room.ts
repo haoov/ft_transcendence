@@ -1,31 +1,34 @@
 import { Socket } from "socket.io";
 import { Pong } from "../data/Pong";
-import { Player } from "../data/player";
 import { gameParams } from "../interfaces/gameParams";
 import { User } from "src/user/user.interface";
 
+const computer = {id: 0, username: "computer", status: "undefined", avatar: "", email: "", games: []};
 
 export class Room {
 	private name: string;
-	private type: string;
 	private public: boolean;
 	private full: boolean;
 	private users: User[];
 	private sockets: Socket[];
 	private gameParams: gameParams;
-	public game: Pong;
+	private game: Pong;
 
 	constructor(name: string, params: gameParams, p1: User, p2?: User) {
+		this.users = [];
 		this.name = name;
-		this.type = params.game;
 		this.public = params.public;
-		this.full = (params.mode == "siglePlayer" ? true : false);
+		this.full = (params.mode == "singlePlayer" ? true : false);
 		this.sockets = [];
 		this.users.push(p1);
 		if (p2)
 			this.users.push(p2);
 		this.gameParams = params;
-		this.game = null;
+		this.game = new Pong(params);
+	}
+
+	startGame(): void {
+		this.game.start();
 	}
 
 	getUsers(): User[] {
@@ -34,16 +37,22 @@ export class Room {
 
 	addSocket(socket: Socket): void {
 		socket.data.room = this.name;
-		if (socket.data.user.id === this.users[0].id)
-			socket.data.side = "right";
-		else if (socket.data.user.id === this.users[1]?.id)
-			socket.data.side = "left";
 		this.sockets.push(socket);
 		socket.join(this.name);
+		if (socket.data.user.id != this.users[0].id) {
+			this.users.push(socket.data.user);
+			this.full = true;
+		}
+	}
+
+	removeSocket(socket: Socket): void {
+		this.sockets.splice(this.sockets.indexOf(socket), 1);
+		socket.leave(this.name);
+		socket.data.room = "";
 	}
 
 	getType(): string {
-		return this.type;
+		return this.gameParams.game;
 	}
 
 	getName(): string {
@@ -58,26 +67,43 @@ export class Room {
 		return this.full;
 	}
 
-	startGame(): void {
-		this.game = new Pong(this.gameParams);
-	}
-
 	getSockets(): Socket[] {
 		return this.sockets;
 	}
 
 	getWinner(): User {
-		let winner: Player;
 		if (this.game.getPlayers()[0].score > this.game.getPlayers()[1].score)
 			return this.users[0];
 		else {
 			if (this.users.length > 1)
 				return this.users[1];
+			else
+				return computer;
 		}
 	}
 
 	getParams(): gameParams {
 		return this.gameParams;
+	}
+
+	getGameUpdate(): any {
+		return this.game.update();
+	}
+
+	gameMove(socket: Socket, direction: string): void {
+		const side: string = (socket.data.user.id == this.users[0].id ? "right" : "left");
+		this.game.movePaddle(side, direction);
+	}
+
+	quitGame(socket: Socket): void {
+		if (socket.data.user.id == this.users[0].id)
+			this.game.getPlayers()[1].topScore();
+		else
+			this.game.getPlayers()[0].topScore();
+	}
+
+	isOpen(): boolean {
+		return (this.public && !this.full);
 	}
 }
 

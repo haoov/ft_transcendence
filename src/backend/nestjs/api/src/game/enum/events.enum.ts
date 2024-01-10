@@ -5,6 +5,8 @@ export enum clientEvents {
 };
 
 export enum serverEvents {
+	updated = "updated",
+	ready = "ready",
 	started = "started",
 	finished = "finished",
 	waiting = "waiting",
