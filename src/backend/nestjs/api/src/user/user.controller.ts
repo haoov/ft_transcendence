@@ -15,8 +15,13 @@ export class UserController {
 	}
 
 	@Get("me")
-	getCurrentUser(@Req() req: Request): Promise<User> {
-		return this.userService.getUser((req.user as User).email);
+	getCurrentUser(@Req() req: Request): Express.User {
+		return this.userService.getCurrentUser(req);
+	}
+
+	@Get(":id")
+	getUser(@Param("id") id: number): Promise<User> {
+		return this.userService.getUserById(id);
 	}
 
 	@Delete(":username")
