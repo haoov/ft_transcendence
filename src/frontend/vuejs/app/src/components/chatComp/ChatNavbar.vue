@@ -20,8 +20,8 @@ import { Socket } from "socket.io-client";
 import { inject, onMounted, computed } from 'vue';
 
 const $data : any = inject('$data');
-const socket : Socket = $data.getSocket();
 const store = $data.getStore();
+const socket : Socket = store.socket;
 const currentUser = await $data.getCurrentUser();
 const channels = computed (() => store.channels);
 

@@ -38,7 +38,7 @@ function scrollToBottomSmooth() {
 
 const data : any = inject('$data');
 const store = data.getStore();
-const socket: Socket = data.getSocket();
+const socket: Socket = store.socket;
 
 const activeChannel = computed(() => store.activeChannel);
 const messages = computed(() => store.messages);
