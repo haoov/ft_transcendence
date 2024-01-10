@@ -11,4 +11,5 @@ export enum ServerEvents {
 	finished = "finished",
 	disconnect = "disconnect",
 	waiting = "waiting",
+	playing = "playing",
 };
