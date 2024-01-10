@@ -67,7 +67,16 @@ onMounted(() => {
 			socket.emit("move", "down");
 	})
 
-	socket.on("started", () => {
+	socket.on("started", (data: any) => {
+		p1.value.username = data[0].username;
+		p1.value.avatar = data[0].avatar;
+		if (data.length > 1) {
+			p2.value.username = data[1].username;
+			p2.value.avatar = data[1].avatar;
+		}
+		else {
+			p2.value.username = "Computer" + ": " + difficulty.value;
+		}
 		game.createField(initParams.params.FIELD_WIDTH, initParams.params.FIELD_HEIGHT, map.value);
 		game.started = true;
 		state.value = "";
@@ -82,7 +91,7 @@ onMounted(() => {
 
 	function animate() {
 		requestAnimationFrame(animate);
-		if (game.hasStarted() && state.value !== "Finished")
+		if (game.hasStarted() && state.value != "finished")
 			socket.emit("update");
 		game.renderer.render(game.scene, game.camera);
 	}
