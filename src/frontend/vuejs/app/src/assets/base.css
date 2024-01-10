@@ -6,6 +6,8 @@
 	--c-grey-light: rgb(211, 211, 211);
 	--c-white: rgb(255, 255, 255);
 	--c-blue-dark : rgb(19, 27, 41);
+	--c-pink: rgb(233, 58, 166);
+	--c-blue-light: #40c9ff;
 
 	--text-color: var(--c-white);
 }
@@ -14,4 +16,7 @@
 @font-face {
 	font-family: Avenir;
 	src: url(./fonts/AvenirLTStd-Roman.otf);
+
+	font-family: Overpass;
+	src: url(./fonts/OverpassMono-Regular.ttf);
 }

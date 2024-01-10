@@ -7,14 +7,18 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { ChatModule } from './chat/chat.modules';
+import { GameModule } from './game/game.module';
+import { HomeModule } from './home/home.module';
 
 @Module({
   imports: [
 							TypeOrmModule.forRoot(databaseConfig),
 							UserModule,
 							AuthModule,
-							HealthModule,
 							ChatModule,
+							HealthModule,
+							GameModule,
+							HomeModule
 						],
   controllers: [AppController],
   providers: [AppService],

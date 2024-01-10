@@ -10,5 +10,4 @@ WORKDIR /api
 
 COPY ./api .
 
-#CMD [ "npm", "run", "start:dev" ]
-CMD npm i && npm run start:dev
+ENTRYPOINT npm install && npm run start:dev

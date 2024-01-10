@@ -48,8 +48,7 @@ async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
 	return axios.get(`http://localhost:3000/api/chat/messages/${id}`).then((res) => { return res.data });
 };
 
-const socket = io('http://localhost:3000', {autoConnect: false});
-socket.connect();
+const socket = io('http://localhost:3000/chat');
 socket.on('NewConnection', async () => {
 	const user = await fetchCurrentUser();
 	socket.emit('userConnected', user);
