@@ -7,7 +7,6 @@ import { Room } from './classes/Room';
 import { UserService } from 'src/user/user.service';
 import { userStatus } from 'src/user/enum/userStatus.enum';
 import { gameParams } from './interfaces/gameParams';
-import { ConsoleLogger } from '@nestjs/common';
 
 
 // Outil de gestion des web socket events
@@ -42,8 +41,12 @@ export class GameGateway
 			client.data.user = data;
 			console.log("user connected: ", client.data.user);
 			//if user is playing, add socket to room
-			if (client.data.user.status == userStatus.playing) {
-				this.findRoom(client).addSocket(client);
+			const room: Room = this.findRoom(client);
+			if (room) {
+				if (room.isFull()) {
+					client.emit(serverEvents.started, room.getUsers(), room.getParams());
+				}
+				room.addSocket(client);
 			}
 		});
 	}
@@ -51,20 +54,17 @@ export class GameGateway
 	async handleDisconnect(client: Socket) {
 		if (client.data.user) {
 			console.log("disconnect user: ", client.data.user);
-			if (client.data.user.status != userStatus.undefined) {
-				const room: Room = this.findRoom(client);
-				if (client.data.user.status == userStatus.playing) {
-					room.quitGame(client);
-					this.deleteRoom(room);
-				}
-				else {
-					room.removeSocket(client);
-					if (room.getSockets().length == 0) {
-						this.deleteRoom(room);
+			const room: Room = this.findRoom(client);
+			if (room) {
+				room.removeSocket(client);
+				if (!room.checkSockets(client.data.user)) {
+					if (room.isFull()) {
+						room.quitGame(client);
 					}
+					this.deleteRoom(room);
+					await this.userService.updateUserStatus(client.data.user, userStatus.undefined);
 				}
 			}
-			await this.userService.updateUserStatus(client.data.user, userStatus.undefined);
 		}
 
 		// if (client.data.game === "classic")
@@ -83,9 +83,10 @@ export class GameGateway
 
 	@SubscribeMessage('gameParams')
 	async manageRooms(client: Socket, params: gameParams) {
+
 		//check if there is a open room
 		const openRoom: Room = this.rooms.find((room) => {
-			room.isOpen() && room.getParams().game == params.game
+			return (room.isOpen() && room.getParams().game == params.game);
 		});
 
 		//if there is, add socket to room, and lock it
@@ -179,10 +180,10 @@ export class GameGateway
 	}
 
 	createRoom(params: gameParams, p1: User) {
-		console.log("creating room");
 		const newRoom = new Room(this.roomId.toString(), params, p1);
 		++this.roomId;
 		this.rooms.push(newRoom);
+		console.log("new room");
 		return newRoom;
 	}
 
@@ -192,15 +193,14 @@ export class GameGateway
 			await this.userService.updateUserStatus(user, userStatus.playing);
 		});
 		room.startGame();
-		this.server.to(room.getName()).emit(serverEvents.started, room.getUsers());
+		this.server.to(room.getName()).emit(serverEvents.started, room.getUsers(), room.getParams());
 	}
 
 	deleteRoom(room: Room) {
-		console.log("deleting room");
+		console.log("deleting room: " + room.getName());
 		this.server.to(room.getName()).emit(serverEvents.finished, room.getWinner().username);
 		room.getSockets().forEach(async (socket) => {
 			await this.userService.updateUserStatus(socket.data.user, userStatus.undefined);
-			socket.data.room = "";
 		});
 		this.rooms.splice(this.rooms.indexOf(room), 1);
 	}

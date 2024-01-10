@@ -11,19 +11,19 @@ export class Room {
 	private full: boolean;
 	private users: User[];
 	private sockets: Socket[];
-	private gameParams: gameParams;
+	private params: gameParams;
 	private game: Pong;
 
 	constructor(name: string, params: gameParams, p1: User, p2?: User) {
 		this.users = [];
 		this.name = name;
-		this.public = params.public;
+		this.public = true;
 		this.full = (params.mode == "singlePlayer" ? true : false);
 		this.sockets = [];
 		this.users.push(p1);
 		if (p2)
 			this.users.push(p2);
-		this.gameParams = params;
+		this.params = params;
 		this.game = new Pong(params);
 	}
 
@@ -48,11 +48,10 @@ export class Room {
 	removeSocket(socket: Socket): void {
 		this.sockets.splice(this.sockets.indexOf(socket), 1);
 		socket.leave(this.name);
-		socket.data.room = "";
 	}
 
 	getType(): string {
-		return this.gameParams.game;
+		return this.params.game;
 	}
 
 	getName(): string {
@@ -83,7 +82,7 @@ export class Room {
 	}
 
 	getParams(): gameParams {
-		return this.gameParams;
+		return this.params;
 	}
 
 	getGameUpdate(): any {
@@ -104,6 +103,13 @@ export class Room {
 
 	isOpen(): boolean {
 		return (this.public && !this.full);
+	}
+
+	checkSockets(user: User): boolean {
+		if (this.sockets.find((socket) => {return (socket.data.user.id == user.id);}))
+			return true;
+		else
+			return false;
 	}
 }
 

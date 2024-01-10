@@ -38,23 +38,24 @@ socket.on(ServerEvents.waiting, () => {
 	state.value = "waiting";
 });
 
+socket.on(ServerEvents.playing, (users: any) => {
+	p1.value.username = users[0].username;
+		p1.value.avatar = users[0].avatar;
+		if (users.length > 1) {
+			p2.value.username = users[1].username;
+			p2.value.avatar = users[1].avatar;
+		}
+		else {
+			p2.value.username = "Computer" + ": " + difficulty.value;
+		}
+	state.value = "playing";
+	displayMenu.value = false;
+});
+
 socket.on(ServerEvents.finished, (winnerUsername) => {
 	state.value = "finished";
 	displayMenu.value = true;
 	winner.value = winnerUsername;
-});
-
-socket.on("room", (p1User, p2User?) => {
-	p1.value.username = p1User.username;
-	p1.value.avatar = p1User.avatar;
-	console.log(p1User);
-	if (p2User) {
-		p2.value.username = p2User.username;
-		p2.value.avatar = p2User.avatar;
-	}
-	else {
-		p2.value.username = "Computer" + ": " + difficulty.value;
-	}
 });
 
 onMounted(() => {
@@ -67,17 +68,17 @@ onMounted(() => {
 			socket.emit("move", "down");
 	})
 
-	socket.on("started", (data: any) => {
-		p1.value.username = data[0].username;
-		p1.value.avatar = data[0].avatar;
-		if (data.length > 1) {
-			p2.value.username = data[1].username;
-			p2.value.avatar = data[1].avatar;
+	socket.on("started", (users: any, params: any) => {
+		p1.value.username = users[0].username;
+		p1.value.avatar = users[0].avatar;
+		if (users.length > 1) {
+			p2.value.username = users[1].username;
+			p2.value.avatar = users[1].avatar;
 		}
 		else {
 			p2.value.username = "Computer" + ": " + difficulty.value;
 		}
-		game.createField(initParams.params.FIELD_WIDTH, initParams.params.FIELD_HEIGHT, map.value);
+		game.createField(initParams.params.FIELD_WIDTH, initParams.params.FIELD_HEIGHT, params.map);
 		game.started = true;
 		state.value = "";
 		displayMenu.value = false;
@@ -103,7 +104,13 @@ onMounted(() => {
 <template>
 	<score :p1="p1" :p2="p2"></score>
 	<div id="game">
-		<gameMenu v-if="displayMenu == true" v-on:click="assignMode" v-on:stopWaiting="stopWait" :state="state" :winner="winner"></gameMenu>
+		<gameMenu
+			v-if="displayMenu == true"
+			v-on:click="assignMode"
+			v-on:stopWaiting="stopWait"
+			:state="state"
+			:winner="winner"
+		></gameMenu>
 	</div>
 	<div class="ball-effect"></div>
 
