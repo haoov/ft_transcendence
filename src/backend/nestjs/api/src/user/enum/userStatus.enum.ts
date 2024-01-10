@@ -1,4 +1,4 @@
-export enum UserStatus {
+export enum userStatus {
 	undefined = "undefined",
 	offline = "offline",
 	online = "online",

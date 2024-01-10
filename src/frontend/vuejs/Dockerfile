@@ -13,7 +13,7 @@ COPY ./app .
 
 RUN npm run build
 
-#conf nginx
+# conf nginx
 FROM nginx:stable as production-stage
 
 RUN mkdir -p /app

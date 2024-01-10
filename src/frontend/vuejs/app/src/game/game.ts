@@ -1,6 +1,5 @@
 import * as th from "three";
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
-import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
 interface Vec3 {
 	x: number,
@@ -75,7 +74,7 @@ export class Game {
 	ball;
 	paddle1;
 	paddle2;
-	field;
+	field: any;
 	effect;
 	started: boolean;
 
@@ -102,7 +101,7 @@ export class Game {
 			questionMark: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=questionMark"),
 			ice: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=ice"),
 			fire: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=fire"),
-		}
+		};
 
 		//init lights
 		const ambiantLight = new th.AmbientLight(init.colors.WHITE, 0.5);
@@ -112,14 +111,13 @@ export class Game {
 		this.scene.add(ambiantLight, directionalLight);
 
 		//init objects
+		this.field = null;
 		this.ball = this.createBall(init.params.BALL_RADIUS);
 		this.paddle1 = this.createPaddle(init);
 		this.paddle2 = this.createPaddle(init);
-		this.field = this.createField(init.params.FIELD_WIDTH, init.params.FIELD_HEIGHT);
-		this.field.material.map = this.textures.tennisCourt;
 		this.effect = this.createEffect();
 
-		this.scene.add(this.ball, this.field, this.paddle1, this.paddle2);
+		this.scene.add(this.ball, this.paddle1, this.paddle2);
 
 		this.started = false;
 	};
@@ -144,13 +142,48 @@ export class Game {
 		return paddle;
 	}
 
-	createField(width: number, height: number) {
+	createField(width: number, height: number, mapOption: string) {
+		const maps: string[] = ["space", "tennis", "classic"];
+		let material;
+		let map;
+
+		//select random map if option is "random"
+		if (mapOption == "random")
+			map = maps[Math.floor(Math.random() * maps.length)];
+		else
+			map = mapOption;
+
+		//create material according to map
+		switch (map) {
+			case "classic":
+				material = new th.MeshPhongMaterial({color: 0x000000});
+				break;
+			case "tennis":
+				material = new th.MeshPhongMaterial({
+					map: this.textures.tennisCourt,
+				});
+				break;
+			case "space":
+				const spaceVideo = document.getElementById("video") as HTMLVideoElement;
+				spaceVideo.play();
+				const spaceTexture = new th.VideoTexture(spaceVideo);
+				spaceTexture.minFilter = th.LinearFilter;
+				spaceTexture.magFilter = th.LinearFilter;
+				material = new th.MeshPhongMaterial({
+					map: spaceTexture,
+					side: th.FrontSide,
+				});
+				break;
+		}
+
+		//create field and 
 		const geometry = new th.PlaneGeometry(width, height);
-		const material = new th.MeshPhongMaterial();
 		const field = new th.Mesh(geometry, material);
 		field.position.set(0, 0, -1);
-		field.receiveShadow = true;
-		return field;
+		if (map != "space")
+			field.receiveShadow = true;
+		this.field = field;
+		this.scene.add(this.field);
 	}
 
 	createEffect() {

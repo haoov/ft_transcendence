@@ -16,7 +16,7 @@ const params = {
 	PADDLE_DEPTH: 0.1,
 	BALL_SPEED: 0.02,
 	BALL_RADIUS: 0.08,
-	MAX_BOUNCE_ANGLE: Math.PI,
+	MAX_BOUNCE_ANGLE: Math.PI / 2,
 }
 
 const cam = {

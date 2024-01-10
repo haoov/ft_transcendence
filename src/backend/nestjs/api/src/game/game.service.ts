@@ -14,7 +14,7 @@ export class GameService {
 		@InjectRepository(GameEntity) private gameRepository: Repository<GameEntity>) {}
 
 	initParams() {
-		return (new Pong("classic").initParams());
+		return (new Pong({game: "classic", mode: "singlePlayer", public: true}).initParams());
 	}
 
 	getFont() {
@@ -31,6 +31,8 @@ export class GameService {
 				return readFileSync("src/game/data/textures/tennis_court.jpeg");
 			case "questionMark":
 				return readFileSync("src/game/data/textures/questionMark.jpeg");
+			case "space":
+				return readFileSync("src/game/data/textures/space.jpeg");
 			default: break;
 		}
 	}

@@ -1,3 +1,4 @@
+import { gameParams } from "../interfaces/gameParams";
 import { Ball } from "./ball";
 import { Effect } from "./effect";
 import { Field } from "./field";
@@ -11,17 +12,20 @@ class Pong {
 	private effect: Effect;
 	private started: boolean;
 	private finished: boolean;
+	private game: string;
 	private mode: string;
+	private difficulty: string;
 
-	constructor(mode: string) {
-		this.mode = mode;
+	constructor(params: gameParams) {
+		this.game = params.game;
+		this.mode = params.mode;
+		this.difficulty = params.difficulty;
 		this.players = [];
 		this.field = new Field();
 		this.players.push(new Player("right", this.field));
 		this.players.push(new Player("left", this.field));
 		this.ball = new Ball();
-		if (this.mode == "super")
-			this.effect = new Effect();
+		this.effect = new Effect();
 		this.started = false;
 		this.finished = false;
 	}
@@ -56,8 +60,14 @@ class Pong {
 
 	update() {
 		if (this.started) {
-			this.ball.moove(this.players, this.field, this.effect);
-			this.effect.moove(this.field);
+			if (this.game == "super") {
+				this.ball.moove(this.players, this.field, this.effect);
+				this.effect.moove(this.field);
+			}
+			else
+				this.ball.moove(this.players, this.field);
+			if (this.mode == "singlePlayer")
+				this.players[1].paddle.autoMove(this.ball, this.field, this.difficulty);
 			for (let i = 0; i < this.players.length; ++i) {
 				if (this.players[i].score == rules.WIN_SCORE)
 					this.finished = true;
@@ -76,6 +86,8 @@ class Pong {
 			effectPosition: this.effect.position,
 			effectRotationSpeed: this.effect.rotationSpeed,
 			effectOn: this.effect.on,
+			p1Score: this.players[0].score,
+			p2Score: this.players[1].score,
 			finished: this.finished,
 		};
 	}
@@ -88,6 +100,10 @@ class Pong {
 
 	getPlayers(): Player[] {
 		return this.players;
+	}
+
+	getMode(): string {
+		return this.mode;
 	}
 };
 
