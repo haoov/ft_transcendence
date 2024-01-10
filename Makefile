@@ -1,8 +1,6 @@
 PROJDIR		=	$(realpath $(CURDIR))
 SRC			=	$(CURDIR)/src
 
-SUDO		=	/usr/bin/sudo
-
 all : build run
 
 build :
