@@ -1,10 +1,10 @@
-import { OnModuleInit } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { UserService } from '../user/user.service';
 import { 
 	ConnectedSocket,
 	MessageBody,
+	OnGatewayConnection,
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer
@@ -23,8 +23,8 @@ function buildMsg(senderName, profilePic, message) {
 	}
 };
 
-@WebSocketGateway({ namespace: 'chat', path: 'chat' })
-export class ChatGateway implements OnModuleInit {
+@WebSocketGateway({ namespace: 'chat' })
+export class ChatGateway implements OnGatewayConnection {
 	constructor(
 		private readonly chatService: ChatService,
 		private readonly userService: UserService
@@ -34,23 +34,23 @@ export class ChatGateway implements OnModuleInit {
 	server: Server;
 	private usersSocketList : Map<number, Socket> = new Map<number, Socket>();
 
-	onModuleInit() {
-		this.server.on('connection', (socket: Socket) => {
-			let currentChannel : string = null;
+	handleConnection(socket: Socket) {
+		let currentChannel : string = null;
+		console.log("chat connection");
 
-			socket.on('join', (channel: any ) => {
-				if (currentChannel) {
-					socket.leave(currentChannel);
-				}
-				socket.join(channel.id.toString());
-				currentChannel = channel.id.toString();
-			});
-			this.server.emit('NewConnection');
-			socket.on('userConnected', (user: any) => {
-				this.usersSocketList.set(user.id, socket);
-			});
+		socket.on('join', (channel: any ) => {
+			if (currentChannel) {
+				socket.leave(currentChannel);
+			}
+			socket.join(channel.id.toString());
+			currentChannel = channel.id.toString();
+		});
+		this.server.emit('NewConnection');
+		socket.on('userConnected', (user: any) => {
+			this.usersSocketList.set(user.id, socket);
 		});
 	}
+
 
 	@SubscribeMessage('newMessage')
 	async onNewMessage(@MessageBody() message: any) {

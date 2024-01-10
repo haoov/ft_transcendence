@@ -11,7 +11,7 @@ import { GameService } from './game.service';
 
 
 // Outil de gestion des web socket events
-@WebSocketGateway({ namespace: 'game', path: '/game' })
+@WebSocketGateway({ namespace: 'game' })
 export class GameGateway 
 	implements OnGatewayConnection, OnGatewayDisconnect {
 
