@@ -23,7 +23,7 @@ function buildMsg(senderName, profilePic, message) {
 	}
 };
 
-@WebSocketGateway()
+@WebSocketGateway({ namespace: 'chat', path: 'chat' })
 export class ChatGateway implements OnModuleInit {
 	constructor(
 		private readonly chatService: ChatService,

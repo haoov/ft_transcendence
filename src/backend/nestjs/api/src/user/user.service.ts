@@ -10,20 +10,27 @@ import { Request } from "express";
 export class UserService {
 	constructor(@InjectRepository(UserEntity) private usersRepository: Repository<UserEntity>) {}
 
-	getUser(email: string): Promise<User> {
-		return this.usersRepository.findOneBy({ email: email }) as Promise<User>;
+	async getUserById(id: number): Promise<User> {
+		return this.usersRepository.findOneBy({ id: id }) as Promise<User>;
 	}
 
-	getUserById(id: number): Promise<User> {
-		return this.usersRepository.findOneBy({ id: id }) as Promise<User>;
+	getUser(email: string): Promise<User> {
+		return this.usersRepository.findOneBy({ email: email }) as Promise<User>;
 	}
 	
 	getAllUsers(): Promise<User[]> {
 		return this.usersRepository.find() as Promise<User[]>;
 	}
 
-	getCurrentUser(req: Request): Express.User {
-		return req.user;
+	async getCurrentUser(req: Request): Promise<User> {
+		const reqUser :User = req.user as User;
+		try {
+			const user: User = await this.usersRepository.findOneBy({ email: reqUser.email });
+			return user;
+		}
+		catch (err) {
+			throw err;
+		};
 	}
 
 	async createUser(user: User): Promise<User> {
@@ -45,4 +52,11 @@ export class UserService {
 		this.usersRepository.remove(user as UserEntity);
 	}
 
+
+	async updateUserStatus(user: User, newStatus: string) {
+		if (user) {
+			user.status = newStatus;
+			this.usersRepository.save(user as UserEntity);
+		}
+	}
 }

@@ -34,9 +34,10 @@
 
 <style>
 	.navBar {
-		background-color: var(--c-blue-dark);
+		background: transparent;
 		display: flex;
 		justify-content: center;
+		margin: 20px;
 	}
 
 	.inline {
