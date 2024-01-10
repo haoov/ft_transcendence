@@ -16,4 +16,7 @@
 @font-face {
 	font-family: Avenir;
 	src: url(./fonts/AvenirLTStd-Roman.otf);
+
+	font-family: Overpass;
+	src: url(./fonts/OverpassMono-Regular.ttf);
 }

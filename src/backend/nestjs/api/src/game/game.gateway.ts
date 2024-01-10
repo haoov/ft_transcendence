@@ -7,6 +7,7 @@ import { Room } from './classes/Room';
 import { UserService } from 'src/user/user.service';
 import { userStatus } from 'src/user/enum/userStatus.enum';
 import { gameParams } from './interfaces/gameParams';
+import { GameService } from './game.service';
 
 
 // Outil de gestion des web socket events
@@ -24,7 +25,7 @@ export class GameGateway
 	rooms: Room[];
 	roomId: number;
 
-	constructor(private readonly userService: UserService) {
+	constructor(private readonly userService: UserService, private readonly gameService: GameService) {
 		// this.classic_rooms = [];
 		// this.classic_waiting = [];
 		// this.super_rooms = [];
@@ -199,6 +200,7 @@ export class GameGateway
 	deleteRoom(room: Room) {
 		console.log("deleting room: " + room.getName());
 		this.server.to(room.getName()).emit(serverEvents.finished, room.getWinner().username);
+		this.gameService.createGame(room.getStats());
 		room.getSockets().forEach(async (socket) => {
 			await this.userService.updateUserStatus(socket.data.user, userStatus.undefined);
 		});
