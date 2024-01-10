@@ -7,6 +7,7 @@ import { Socket } from "socket.io-client";
 import { ClientEvents, ServerEvents } from '@/utils';
 import gameMenu from '@/game/components/gameMenu.vue';
 import score from '@/game/components/score.vue';
+import { onBeforeRouteLeave } from 'vue-router';
 
 const state = ref("");
 const displayMenu = ref(true);
@@ -26,7 +27,7 @@ function assignMode(gameParams: {game: string, mode: string, difficulty: string,
 }
 
 function stopWait() {
-	socket.emit("stop_wait");
+	socket.emit("stopWaiting");
 	state.value = "";
 }
 
@@ -36,20 +37,6 @@ await axios.get("http://localhost:3000/api/user/me").then((response) => {
 
 socket.on(ServerEvents.waiting, () => {
 	state.value = "waiting";
-});
-
-socket.on(ServerEvents.playing, (users: any) => {
-	p1.value.username = users[0].username;
-		p1.value.avatar = users[0].avatar;
-		if (users.length > 1) {
-			p2.value.username = users[1].username;
-			p2.value.avatar = users[1].avatar;
-		}
-		else {
-			p2.value.username = "Computer" + ": " + difficulty.value;
-		}
-	state.value = "playing";
-	displayMenu.value = false;
 });
 
 socket.on(ServerEvents.finished, (winnerUsername) => {
@@ -80,7 +67,7 @@ onMounted(() => {
 		}
 		game.createField(initParams.params.FIELD_WIDTH, initParams.params.FIELD_HEIGHT, params.map);
 		game.started = true;
-		state.value = "";
+		state.value = "playing";
 		displayMenu.value = false;
 	})
 
@@ -98,6 +85,10 @@ onMounted(() => {
 	}
 
 	animate();
+})
+
+onBeforeRouteLeave(() => {
+	socket.disconnect();
 })
 </script>
 
@@ -130,8 +121,8 @@ onMounted(() => {
 
 <style>
 	canvas {
-		border: 1px solid;
 		border-radius: 1rem;
+		box-shadow: 0 0 0 1px var(--c-black-light);
 	}
 
 	#game {
@@ -141,7 +132,7 @@ onMounted(() => {
 	}
 
 	.ball-effect {
-		width: 700px;
+		width: 720px;
 		height: 50px;
 		border-radius: 5rem;
 		background: linear-gradient(145deg, var(--c-grey), transparent 35%);

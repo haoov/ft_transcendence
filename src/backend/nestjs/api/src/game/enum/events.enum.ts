@@ -2,6 +2,9 @@ export enum clientEvents {
 	connected = "connected",
 	update = "update",
 	mode = "mode",
+	stopWaiting = "stopWaiting",
+	gameParams = "gameParams",
+	move = "move",
 };
 
 export enum serverEvents {
