@@ -1,3 +1,4 @@
+import { Ball } from "./ball";
 import { Effect } from "./effect";
 import { Field } from "./field";
 import { Vec3, params } from "./opts";
@@ -39,6 +40,27 @@ class Paddle {
 				this.position.y -= this.speed;
 			else
 				this.position.y = field.borders.bottom + this.height / 2;
+	}
+
+	autoMove(ball: Ball, field: Field, difficulty: string) {
+		let reactivityFactor: number;
+		let placementFactor: number = 1;
+
+		if (difficulty == "easy")
+			reactivityFactor = 0.04;
+		else if (difficulty == "medium")
+			reactivityFactor = 0.06;
+		else
+			reactivityFactor = 0.08;
+
+		// Calculate the distance between the ball and the paddle
+		const distance = ball.position.y - this.position.y;
+
+		// Move the paddle proportionally to the distance
+		if (distance > 0)
+				this.position.y += Math.min(distance, this.speed * reactivityFactor);
+		else if (distance < 0)
+				this.position.y -= Math.max(distance, this.speed * reactivityFactor);
 	}
 
 	resetEffect() {

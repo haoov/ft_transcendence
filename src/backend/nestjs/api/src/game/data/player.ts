@@ -2,7 +2,7 @@ import { ConsoleLogger } from "@nestjs/common";
 import { Ball } from "./ball";
 import { Field } from "./field";
 import { Paddle } from "./paddle";
-import { rules } from "./opts";
+import { params, rules } from "./opts";
 
 class Player {
 	side: string;
@@ -20,14 +20,19 @@ class Player {
 		const ballY = ball.position.y;
 		const paddleX = this.paddle.position.x;
 		const paddleY = this.paddle.position.y;
-		var aligned = false;
+		let aligned = false;
 
-		if (ballY >= paddleY - this.paddle.height / 2 && ballY <= paddleY + this.paddle.height / 2) {
+		if (	ballY >= paddleY - (this.paddle.height / 2) - ball.radius
+					&& ballY <= paddleY + (this.paddle.height / 2) + ball.radius) {
 			aligned = true;
 		}
-		if (aligned && this.side == "right" && ballX >= paddleX - this.paddle.width)
+		if (	aligned && this.side == "right"
+					&& ballX + ball.radius >= paddleX - this.paddle.width / 2
+					&& ballX <= paddleX)
 				return true;
-		if (aligned && this.side == "left" && ballX <= paddleX + this.paddle.width)
+		if (	aligned && this.side == "left"
+					&& ballX - ball.radius <= paddleX + this.paddle.width / 2
+					&& ballX >= paddleX)
 				return true;
 		return false;
 	}
