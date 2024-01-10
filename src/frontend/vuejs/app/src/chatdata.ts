@@ -1,5 +1,6 @@
 import axios from "axios";
 import io from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { reactive } from "vue";
 
 interface Channel {
@@ -48,12 +49,6 @@ async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
 	return axios.get(`http://localhost:3000/api/chat/messages/${id}`).then((res) => { return res.data });
 };
 
-const socket = io('http://localhost:3000/chat');
-socket.on('NewConnection', async () => {
-	const user = await fetchCurrentUser();
-	socket.emit('userConnected', user);
-});
-
 const store = reactive({
 	channels: [] as Channel[],
 	messages: [] as Message [],
@@ -62,12 +57,10 @@ const store = reactive({
 	isModalOpen: false,
 	isEditModalOpen: false,
 	activeChannel: null as Channel | null,
+	socket: null as Socket | null,
 });
 
 export default {
-	getSocket() {
-		return socket;
-	},
 
 	getUsers() : Promise<User []> {
 		return fetchUsers();
@@ -83,6 +76,10 @@ export default {
 
 	getStore() : Object {
 		return store;
+	},
+
+	setSocket(socket: Socket) {
+		store.socket = socket;
 	},
 
 	loadChannels(idUser: number) {

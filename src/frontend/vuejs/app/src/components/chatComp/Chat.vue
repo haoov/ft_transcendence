@@ -22,9 +22,21 @@ import Modal from './Modal.vue';
 import ChannelModal from './ChannelModal.vue';
 import EditChannelForm from './EditChannelForm.vue';
 import { Suspense, inject } from 'vue';
+import { io, Socket } from 'socket.io-client';
+import { onBeforeRouteLeave } from 'vue-router';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
+$data.setSocket(io('http://localhost:3000/chat'));
+const socket : Socket = store.socket; 
+socket.on('NewConnection', async () => {
+	const user = await $data.getCurrentUser();
+	socket.emit('userConnected', user);
+});
+
+onBeforeRouteLeave(() => {
+	socket.disconnect();
+});
 
 const closeModal = () => {
 	$data.closeModalForm()
@@ -39,15 +51,11 @@ const closeEditModal = () => {
 <style scoped>
 .chat {
 	position: relative;
-	background: linear-gradient(to right,
-			var(--c-black),
-			var(--c-blue-dark),
-			var(--c-black));
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	width: 100vw;
-	height: 100vh;
+	height: 90vh;
 }
 
 </style>

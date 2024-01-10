@@ -5,6 +5,7 @@ import {
 	ConnectedSocket,
 	MessageBody,
 	OnGatewayConnection,
+	OnGatewayDisconnect,
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer
@@ -36,7 +37,7 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(socket: Socket) {
 		let currentChannel : string = null;
-		console.log("chat connection");
+		console.log("Socket->", socket.id + " connected");
 
 		socket.on('join', (channel: any ) => {
 			if (currentChannel) {
@@ -51,6 +52,14 @@ export class ChatGateway implements OnGatewayConnection {
 		});
 	}
 
+	handleDisconnect(socket: Socket) {
+		console.log("Socket->", socket.id + " disconnected");
+		this.usersSocketList.forEach((value: Socket, key: number) => {
+			if (value === socket) {
+				this.usersSocketList.delete(key);
+			}
+		});
+	}
 
 	@SubscribeMessage('newMessage')
 	async onNewMessage(@MessageBody() message: any) {

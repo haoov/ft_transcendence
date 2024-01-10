@@ -63,7 +63,8 @@ interface Channel {
 }
 
 const $data : any = inject('$data');
-const socket = $data.getSocket();
+const store = $data.getStore();
+const socket = store.socket;
 const currentUser = await $data.getCurrentUser();
 const channelList = await $data.getChannels();
 const channelToJoin = ref<Channel>();

@@ -28,8 +28,9 @@ type Message = {
 
 const input = ref<string>("");
 const $data : any = inject('$data');
-const socket : Socket = $data.getSocket();
+const store = $data.getStore();
 const myUser = await $data.getCurrentUser();
+const socket : Socket = store.socket;
 const DateRawStamp : string = new Date().toISOString();
 const $store = $data.getStore();
 const activeChannel = computed(() => $store.activeChannel);
