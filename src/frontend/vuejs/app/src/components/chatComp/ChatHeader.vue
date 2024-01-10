@@ -43,7 +43,7 @@ const openEditChannelForm = () => {
 
 img {
   display: block;
-  width: 2rem;
+  width: 1.5rem;
   height: auto;
   margin: auto;
 }

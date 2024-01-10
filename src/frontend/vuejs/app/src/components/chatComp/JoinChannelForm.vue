@@ -72,6 +72,7 @@ const passwordError = ref(false);
 const errorMessagePassword = ref('');
 
 const search = ref('');
+
 const searchResults = computed(() => {
     if (channelToJoin.value) {
         return [channelToJoin.value];
