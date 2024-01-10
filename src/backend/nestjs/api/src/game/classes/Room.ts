@@ -2,8 +2,9 @@ import { Socket } from "socket.io";
 import { Pong } from "../data/Pong";
 import { gameParams } from "../interfaces/gameParams";
 import { User } from "src/user/user.interface";
+import { Game } from "../interfaces/game.interface";
 
-const computer = {id: 0, username: "computer", status: "undefined", avatar: "", email: "", games: []};
+const computer = {id: 0, username: "computer", status: "undefined", avatar: "", email: "", games_won: [], games_lost: []};
 
 export class Room {
 	private name: string;
@@ -81,6 +82,21 @@ export class Room {
 		}
 	}
 
+	getLoser(): User {
+		if (this.game.getPlayers()[0].score < this.game.getPlayers()[1].score)
+			return this.users[0];
+		else {
+				return this.users[1];
+		}
+	}
+
+	getScore(user: User): number {
+		if (this.users[0].id == user.id)
+			return this.game.getPlayers()[0].score;
+		else
+			return this.game.getPlayers()[1].score;
+	}
+
 	getParams(): gameParams {
 		return this.params;
 	}
@@ -110,6 +126,17 @@ export class Room {
 			return true;
 		else
 			return false;
+	}
+
+	getStats(): Game {
+		const stats: Game = {
+			game: this.params.game,
+			winner: this.getWinner(),
+			loser: this.getLoser(),
+			winner_score: this.getScore(this.getWinner()),
+			loser_score: this.getScore(this.getLoser()),
+		};
+		return stats;
 	}
 }
 
