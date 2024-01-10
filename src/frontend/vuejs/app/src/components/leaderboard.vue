@@ -26,7 +26,7 @@ function fetchMyStats() {
 }
 
 function  getRankClass(index: number) : string {
-  let className = "c-flag c-place u-bg--transparent"
+  let className = "c-flag c-place u-bg--transparent u-text--title"
   switch (index) {
     case 0:
       className += " u-text--dark u-bg--yellow";
@@ -70,9 +70,9 @@ function getPieProportions() : string {
         <div class="c-card__body">
           <div class="u-display--flex u-justify--space-between">
             <div class="u-text--left">
-              <img class="c-avatar c-avatar--lg" :src="getMyAvatarSrc()"/>
-              <div class="u-text--medium u-mt--16 u-text--key">{{ me?.username }}</div>
-              <span class="u-text--teal u-mt--8 u-text--key">{{ me?.email}} </span>
+              <img class="c-avatar c-avatar--lg u-ml--24" :src="getMyAvatarSrc()"/>
+              <div class="u-text--medium u-mt--16 u-text--key u-ml--24">{{ me?.username }}</div>
+              <span class="u-text--teal u-mt--16 u-text--small u-text--key u-ml--24">{{ me?.email}} </span>
             </div>
             <div class="u-text--right">
                 <div class="u-mt--16 u-text--small u-text--key">My Rank</div>
@@ -84,23 +84,22 @@ function getPieProportions() : string {
         </div>
       </div>
       <div class="c-card">
+        <h3 class="u-p--24">MY GAMES</h3>
         <div class="c-card__body">
           <div class="u-display--flex u-justify--space-between">
             <div class="svg-pie">
-              <svg width="100%" height="100%" viewBox="0 0 40 40" class="donut">
+              <svg width="100%" height="70%" viewBox="0 0 40 40">
                 <!-- <circle class="donut-hole" cx="20" cy="20" r="15.91549430918954" fill="#fff"></circle> -->
                 <circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
                 <circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
                         stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"
                         :style="{ animation: 'donut 1s', '--end-dash': getPieProportions()}"></circle>
-                <g class="donut-text">
-                  <text y="50%" transform="translate(0, 2)">
-                    <tspan x="50%" text-anchor="middle" class="donut-percent">{{ myStats?.win_rate}}%</tspan>   
-                  </text>
-                  <text y="60%" transform="translate(0, 2)">
-                    <tspan x="50%" text-anchor="middle" class="donut-data">{{ myStats?.wins}} wins</tspan>   
-                  </text>
-                </g>
+                <text y="50%" transform="translate(0, 2)">
+                  <tspan x="50%" text-anchor="middle" class="donut-percent">{{ myStats?.win_rate}}%</tspan>   
+                </text>
+                <text y="60%" transform="translate(0, 2)">
+                  <tspan x="50%" text-anchor="middle" class="donut-data">{{ myStats?.wins}} wins</tspan>   
+                </text>
               </svg>
             </div>
           </div>
@@ -133,14 +132,14 @@ function getPieProportions() : string {
                   <img class="c-avatar c-media__img" :src="getAvatarSrc(index)"/>
                   <div class="c-media__content">
                     <div class="c-media__title u-text--key">{{ customer.username }}</div>
-                    <a class="c-media__link u-text--small" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
+                    <a class="c-media__link u-text--small u-text--key" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
                   </div>
                 </div>
                 <div class="u-text--right c-stats u-mt--8">
-                  <p>{{ customer.win_rate }}%</p>
+                  <p class="u-text--title">{{ customer.win_rate }}%</p>
                 </div>
                 <div class="u-text--right c-stats u-mt--8">
-                  <strong>{{ customer.wins }}</strong>
+                  <strong class="u-text--title">{{ customer.wins }}</strong>
                 </div>
               </div>
             </li>
@@ -240,6 +239,7 @@ button, select {
     font-size: 16px;
     margin: 0 auto;
     animation: donutfade 1s;
+    align-items: center;
 }
 
 @keyframes donutfade {
@@ -271,7 +271,13 @@ button, select {
 .segment-1{fill:#ed1e79;}
 
 .donut-percent {
+    font-family: "Oswald", system-ui;
+    fill: #ed1e79;
     animation: donutfadelong 1s;
+    font-size: 0.5em;
+    line-height: 1;
+    transform: translateY(0.5em);
+    font-weight: bold;
 }
 
 @keyframes donutfadelong {
@@ -292,35 +298,16 @@ button, select {
     }
 }
 
-.donut-text {
-    font-family: "Oswald", system-ui;
-    fill: #ed1e79;
-}
-
-.donut-label {
-    font-size: 0.28em;
-    font-weight: 700;
-    line-height: 1;
-    fill: #000;
-    transform: translateY(0.25em);
-}
-
-.donut-percent {
-    font-size: 0.5em;
-    line-height: 1;
-    transform: translateY(0.5em);
-    font-weight: bold;
-}
-
 .donut-data {
-    font-size: 0.12em;
+    font-size: 0.18em;
     line-height: 1;
     transform: translateY(0.5em);
     text-align: center;
     text-anchor: middle;
-    color:#666;
-    fill: #666;
+    color:white;
+    fill: white;
     animation: donutfadelong 1s;
+    font-family: Overpass;
 }
 
 
@@ -350,7 +337,7 @@ button, select {
   background: var(--surface);
   width: 100%;
   margin-bottom: 1.6rem;
-  box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.12);
+  box-shadow: 0px 0px 0px 1px var(--c-black-light)
 }
 .c-card__body, .c-card__header {
   padding: 2.4rem;
@@ -433,7 +420,7 @@ button, select {
   justify-content: center;
   width: 4.8rem;
   height: 4.8rem;
-  box-shadow: inset 0px 0px 0px 1px currentColor;
+  box-shadow: 0 0 3px, 0 0 5px var(--c-black-light), 0 0 7px var(--c-black-light), 0 0 10px var(--c-black-light);
   border-radius: 50%;
   background: var(--lightest);
   color: var(--dark);
@@ -668,6 +655,12 @@ button, select {
 
 .u-text--small {
   font-size: 1.4rem;
+}
+
+.u-p--24 {
+  padding-left: 2.4rem;
+  padding-right: 2.4rem;
+  padding-top: 2.4rem;
 }
 
 .u-pl--2 {
