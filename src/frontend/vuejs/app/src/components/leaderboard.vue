@@ -154,7 +154,7 @@ function getPieProportions() : string {
 
 </template>
 
-<style>
+<style scoped>
 
 
 html {
