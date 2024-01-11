@@ -16,6 +16,7 @@ exports.UserController = void 0;
 const common_1 = require("@nestjs/common");
 const user_service_1 = require("./user.service");
 const auth_AuthentificatedGuard_1 = require("../auth/guards/auth.AuthentificatedGuard");
+const throttler_1 = require("@nestjs/throttler");
 let UserController = class UserController {
     constructor(userService) {
         this.userService = userService;
@@ -42,6 +43,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "deleteUser", null);
 exports.UserController = UserController = __decorate([
+    (0, throttler_1.SkipThrottle)(),
     (0, common_1.Controller)("user"),
     (0, common_1.UseGuards)(auth_AuthentificatedGuard_1.AuthentificatedGuard),
     __metadata("design:paramtypes", [user_service_1.UserService])

@@ -4,18 +4,26 @@ import { User } from "src/user/user.interface";
 import { UserService } from "src/user/user.service";
 
 @Injectable()
-export class AuthentificatedGuard implements CanActivate {
+export class Authentificated2faGuard implements CanActivate {
 	constructor (private readonly userService: UserService) {};
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const request: Request = context.switchToHttp().getRequest();
 
-
 		const user: User = request.user as User;
 		if (!user) {
 			return false;
 		}
+		const userDB = await this.userService.getUser(user.email);
+		if (userDB.twofa_enabled == false) {
+			return true;
+		}
 		
-		return request.isAuthenticated() || true;
+		if (user.twofa_auth == true) {
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 }

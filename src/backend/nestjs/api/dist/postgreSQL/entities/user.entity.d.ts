@@ -4,5 +4,6 @@ export declare class UserEntity {
     avatar: string;
     twofa_secret: string;
     twofa_enabled: boolean;
+    twofa_auth: boolean;
     email: string;
 }
