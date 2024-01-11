@@ -7,15 +7,15 @@ import { Socket } from "socket.io-client";
 import { ClientEvents, ServerEvents } from '@/utils';
 import gameMenu from '@/game/components/gameMenu.vue';
 import score from '@/game/components/score.vue';
+import spells from '@/game/components/spells.vue';
 import { onBeforeRouteLeave } from 'vue-router';
 
 const state = ref("");
 const displayMenu = ref(true);
-const displayScore = ref(false);
 const map = ref("random");
 const difficulty = ref("");
-const p1 = ref({username: "Player1", avatar: "", score: 0});
-const p2 = ref({username: "Player2", avatar: "", score: 0});
+const p1 = ref({username: "Player1", avatar: "", score: 0, spells: [false, false, false, false]});
+const p2 = ref({username: "Player2", avatar: "", score: 0, spells: [false, false, false, false]});
 const winner = ref("");
 const initParams = (await axios.get("http://localhost:3000/api/game/params")).data;
 const socket: Socket = io("http://localhost:3000/game");
@@ -53,6 +53,14 @@ onMounted(() => {
 			socket.emit("move", "up");
 		if (event.key == "s" || event.key == "S")
 			socket.emit("move", "down");
+		if (event.key == "1")
+			socket.emit("useSpell", "fire");
+		if (event.key == "2")
+			socket.emit("useSpell", "ice");
+		if (event.key == "3")
+			socket.emit("useSpell", "small");
+		if (event.key == "4")
+			socket.emit("useSpell", "big");
 	})
 
 	socket.on("started", (users: any, params: any) => {
@@ -75,6 +83,8 @@ onMounted(() => {
 		game.update(data);
 		p1.value.score = data.p1Score;
 		p2.value.score = data.p2Score;
+		p1.value.spells = data.p1Spells;
+		p2.value.spells = data.p2Spells;
 	});
 
 	function animate() {
@@ -103,7 +113,11 @@ onBeforeRouteLeave(() => {
 			:winner="winner"
 		></gameMenu>
 	</div>
-	<div class="ball-effect"></div>
+	<spells
+		:p1Spells="p1.spells"
+		:p2Spells="p2.spells"
+		v-on:useSpell="(spell) => {socket.emit('useSpell', spell)}"
+	></spells>
 
 	<video
 		id="video"
@@ -129,15 +143,5 @@ onBeforeRouteLeave(() => {
 		display: flex;
 		width: 720px;
 		height: 480px;
-	}
-
-	.ball-effect {
-		width: 720px;
-		height: 50px;
-		border-radius: 5rem;
-		background: linear-gradient(145deg, var(--c-grey), transparent 35%);
-		background-size: 200% 100%;
-		padding: 0px 10px 0px 10px;
-		margin-top: 2px;
 	}
 </style>

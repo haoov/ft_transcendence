@@ -47,50 +47,6 @@ class Effect {
 			return true;
 		return false;
 	}
-
-	apply(ball: Ball, paddle: Paddle) {
-		switch (this.type) {
-			case "ice":
-				ball.effect.type = this.type;
-				ball.vecSpeed.x *= 0.8;
-				ball.vecSpeed.y *= 0.8;
-				break;
-			case "fire":
-				ball.effect.type = this.type;
-				ball.vecSpeed.x *= 1.5;
-				ball.vecSpeed.y *= 1.5;
-				break;
-			case "big":
-				paddle.effect.type = this.type;
-				paddle.scale.y *= 2;
-				paddle.height *= paddle.scale.y
-				break;
-			case "small":
-				ball.effect.type = this.type;
-				ball.scale = {x: 0.5, y: 0.5, z: 0.5};
-				ball.radius *= ball.scale.x;
-				break;
-			default: break;
-		}
-		this.on = false;
-	}
-
-	transmit(paddle: Paddle) {
-		paddle.effect.type = this.type;
-		switch (this.type) {
-			case "ice":
-				paddle.speed *= 0.5;
-				break;
-			case "fire":
-				paddle.speed *= 2;
-				break;
-			case "small":
-				paddle.scale.y *= 0.5;
-				paddle.height *= paddle.scale.y;
-				break;
-			default: break;
-		}
-	}
 }
 
 export { Effect };

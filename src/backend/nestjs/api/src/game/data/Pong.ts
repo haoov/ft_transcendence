@@ -38,6 +38,12 @@ class Pong {
 			player.paddle.move(direction, this.field);
 	}
 
+	useSpell(side: string, type: string) {
+		const player: Player = this.players.find((currentPlayer) => {return (currentPlayer.side == side);});
+		if (player.spellBook.spellEnabled(type))
+			player.spellBook.useSpell(type, this.ball, player.paddle);
+	}
+
 	initParams() {
 		return {
 			window: window,
@@ -76,13 +82,15 @@ class Pong {
 		return {
 			ballPosition: this.ball.position,
 			ballScale: this.ball.scale,
-			ballEffect: (this.ball.effect != null ? this.ball.effect.type : "none"),
-			p1PaddlePosition: this.players[0]?.paddle.position,
-			p1PaddleScale: this.players[0]?.paddle.scale,
-			p1Effect: (this.players[0]?.paddle.effect != null ? this.players[0]?.paddle.effect.type : "none"),
-			p2PaddlePosition: this.players[1]?.paddle.position,
-			p2PaddleScale: this.players[1]?.paddle.scale,
-			p2Effect: (this.players[1]?.paddle.effect != null ? this.players[1]?.paddle.effect.type : "none"),
+			ballEffect: this.ball.getEffect(),
+			p1PaddlePosition: this.players[0].paddle.position,
+			p1PaddleScale: this.players[0].paddle.scale,
+			p1Effect: this.players[0].paddle.effect,
+			p1Spells: this.players[0].spellBook.getSpells(),
+			p2PaddlePosition: this.players[1].paddle.position,
+			p2PaddleScale: this.players[1].paddle.scale,
+			p2Effect: this.players[1].paddle.effect,
+			p2Spells: this.players[1].spellBook.getSpells(),
 			effectPosition: this.effect.position,
 			effectRotationSpeed: this.effect.rotationSpeed,
 			effectOn: this.effect.on,

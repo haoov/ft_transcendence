@@ -103,6 +103,14 @@ export class GameGateway
 		}
 	}
 
+	@SubscribeMessage(clientEvents.useSpell)
+	useSpell(client: Socket, type: string) {
+		const room: Room = this.findRoom(client);
+		if (room) {
+			room.gameUseSpell(client, type);
+		}
+	}
+
 	@SubscribeMessage(clientEvents.stopWaiting)
 	async stopWaiting(client: Socket) {
 		this.deleteRoom(this.findRoom(client));
