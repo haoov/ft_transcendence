@@ -30,7 +30,6 @@ export class GameGateway
 		client.on(clientEvents.connected, (data: User) => {
 			//store user data in socket
 			client.data.user = data;
-			console.log("user connected: ", client.data.user);
 			//if user is playing, add socket to room
 			const room: Room = this.findRoom(client);
 			if (room) {
@@ -44,7 +43,6 @@ export class GameGateway
 
 	async handleDisconnect(client: Socket) {
 		if (client.data.user) {
-			console.log("disconnect user: ", client.data.user);
 			const room: Room = this.findRoom(client);
 			if (room) {
 				room.removeSocket(client);
@@ -133,7 +131,6 @@ export class GameGateway
 	}
 
 	createRoom(params: gameParams, p1: User) {
-		console.log("creating room" + this.roomId.toString());
 		const newRoom = new Room(this.roomId.toString(), params, p1);
 		++this.roomId;
 		this.rooms.push(newRoom);
@@ -141,7 +138,6 @@ export class GameGateway
 	}
 
 	closeRoom(room: Room) {
-		console.log("closing room" + room.getName());
 		room.getUsers().forEach(async (user) => {
 			await this.userService.updateUserStatus(user, userStatus.playing);
 		});
@@ -150,7 +146,6 @@ export class GameGateway
 	}
 
 	deleteRoom(room: Room) {
-		console.log("deleting room: " + room.getName());
 		room.getSockets().forEach(async (socket) => {
 			socket.leave(room.getName());
 			await this.userService.updateUserStatus(socket.data.user, userStatus.undefined);
