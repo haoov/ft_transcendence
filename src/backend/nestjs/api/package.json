@@ -27,6 +27,7 @@
 		"@nestjs/passport": "^10.0.2",
 		"@nestjs/platform-express": "^10.0.0",
 		"@nestjs/serve-static": "^4.0.0",
+		"@nestjs/throttler": "^5.1.1",
 		"@nestjs/typeorm": "^10.0.1",
 		"@types/passport": "^1.0.16",
 		"@types/passport-jwt": "^3.0.13",

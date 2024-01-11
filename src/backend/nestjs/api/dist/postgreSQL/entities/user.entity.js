@@ -35,6 +35,10 @@ __decorate([
     __metadata("design:type", Boolean)
 ], UserEntity.prototype, "twofa_enabled", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], UserEntity.prototype, "twofa_auth", void 0);
+__decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], UserEntity.prototype, "email", void 0);

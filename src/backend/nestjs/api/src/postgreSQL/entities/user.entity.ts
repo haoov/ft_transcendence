@@ -12,6 +12,8 @@ export class UserEntity {
 	twofa_secret: string;
 	@Column({ default: false })
 	twofa_enabled: boolean;
+	@Column({ default: false })
+	twofa_auth: boolean;
 	@Column()
 	email: string;
 }

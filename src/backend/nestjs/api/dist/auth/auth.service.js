@@ -14,31 +14,15 @@ const common_1 = require("@nestjs/common");
 const user_service_1 = require("../user/user.service");
 const otplib_1 = require("otplib");
 const qrcode_1 = require("qrcode");
-const jwt_1 = require("@nestjs/jwt");
 let AuthService = class AuthService {
-    constructor(userService, jwtService) {
+    constructor(userService) {
         this.userService = userService;
-        this.jwtService = jwtService;
     }
     async validateUser(dto) {
         const user = await this.userService.getUser(dto.email);
         if (!user)
             return await this.userService.createUser(dto);
         return user;
-    }
-    redirect(code, res) {
-        if (!code)
-            throw new common_1.ForbiddenException("No code provided");
-        res.status(302).redirect("/");
-    }
-    async login(user) {
-        const payload = {
-            email: user.email
-        };
-        return {
-            email: payload.email,
-            access_token: this.jwtService.sign(payload)
-        };
     }
     logout(req, res) {
         req.session.destroy(() => {
@@ -52,7 +36,7 @@ let AuthService = class AuthService {
     async get2faSecret(user) {
         const secret = otplib_1.authenticator.generateSecret();
         const optAuthUrl = otplib_1.authenticator.keyuri(user.email, process.env.OTP_NAME, secret);
-        await this.userService.set2faSecret(secret, user.email);
+        await this.userService.set2faSecret(user.email, secret);
         return {
             secret,
             optAuthUrl
@@ -64,22 +48,10 @@ let AuthService = class AuthService {
             secret: user.twofa_secret,
         });
     }
-    async loginWith2fa(user) {
-        const payload = {
-            email: user.email,
-            is_2fa_enabled: !!user.twofa_enabled,
-            is_2fa_auth: true,
-        };
-        return {
-            email: payload.email,
-            access_token: this.jwtService.sign(payload),
-        };
-    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [user_service_1.UserService,
-        jwt_1.JwtService])
+    __metadata("design:paramtypes", [user_service_1.UserService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

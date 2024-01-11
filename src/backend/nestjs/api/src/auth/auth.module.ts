@@ -8,25 +8,24 @@ import { UserEntity } from "src/postgreSQL/entities/user.entity";
 
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
-import { Auth42Strategy } from "./stategies/auth.42strategy";
-import { Jwt2faStrategy } from "./stategies/auth.jwtstrategy";
+import { Auth42Strategy } from "./intra42/auth.intra42Strategy";
 import { SessionSerializer } from "./auth.sessionSerializer";
+import { ThrottlerModule } from "@nestjs/throttler";
 
 @Module({
 	imports: [
 		UserModule, 
 		PassportModule.register({ session: true }),
 		TypeOrmModule.forFeature([UserEntity]),
-		JwtModule.register({
-			secret: 'secret',
-			signOptions: { expiresIn: '1d' },
-		})
+		ThrottlerModule.forRoot([{
+			ttl: 6000,
+			limit: 10,
+		}])
 	],
 	controllers: [AuthController],
 	providers: [
 		AuthService, 
 		Auth42Strategy, 
-		/* Jwt2faStrategy, */ 
 		SessionSerializer
 	]
 })

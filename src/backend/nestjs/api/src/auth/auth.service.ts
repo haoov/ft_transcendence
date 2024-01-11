@@ -12,7 +12,6 @@ import { JwtService } from "@nestjs/jwt";
 export class AuthService {
 	constructor(
 		private readonly userService: UserService,
-		private readonly jwtService: JwtService,
 	) {}
 
 	async validateUser(dto: UserAuthDTO): Promise<User> {
@@ -20,23 +19,6 @@ export class AuthService {
 		if (!user)
 			return await this.userService.createUser(dto as User);
 		return user;
-	}
-
-	redirect(code: string, res: Response) {
-		if (!code)
-			throw new ForbiddenException("No code provided");
-		res.status(302).redirect("/");
-	}
-
-	async login(user: Partial<User>) {
-		const payload = {
-			email: user.email
-		}
-
-		return {
-			email: payload.email,
-			access_token: this.jwtService.sign(payload)
-		}
 	}
 
 	logout(req: Request, res: Response) {
@@ -53,8 +35,7 @@ export class AuthService {
 	async get2faSecret(user: User) : Promise<any> {
 		const secret: string = authenticator.generateSecret();
 		const optAuthUrl = authenticator.keyuri(user.email, process.env.OTP_NAME, secret);
-		await this.userService.set2faSecret(secret, user.email);
-
+		await this.userService.set2faSecret(user.email, secret);
 		return {
 			secret,
 			optAuthUrl
@@ -66,18 +47,6 @@ export class AuthService {
 			token: code,
 			secret: user.twofa_secret,
 		})
-	}
-
-	async loginWith2fa(user: Partial<User>) {
-		const payload = {
-			email: user.email,
-			is_2fa_enabled: !!user.twofa_enabled,
-			is_2fa_auth: true,
-		}
-		return {
-			email: payload.email,
-			access_token: this.jwtService.sign(payload),
-		}
 	}
 }
 

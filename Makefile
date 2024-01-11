@@ -7,7 +7,7 @@ all : build run
 ifneq (,$(findstring 42paris,$(USE)))
     SUDO	=	
 else
-    SUDO	=	/bin/sudo
+    # SUDO	=	/bin/sudo
 endif
 
 build :

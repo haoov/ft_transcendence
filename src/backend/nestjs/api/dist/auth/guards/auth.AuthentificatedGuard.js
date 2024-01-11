@@ -21,15 +21,9 @@ let AuthentificatedGuard = class AuthentificatedGuard {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
         if (!user) {
-            console.log(request.isAuthenticated());
-            return true;
+            return false;
         }
-        const userDB = await this.userService.getUser(user.email);
-        if (userDB.twofa_enabled == false) {
-            console.log("2fa is false");
-            return request.isAuthenticated() || true;
-        }
-        return false;
+        return request.isAuthenticated() || true;
     }
 };
 exports.AuthentificatedGuard = AuthentificatedGuard;
