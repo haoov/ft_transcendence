@@ -7,7 +7,10 @@
 	--c-white: rgb(255, 255, 255);
 	--c-blue-dark : rgb(19, 27, 41);
 	--c-pink: rgb(233, 58, 166);
+	--c-pink-fade-1: rgba(233, 58, 166, 0.70);
+	--c-pink-fade-2: rgba(233, 58, 166, 0.30);
 	--c-blue-light: #40c9ff;
+	--c-teal: #00CEC9;
 
 	--text-color: var(--c-white);
 
@@ -26,7 +29,6 @@
 	--primary-trans: rgba(123,22,255,0.4);
 	--yellow: #FDCB6E;
 	--orange: #E17055;
-	--teal: #00CEC9;
 	--bg: var(--darkest);
 	--color: var(--lightest);
 	--surface: var(--darker);

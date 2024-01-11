@@ -1,30 +1,40 @@
 <script setup lang="ts">
 
 import axios from "axios";
-import type { UserStat, User } from "@/utils";
-import { onMounted, ref } from "vue";
+import type { UserStat, User, GameStat } from "@/utils";
+import { ref } from "vue";
+import GameMenu from "@/game/components/gameMenu.vue";
 
-let customers = ref<UserStat[]>([]);
+let players = ref<UserStat[]>([]);
 let me = ref<User>();
 let myStats = ref<UserStat>();
+let myGames = ref<GameStat[]>([]);
 
-function fetchLeaderboard() {
-  axios
+
+// FETCHING DATA
+async function fetchLeaderboard() {
+  await axios
     .get("http://localhost:3000/api/home/leaderboard")
-    .then(data => { customers.value = data.data;});
+    .then(data => { players.value = data.data;});
 }
 
-function fetchMyStats() {
-  axios
+async function fetchMe() {
+  await axios
     .get("http://localhost:3000/api/user/me")
-    .then(data => { 
+    .then( (data) => { 
       me.value = data.data;
-      const url: string = "http://localhost:3000/api/home/stats/" + data.data.username;
-      axios.get(url).then( data => {
+      // Fetch my stats
+      const url1: string = `http://localhost:3000/api/home/stats/${data.data.id}`;
+        axios.get(url1).then( data => {
         myStats.value = data.data;})
+      // Fetch my games
+      const url2: string = `http://localhost:3000/api/home/game-history/${data.data.id}`;
+      axios.get(url2).then( data => {
+        myGames.value = data.data;})
       });
 }
 
+// UTIL FUNCTIONS
 function  getRankClass(index: number) : string {
   let className = "c-flag c-place u-bg--transparent u-text--oswald"
   switch (index) {
@@ -32,7 +42,7 @@ function  getRankClass(index: number) : string {
       className += " u-text--dark u-bg--yellow";
       break;
     case 1:
-      className += " u-text--dark u-bg--teal"
+      className += " u-text--dark u-bg--c-teal"
       break;
     case 2:
       className += " u-text--dark u-bg--orange"
@@ -42,7 +52,7 @@ function  getRankClass(index: number) : string {
 }
 
 function  getAvatarSrc(index: number) : string {
-  return customers.value[index].avatar;
+  return players.value[index].avatar;
 }
 
 function  getMyAvatarSrc() : string | undefined {
@@ -56,10 +66,14 @@ function getPieProportions() : string {
   return myStats.value?.win_rate.toString() + " " + loses.toString();
 }
 
-  onMounted(() => {
-    fetchMyStats();
-    fetchLeaderboard();
-  });
+function getDateStr(dt: Date) : string {
+  let date = new Date(dt);
+  return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0');
+}
+
+await fetchMe();
+await fetchLeaderboard();
+
 </script>
 
 <template>
@@ -72,7 +86,7 @@ function getPieProportions() : string {
             <div class="u-text--left">
               <img class="c-avatar c-avatar--lg u-ml--24" :src="getMyAvatarSrc()"/>
               <div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ me?.username }}</div>
-              <span class="u-text--teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ me?.email}} </span>
+              <span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ me?.email}} </span>
             </div>
             <div class="u-text--right">
                 <div class="u-mt--16 u-text--small u-text--overpass">My Rank</div>
@@ -86,9 +100,9 @@ function getPieProportions() : string {
       <div class="c-card">
         <h3 class="u-p--24">MY GAMES</h3>
         <div class="c-card__body">
-          <div class="u-display--flex u-justify--space-between">
+          <div class="">
             <div class="svg-pie">
-              <svg width="100%" height="70%" viewBox="0 0 40 40">
+              <svg width="60%" height="60%" viewBox="0 0 40 40">
                 <!-- <circle class="donut-hole" cx="20" cy="20" r="15.91549430918954" fill="#fff"></circle> -->
                 <circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
                 <circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
@@ -98,10 +112,33 @@ function getPieProportions() : string {
                   <tspan x="50%" text-anchor="middle" class="donut-percent">{{ myStats?.win_rate}}%</tspan>   
                 </text>
                 <text y="60%" transform="translate(0, 2)">
-                  <tspan x="50%" text-anchor="middle" class="donut-data">{{ myStats?.wins}} wins</tspan>   
+                  <tspan x="50%" text-anchor="middle" class="donut-data">of wins</tspan>   
                 </text>
               </svg>
             </div>
+
+            <ul class="c-list">
+            <li class="u-mb--8">
+              <div class="c-list__game-history">
+                <div class="u-text--left u-text--small u-text--overpass">Date</div>
+                <div class="u-text--center u-text--small u-text--overpass">Score</div>
+                <div class="u-text--left u-text--small u-text--overpass">Mode</div>
+              </div>
+            </li>
+            <li v-for="(game, index) in myGames" :key="game.id" class="c-list__item-score">
+              <div class="c-list__game-history">
+                <div class="u-bg--transparent u-text--mini">{{ getDateStr(game.date) }}</div>
+                <div class="c-list__score-grid">
+                  <div :class="{ 'win': game.winFlag }" class="c-score-grid__me">{{ me?.username }}</div>
+                  <div class="c-score-grid__score">{{ game.userScore }} - {{ game.opponentScore }}</div>
+                  <div :class="{ 'win': !game.winFlag }" class="c-score-grid__opponent">{{ game.opponent.username }}</div>
+                </div>
+                <div class="u-text-left u-text--extra-small c-stats u-text--overpass">{{ game.type }}</div>
+              </div>
+            </li>
+          </ul>
+
+
           </div>
         </div>
       </div>
@@ -118,28 +155,28 @@ function getPieProportions() : string {
           <ul class="c-list" id="list">
             <li class="c-list__item">
               <div class="c-list__grid">
-                <div class="u-text--left u-text--small u-text--medium u-text--overpass">Rank</div>
-                <div class="u-text--left u-text--small u-text--medium u-text--overpass">Username</div>
-                <div class="u-text--right u-text--small u-text--medium u-text--overpass">Win Rate</div>
-                <div class="u-text--right u-text--small u-text--medium u-text--overpass"># of Wins</div>
+                <div class="u-text--left u-text--small u-text--overpass">Rank</div>
+                <div class="u-text--left u-text--small u-text--overpass">Username</div>
+                <div class="u-text--right u-text--small u-text--overpass">Win Rate</div>
+                <div class="u-text--right u-text--small u-text--overpass u-mr--8"># Wins</div>
               </div>
             </li>
                 <!-- premier element -->
-            <li v-for="(customer, index) in customers" :key="customer.id" class="c-list__item">
+            <li v-for="(player, index) in players" :key="player.id" class="c-list__item">
               <div class="c-list__grid">
                 <div :class="getRankClass(index)">{{ index + 1 }}</div>
                 <div class="c-media">
                   <img class="c-avatar c-media__img" :src="getAvatarSrc(index)"/>
                   <div class="c-media__content">
-                    <div class="c-media__title u-text--overpass">{{ customer.username }}</div>
+                    <div class="c-media__title u-text--overpass">{{ player.username }}</div>
                     <a class="c-media__link u-text--small u-text--overpass" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
                   </div>
                 </div>
                 <div class="u-text--right c-stats u-mt--8">
-                  <p class="u-text--oswald">{{ customer.win_rate }}%</p>
+                  <p class="u-text--oswald">{{ player.win_rate }}%</p>
                 </div>
-                <div class="u-text--right c-stats u-mt--8">
-                  <strong class="u-text--oswald">{{ customer.wins }}</strong>
+                <div class="u-text--right c-stats u-mt--8 u-mr--8">
+                  <strong class="u-text--oswald">{{ player.wins }}</strong>
                 </div>
               </div>
             </li>
@@ -196,6 +233,9 @@ button, select {
     margin: 0 auto;
     animation: donutfade 1s;
     align-items: center;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
 }
 
 @keyframes donutfade {
@@ -215,25 +255,25 @@ button, select {
 }
 
 .donut-ring {
+    align-items: center;
     stroke: #EBEBEB;
 }
 
 .donut-segment {
     transform-origin: center;
-    stroke: #ed1e79;
+    stroke: var(--c-pink);
     animation: donut 1s;
 }
 
-.segment-1{fill:#ed1e79;}
 
 .donut-percent {
     font-family: "Oswald";
-    fill: #ed1e79;
+    fill: var(--c-pink);
     animation: donutfadelong 1s;
     font-size: 0.5em;
     line-height: 1;
     transform: translateY(0.5em);
-    font-weight: bold;
+    font-weight: 500;
 }
 
 @keyframes donutfadelong {
@@ -263,10 +303,8 @@ button, select {
     color:white;
     fill: white;
     animation: donutfadelong 1s;
-    font-family: Oswald;
+    font-family: Overpass;
 }
-
-
 
 .l-wrapper {
   width: 100%;
@@ -326,6 +364,9 @@ button, select {
   padding: 0;
   list-style-type: none;
 }
+.c-list__item-score {
+  padding: 0.4rem 0;
+}
 .c-list__item {
   padding: 1.6rem 0;
 }
@@ -347,6 +388,47 @@ button, select {
     grid-template-columns: 3.2rem 3fr 1fr 1fr;
     grid-column-gap: 0.8rem;
   }
+}
+
+.c-list__game-history {
+  display: grid;
+  grid-template-columns: 1.1fr 3.5fr 0.8fr;
+  grid-column-gap: 2rem;
+  align-items: end;
+}
+
+.c-list__score-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  grid-column-gap: 1.3rem;
+  align-items: end;
+}
+
+.c-score-grid__score {
+  font-size: 1.4rem;
+  font-family: Oswald;
+  justify-content: center;
+  display: flex;
+  border-radius: 0.4rem;
+  background: var(--c-grey);
+  box-shadow: 0px 0px 0px 0.4rem var(--c-grey);
+}
+.c-score-grid__me {
+  font-size: 1.2rem;
+  font-family: Overpass;
+  justify-content: right;
+  display: flex;
+}
+.c-score-grid__opponent {
+  font-size: 1.2rem;
+  font-family: Overpass;
+  justify-content: left;
+  display: flex;
+}
+
+.win {
+  font-weight: bold;
+  color: var(--c-pink);
 }
 
 .c-media {
@@ -474,8 +556,8 @@ button, select {
   background: var(--orange);
 }
 
-.c-button--teal {
-  background: var(--teal);
+.c-button--c-teal {
+  background: var(--c-teal);
 }
 
 .c-button--light-gradient {
@@ -557,12 +639,12 @@ button, select {
   color: var(--orange) !important;
 }
 
-.u-bg--teal {
-  background: var(--teal) !important;
+.u-bg--c-teal {
+  background: var(--c-teal) !important;
 }
 
-.u-text--teal {
-  color: var(--teal) !important;
+.u-text--c-teal {
+  color: var(--c-teal) !important;
 }
 
 .u-bg--light-gradient {
@@ -611,6 +693,13 @@ button, select {
 
 .u-text--small {
   font-size: 1.4rem;
+}
+
+.u-text--extra-small {
+  font-size: 1.2rem;
+}
+.u-text--mini {
+  font-size: 1.1rem;
 }
 
 .u-p--24 {
