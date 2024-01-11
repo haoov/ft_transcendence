@@ -10,13 +10,40 @@
 	--c-blue-light: #40c9ff;
 
 	--text-color: var(--c-white);
+
+	/* Leaderboard */
+	--black: #000000;
+	--white: #ffffff;
+	--darkest: #101010;
+	--darker: #16171A;
+	--dark: #A3AFBF;
+	--medium: #DFE7EF;
+	--light: #CAD4E1;
+	--lighter: #F5F8FC;
+	--lightest: var(--white);
+	--primary: #7B16FF;
+	--primary-light: #DDD9FF;
+	--primary-trans: rgba(123,22,255,0.4);
+	--yellow: #FDCB6E;
+	--orange: #E17055;
+	--teal: #00CEC9;
+	--bg: var(--darkest);
+	--color: var(--lightest);
+	--surface: var(--darker);
 }
 
 /*CUSTUM FONTS*/
 @font-face {
 	font-family: Avenir;
 	src: url(./fonts/AvenirLTStd-Roman.otf);
+}
 
+@font-face {
+	font-family: Oswald;
+	src: url(./fonts/Oswald-VariableFont_wght.ttf);
+}
+
+@font-face{
 	font-family: Overpass;
 	src: url(./fonts/OverpassMono-Regular.ttf);
 }
