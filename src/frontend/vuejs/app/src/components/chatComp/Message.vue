@@ -32,12 +32,8 @@
 
 <style scoped>
 .message-div {
-  display: grid;
-  grid-template: auto auto / 1fr 2fr;
-  width: 95%;
-  height: 98%;
+  display: flex;
   overflow: hidden;
-  margin: 2% 0 0 5%;
 }
 
 .profile-img-div {

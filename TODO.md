@@ -1,3 +1,6 @@
+- Implementer l'edit des channels
+	- Faire le BackEnd
+
 - Faire en sorte le component message soit de la bonne taille et que tout s'aligne
 
 - [DONE] Faire en sorte qu'on soit toujours sur le dernier message et pas le premier
@@ -10,7 +13,6 @@
 	- [DONE] Implementer recherche des user a ajouter
 	- [DONE] Implementer le set du MDP
 
-- Implementer l'edit des channels
 
 - Implementer les messages par channel
 

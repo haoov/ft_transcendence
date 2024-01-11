@@ -120,7 +120,6 @@ const submitForm = () => {
 };
 
 socket.on('channelJoined', (ret : boolean) => {
-	console.log(ret);
 	if (ret) {
 		$data.closeModalForm();
 		passwordError.value = false;
