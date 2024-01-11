@@ -5,6 +5,7 @@ export enum clientEvents {
 	stopWaiting = "stopWaiting",
 	gameParams = "gameParams",
 	move = "move",
+	useSpell = "useSpell",
 };
 
 export enum serverEvents {
