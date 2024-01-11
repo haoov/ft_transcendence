@@ -10,6 +10,7 @@ import {
 	WebSocketGateway,
 	WebSocketServer
 } from '@nestjs/websockets';
+import { ChannelEntity } from 'src/postgreSQL/entities';
 
 function buildMsg(senderName, profilePic, message) {
 	return {
@@ -37,9 +38,9 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(socket: Socket) {
 		let currentChannel : string = null;
-		console.log("Socket->", socket.id + " connected");
 
 		socket.on('join', (channel: any ) => {
+			console.log('join', channel);
 			if (currentChannel) {
 				socket.leave(currentChannel);
 			}
@@ -53,7 +54,6 @@ export class ChatGateway implements OnGatewayConnection {
 	}
 
 	handleDisconnect(socket: Socket) {
-		console.log("Socket->", socket.id + " disconnected");
 		this.usersSocketList.forEach((value: Socket, key: number) => {
 			if (value === socket) {
 				this.usersSocketList.delete(key);
@@ -87,11 +87,32 @@ export class ChatGateway implements OnGatewayConnection {
 			this.usersSocketList.get(channel.userId).emit('channelJoined', false);
 			return;
 		}
-		console.log('ici');
 		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
 			this.usersSocketList.get(channel.userId).emit('channelJoined', true);
 			this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
 		}
 	}
 
+	@SubscribeMessage('updateChannel')
+	async onUpdateChannel(@MessageBody() channel: any) {
+		const channelToUpdate = await this.chatService.getChannelById(channel.channelId);
+		channelToUpdate.name = channel.name;
+		channelToUpdate.mode = channel.mode;
+		channelToUpdate.password = channel.password;
+		const channelUpdated = await this.chatService.updateChannel(channelToUpdate);
+		const users = await this.chatService.getUsersByChannelId(channel.channelId);
+		for (const user of users) {
+			this.usersSocketList.get(user.id).emit('channelUpdated', channelUpdated);
+		}
+	}
+
+	@SubscribeMessage('deleteChannel')
+	async onDeleteChannel(@MessageBody() channelId: number) {
+		const users = await this.chatService.getUsersByChannelId(channelId);
+		if (await this.chatService.deleteChannel(channelId)) {
+			for (const user of users) {
+				this.usersSocketList.get(user.id).emit('channelDeleted', channelId);
+			}
+		}
+	}
 }

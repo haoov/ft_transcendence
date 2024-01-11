@@ -4,7 +4,11 @@
 		<p v-if="!userFound" style="color: red;">User not found</p>
 		<p v-if="userAlreadyAdded" style="color: red;">User already added</p>
 		<div class="input-container">
-			<img class="search-icon" src="@/assets/images/chat-svg/search-alt-1-svgrepo-com.svg" alt="Search Icon">
+			<svg class="search-icon" width="10px" height="10px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#999494">
+				<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+				<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+				<g id="SVGRepo_iconCarrier"> <path d="M14.9536 14.9458L21 21M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="#a3a3a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </g>
+			</svg>
 			<input
 				type="text"
 				id="channelUsers"
@@ -16,7 +20,11 @@
 				@keydown.enter.prevent
 				:class="{ 'is-invalid': inputVal.length > 0 && (!userFound || userAlreadyAdded)}"
 				>
-				<img v-if="inputVal" class="cancel-icon" src="@/assets/images/chat-svg/cross-svgrepo-com.svg" alt="Cancel Icon" @click=resetInputVal>
+				<svg v-if="inputVal" class="cancel-icon" alt="Cancel Icon" @click=resetInputVal width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+					<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+					<g id="SVGRepo_iconCarrier"> <path d="M6.99486 7.00636C6.60433 7.39689 6.60433 8.03005 6.99486 8.42058L10.58 12.0057L6.99486 15.5909C6.60433 15.9814 6.60433 16.6146 6.99486 17.0051C7.38538 17.3956 8.01855 17.3956 8.40907 17.0051L11.9942 13.4199L15.5794 17.0051C15.9699 17.3956 16.6031 17.3956 16.9936 17.0051C17.3841 16.6146 17.3841 15.9814 16.9936 15.5909L13.4084 12.0057L16.9936 8.42059C17.3841 8.03007 17.3841 7.3969 16.9936 7.00638C16.603 6.61585 15.9699 6.61585 15.5794 7.00638L11.9942 10.5915L8.40907 7.00636C8.01855 6.61584 7.38538 6.61584 6.99486 7.00636Z" fill="#adadad"/> </g>
+				</svg>
 		</div>
 		<div>
 			<ul>
@@ -177,7 +185,7 @@ li {
 }
 
 .cancel-icon {
-    right: 25px;
+    right: 70px;
 	cursor: pointer;
 }
 </style>

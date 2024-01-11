@@ -92,9 +92,18 @@ export default {
 		store.channels.unshift(channel)
 	},
 
+	deleteChannel(channelId: number) {
+		const index = store.channels.findIndex((c) => c.id === channelId);
+		store.channels.splice(index, 1);
+	},
+
+	updateChannel(channel: Channel) {
+		const index = store.channels.findIndex((c) => c.id === channel.id);
+		store.channels[index] = channel;
+	},
+
 	setActiveChannel(channel: Channel) {
 		store.activeChannel = channel;
-		// localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString()); // Permet de stocker la dernier channel active dans le local storage
 	},
 
 	loadMessagesByChannel(idChannel: number) {

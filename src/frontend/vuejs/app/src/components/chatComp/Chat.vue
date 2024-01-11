@@ -29,12 +29,29 @@ const $data: any = inject('$data');
 const store = $data.getStore();
 $data.setSocket(io('http://localhost:3000/chat'));
 const socket : Socket = store.socket; 
+
 socket.on('NewConnection', async () => {
 	const user = await $data.getCurrentUser();
 	socket.emit('userConnected', user);
+	if (localStorage.getItem('lastActiveChannel')) {
+		const lastChannelId = Number(localStorage.getItem('lastActiveChannel'));
+		const lastActiveChannel = store.channels.find((channel : any) => channel.id === lastChannelId);
+		if (lastActiveChannel) {
+			socket.emit('join', lastActiveChannel);
+			$data.setActiveChannel(lastActiveChannel);
+			return ;
+		}
+	}
+	else if (store.channels.length > 0) {
+		socket.emit('join', store.channels[0]);
+		$data.setActiveChannel(store.channels[0]);
+		return ;
+	}
+	$data.setActiveChannel(null);
 });
 
 onBeforeRouteLeave(() => {
+	localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString());
 	socket.disconnect();
 });
 

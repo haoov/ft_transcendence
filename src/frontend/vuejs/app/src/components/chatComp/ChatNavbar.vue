@@ -3,9 +3,9 @@
 		<nav>
 			<ul v-for="(channel, index) in channels">
 				<ChannelWidget
-				:channel="channel"
-				:key="channel.id"
-				@click="setActiveChannel(channel)"
+					:channel="channel"
+					:key="channel.id"
+					@click="setActiveChannel(channel)"
 				></ChannelWidget>
 			</ul>
 			<NewChannelWidget></NewChannelWidget>
@@ -36,6 +36,19 @@ const setActiveChannel = (channel : any) => {
 
 socket.on('newChannelCreated', (newChannelCreated : any) => {
 	$data.addChannel(newChannelCreated);
+});
+
+socket.on('channelDeleted', (channelIdDeleted : number) => {
+	$data.deleteChannel(channelIdDeleted);
+	if (store.channels.length > 0) {
+		store.activeChannel = store.channels[store.channels.length - 1];
+	} else {
+		store.activeChannel = null;
+	}
+});
+
+socket.on('channelUpdated', (channelUpdated : any) => {
+	$data.updateChannel(channelUpdated);
 });
 
 </script>
