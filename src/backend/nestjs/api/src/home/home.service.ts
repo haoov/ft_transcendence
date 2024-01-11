@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { GameEntity, UserEntity } from 'src/postgreSQL/entities';
 import { Repository } from 'typeorm';
 import { UserStat } from './interfaces';
+import { GameStat } from './interfaces/gamestat.interface';
 
 @Injectable()
 export class HomeService {
@@ -13,26 +14,57 @@ export class HomeService {
 	
 	  // Get top best 5 players
 	  async getLeaderboard(): Promise<UserStat[]> {
-		// Get total user stats
 		let userStats = await this.getAllUserStats();
-
-		// Slice the top 5 players
 		return userStats.slice(0, 5);
 	  }
 
-	  // Get user stats according to their username
-	  async getOneUserStats(username: string): Promise<UserStat> {
-		// Get total user stats
+	  // Get user stats according to their id
+	  async getOneUserStats(id: number): Promise<UserStat> {
 		const userStats = await this.getAllUserStats();
-	
-		// Find the corresponding user
 		const target = userStats.filter((user) => {
-			return user.username === username});
+			return user.id == id});
 
 		if (target.length)
 			return target[0];
 		else
 			return null;
+	  }
+
+	  // Get user game history according to their id
+	  async getUserGameHistory(id: number): Promise<GameStat[]> {
+		const games = await this.gameRepository.createQueryBuilder('game')
+			.leftJoinAndSelect('game.winner', 'winner')
+			.leftJoinAndSelect('game.loser', 'loser')
+			.where('game.winnerId = :id', { id })
+			.orWhere('game.loserId = :id', { id })
+			.orderBy('game.id', 'DESC')
+			.getMany();
+		const gameStats = games.map((game) => {
+			console.log(game);
+			if (game.winner.id == id) {
+				return {
+					id: game.id,
+					date: game.date,
+					type: game.game,
+					winFlag : true,
+					opponent : game.loser,
+					userScore : game.winner_score,
+					opponentScore : game.loser_score,
+				}
+			}
+			else {
+				return {
+					id: game.id,
+					date: game.date,
+					type: game.game,
+					winFlag : false,
+					opponent : game.winner,
+					userScore : game.loser_score,
+					opponentScore : game.winner_score,
+				}
+			}
+		});
+		return gameStats;
 	  }
 
 	  // Get all user stats
@@ -77,4 +109,4 @@ export class HomeService {
 		
 		return userStats;
 	  }
-}
+}import { Game } from 'src/game/interfaces/game.interface';

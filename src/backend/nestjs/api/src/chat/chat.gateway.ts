@@ -36,7 +36,7 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(socket: Socket) {
 		let currentChannel : string = null;
-		console.log("chat connection");
+		// console.log("chat connection");
 
 		socket.on('join', (channel: any ) => {
 			if (currentChannel) {
