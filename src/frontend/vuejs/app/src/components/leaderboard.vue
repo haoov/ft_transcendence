@@ -26,7 +26,7 @@ function fetchMyStats() {
 }
 
 function  getRankClass(index: number) : string {
-  let className = "c-flag c-place u-bg--transparent u-text--title"
+  let className = "c-flag c-place u-bg--transparent u-text--oswald"
   switch (index) {
     case 0:
       className += " u-text--dark u-bg--yellow";
@@ -71,13 +71,13 @@ function getPieProportions() : string {
           <div class="u-display--flex u-justify--space-between">
             <div class="u-text--left">
               <img class="c-avatar c-avatar--lg u-ml--24" :src="getMyAvatarSrc()"/>
-              <div class="u-text--medium u-mt--16 u-text--key u-ml--24">{{ me?.username }}</div>
-              <span class="u-text--teal u-mt--16 u-text--small u-text--key u-ml--24">{{ me?.email}} </span>
+              <div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ me?.username }}</div>
+              <span class="u-text--teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ me?.email}} </span>
             </div>
             <div class="u-text--right">
-                <div class="u-mt--16 u-text--small u-text--key">My Rank</div>
+                <div class="u-mt--16 u-text--small u-text--overpass">My Rank</div>
                 <h2>{{ myStats?.rank }}</h2>
-                <div class="u-mt--24 u-text--small u-text--key">My Wins</div>
+                <div class="u-mt--24 u-text--small u-text--overpass">My Wins</div>
                 <h2>{{ myStats?.wins }}</h2>
             </div>
           </div>
@@ -118,10 +118,10 @@ function getPieProportions() : string {
           <ul class="c-list" id="list">
             <li class="c-list__item">
               <div class="c-list__grid">
-                <div class="u-text--left u-text--small u-text--medium u-text--key">Rank</div>
-                <div class="u-text--left u-text--small u-text--medium u-text--key">Username</div>
-                <div class="u-text--right u-text--small u-text--medium u-text--key">Win Rate</div>
-                <div class="u-text--right u-text--small u-text--medium u-text--key"># of Wins</div>
+                <div class="u-text--left u-text--small u-text--medium u-text--overpass">Rank</div>
+                <div class="u-text--left u-text--small u-text--medium u-text--overpass">Username</div>
+                <div class="u-text--right u-text--small u-text--medium u-text--overpass">Win Rate</div>
+                <div class="u-text--right u-text--small u-text--medium u-text--overpass"># of Wins</div>
               </div>
             </li>
                 <!-- premier element -->
@@ -131,15 +131,15 @@ function getPieProportions() : string {
                 <div class="c-media">
                   <img class="c-avatar c-media__img" :src="getAvatarSrc(index)"/>
                   <div class="c-media__content">
-                    <div class="c-media__title u-text--key">{{ customer.username }}</div>
-                    <a class="c-media__link u-text--small u-text--key" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
+                    <div class="c-media__title u-text--overpass">{{ customer.username }}</div>
+                    <a class="c-media__link u-text--small u-text--overpass" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
                   </div>
                 </div>
                 <div class="u-text--right c-stats u-mt--8">
-                  <p class="u-text--title">{{ customer.win_rate }}%</p>
+                  <p class="u-text--oswald">{{ customer.win_rate }}%</p>
                 </div>
                 <div class="u-text--right c-stats u-mt--8">
-                  <strong class="u-text--title">{{ customer.wins }}</strong>
+                  <strong class="u-text--oswald">{{ customer.wins }}</strong>
                 </div>
               </div>
             </li>
@@ -154,58 +154,14 @@ function getPieProportions() : string {
 
 </template>
 
-<style>
+<style scoped>
 
-
-html {
-  --black: #000000;
-  --white: #ffffff;
-  --darkest: #101010;
-  --darker: #16171A;
-  --dark: #A3AFBF;
-  --medium: #DFE7EF;
-  --light: #CAD4E1;
-  --lighter: #F5F8FC;
-  --lightest: var(--white);
-  --primary: #7B16FF;
-  --primary-light: #DDD9FF;
-  --primary-trans: rgba(123,22,255,0.4);
-  --yellow: #FDCB6E;
-  --orange: #E17055;
-  --teal: #00CEC9;
-  --bg: var(--darkest);
-  --color: var(--lightest);
-  --surface: var(--darker);
-}
-
-html {
-  font-size: 62.5%;
-  box-sizing: border-box;
-}
-
-*, *:before, *:after {
-  box-sizing: inherit;
-}
-
-html, body {
-  width: 100%;
-  height: 100%;
-}
-
-body {
-  background: var(--bg);
-  color: var(--color);
-  font-size: 1.6rem;
-  font-family: Overpass, system-ui !important;
-}
-
-h1, h2, h3, h4, h5, h6 {
+h1,h2,h3,h4,h5,h6 {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-top: 0.8rem;
   margin-bottom: 0.8rem;
-  font-family: "Oswald", system-ui !important;
   color: inherit;
 }
 
@@ -271,7 +227,7 @@ button, select {
 .segment-1{fill:#ed1e79;}
 
 .donut-percent {
-    font-family: "Oswald", system-ui;
+    font-family: "Oswald";
     fill: #ed1e79;
     animation: donutfadelong 1s;
     font-size: 0.5em;
@@ -307,7 +263,7 @@ button, select {
     color:white;
     fill: white;
     animation: donutfadelong 1s;
-    font-family: Overpass;
+    font-family: Oswald;
 }
 
 
@@ -526,11 +482,11 @@ button, select {
   background: linear-gradient(to top, var(--light), var(--lightest));
 }
 
-.u-text--title {
-  font-family: "Oswald", system-ui;
+.u-text--oswald {
+  font-family: "Oswald";
 }
 
-.u-text--key {
+.u-text--overpass {
   font-family: Overpass, system-ui;
 }
 
