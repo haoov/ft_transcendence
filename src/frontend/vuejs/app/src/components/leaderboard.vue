@@ -2,13 +2,24 @@
 
 import axios from "axios";
 import type { UserStat, User, GameStat } from "@/utils";
-import { ref } from "vue";
-import GameMenu from "@/game/components/gameMenu.vue";
+import { computed, onMounted, ref } from "vue";
 
-let players = ref<UserStat[]>([]);
-let me = ref<User>();
-let myStats = ref<UserStat>();
-let myGames = ref<GameStat[]>([]);
+const players = ref<UserStat[]>([]);
+const imagesLoaded = ref<boolean>(false);
+const me = ref<User>();
+const myStats = ref<UserStat>();
+const myGames = ref<GameStat[]>([]);
+const search = ref('');
+
+const playersDisplayed = computed(() => {
+    if (search.value.length === 0) {
+        return players.value;
+    } else {
+        return players.value.filter((user: UserStat) => {
+            return user.username.toLowerCase().startsWith(search.value.toLowerCase());
+        });
+    }
+});
 
 
 // FETCHING DATA
@@ -34,25 +45,43 @@ async function fetchMe() {
       });
 }
 
+function loadAllImages() {
+      let loadPromises = players.value.map(player => {
+        return new Promise((resolve, reject) => {
+          let img = new Image();
+          img.src = player.avatar;
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+      });
+
+      Promise.all(loadPromises)
+        .then(() => { imagesLoaded.value = true; })
+    }
+
+
 // UTIL FUNCTIONS
 function  getRankClass(index: number) : string {
   let className = "c-flag c-place u-bg--transparent u-text--oswald"
   switch (index) {
-    case 0:
-      className += " u-text--dark u-bg--yellow";
-      break;
     case 1:
-      className += " u-text--dark u-bg--c-teal"
+      className += " u-text--dark u-bg--pink1";
       break;
     case 2:
-      className += " u-text--dark u-bg--orange"
+      className += " u-text--dark u-bg--pink2"
+      break;
+    case 3:
+      className += " u-text--dark u-bg--pink3"
       break;
   }
   return className;
 }
 
-function  getAvatarSrc(index: number) : string {
-  return players.value[index].avatar;
+function  getAvatarSrc(id: number) : string {
+  const user = players.value.filter((user) => {
+    return user.id == id;
+  });
+  return user[0].avatar;
 }
 
 function  getMyAvatarSrc() : string | undefined {
@@ -71,8 +100,11 @@ function getDateStr(dt: Date) : string {
   return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0');
 }
 
-await fetchMe();
-await fetchLeaderboard();
+onMounted(async () => {
+  await fetchMe();
+  await fetchLeaderboard();
+  loadAllImages();
+});
 
 </script>
 
@@ -84,7 +116,7 @@ await fetchLeaderboard();
         <div class="c-card__body">
           <div class="u-display--flex u-justify--space-between">
             <div class="u-text--left">
-              <img class="c-avatar c-avatar--lg u-ml--24" :src="getMyAvatarSrc()"/>
+              <img v-if="imagesLoaded" class="c-avatar c-avatar--lg u-ml--24" :src="getMyAvatarSrc()"/>
               <div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ me?.username }}</div>
               <span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ me?.email}} </span>
             </div>
@@ -99,10 +131,10 @@ await fetchLeaderboard();
       </div>
       <div class="c-card">
         <h3 class="u-p--24">MY GAMES</h3>
-        <div class="c-card__body">
+        <div class="c-card__body u-pt--2">
           <div class="">
             <div class="svg-pie">
-              <svg width="60%" height="60%" viewBox="0 0 40 40">
+              <svg width="50%" height="50%" viewBox="0 0 40 40">
                 <!-- <circle class="donut-hole" cx="20" cy="20" r="15.91549430918954" fill="#fff"></circle> -->
                 <circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
                 <circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
@@ -117,7 +149,7 @@ await fetchLeaderboard();
               </svg>
             </div>
 
-            <ul class="c-list">
+          <ul class="c-list">
             <li class="u-mb--8">
               <div class="c-list__game-history">
                 <div class="u-text--left u-text--small u-text--overpass">Date</div>
@@ -125,17 +157,20 @@ await fetchLeaderboard();
                 <div class="u-text--left u-text--small u-text--overpass">Mode</div>
               </div>
             </li>
-            <li v-for="(game, index) in myGames" :key="game.id" class="c-list__item-score">
-              <div class="c-list__game-history">
-                <div class="u-bg--transparent u-text--mini">{{ getDateStr(game.date) }}</div>
-                <div class="c-list__score-grid">
-                  <div :class="{ 'win': game.winFlag }" class="c-score-grid__me">{{ me?.username }}</div>
-                  <div class="c-score-grid__score">{{ game.userScore }} - {{ game.opponentScore }}</div>
-                  <div :class="{ 'win': !game.winFlag }" class="c-score-grid__opponent">{{ game.opponent.username }}</div>
+            <div v-if="myGames.length" id="gameContent">
+              <li v-for="(game, index) in myGames" :key="game.id" class="c-list__item-score">
+                <div class="c-list__game-history">
+                  <div class="u-bg--transparent u-text--mini">{{ getDateStr(game.date) }}</div>
+                  <div class="c-list__score-grid">
+                    <div :class="{ 'win': game.winFlag }" class="c-score-grid__me">{{ me?.username }}</div>
+                    <div class="c-score-grid__score">{{ game.userScore }} - {{ game.opponentScore }}</div>
+                    <div :class="{ 'win': !game.winFlag }" class="c-score-grid__opponent">{{ game.opponent.username }}</div>
+                  </div>
+                  <div class="u-text-left u-text--extra-small c-stats u-text--overpass">{{ game.type }}</div>
                 </div>
-                <div class="u-text-left u-text--extra-small c-stats u-text--overpass">{{ game.type }}</div>
-              </div>
-            </li>
+              </li>
+            </div>
+            <div v-else>No game</div>
           </ul>
 
 
@@ -147,12 +182,19 @@ await fetchLeaderboard();
       <div class="c-card">
         <div class="c-card__header">
           <h3>Leaderboard</h3>
-          <select class="c-select">
-            <!-- <option selected="selected">Sunday, Feb. 23 - Sunday, Feb. 30</option> -->
-          </select>
+          <div class= "searchForm">
+            <input 
+            v-model="search"
+            name="searchUser"
+            id="searchUser"
+            type="text"
+            autocomplete="off"
+            placeholder="Search..."
+            >
+          </div>
         </div>
         <div class="c-card__body">
-          <ul class="c-list" id="list">
+          <ul class="c-list">
             <li class="c-list__item">
               <div class="c-list__grid">
                 <div class="u-text--left u-text--small u-text--overpass">Rank</div>
@@ -161,25 +203,29 @@ await fetchLeaderboard();
                 <div class="u-text--right u-text--small u-text--overpass u-mr--8"># Wins</div>
               </div>
             </li>
-                <!-- premier element -->
-            <li v-for="(player, index) in players" :key="player.id" class="c-list__item">
-              <div class="c-list__grid">
-                <div :class="getRankClass(index)">{{ index + 1 }}</div>
-                <div class="c-media">
-                  <img class="c-avatar c-media__img" :src="getAvatarSrc(index)"/>
-                  <div class="c-media__content">
-                    <div class="c-media__title u-text--overpass">{{ player.username }}</div>
-                    <a class="c-media__link u-text--small u-text--overpass" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
+            <div v-if="playersDisplayed.length" id="leaderboardContent"> 
+              <!-- premier element -->
+              <li v-for="(player, index) in playersDisplayed" :key="player.id" class="c-list__item">
+                <div class="c-list__grid">
+                  <div :class="getRankClass(player.rank)">{{ player.rank }}</div>
+                  <div class="c-media">
+                    <img v-if="imagesLoaded" class="c-avatar c-media__img" :src="getAvatarSrc(player.id)"/>
+                    <div class="c-media__content">
+                      <div class="c-media__title u-text--overpass">{{ player.username }}</div>
+                      <a class="c-media__link u-text--small u-text--overpass" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
+                    </div>
+                  </div>
+                  <div class="u-text--right c-stats u-mt--8">
+                    <p class="u-text--oswald">{{ player.win_rate }}%</p>
+                  </div>
+                  <div class="u-text--right c-stats u-mt--8 u-mr--8">
+                    <strong class="u-text--oswald">{{ player.wins }}</strong>
                   </div>
                 </div>
-                <div class="u-text--right c-stats u-mt--8">
-                  <p class="u-text--oswald">{{ player.win_rate }}%</p>
-                </div>
-                <div class="u-text--right c-stats u-mt--8 u-mr--8">
-                  <strong class="u-text--oswald">{{ player.wins }}</strong>
-                </div>
-              </div>
-            </li>
+              </li>
+            </div>
+            <div v-else>No user</div>
+
           </ul>
         </div>
       </div>
@@ -203,20 +249,20 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 a {
-  color: var(--primary);
+  color: var(--c-teal);
   text-decoration: none;
   transition: all 120ms ease-out 0s;
   display: inline-block;
   border-radius: 0.4rem;
 }
 a:hover {
-  background: var(--primary-trans);
-  color: var(--primary-light);
-  box-shadow: 0px 0px 0px 0.4rem var(--primary-trans);
+  background: var(--c-teal-dark);
+  color: var(--c-teal);
+  box-shadow: 0px 0px 0px 0.4rem var(--c-teal-dark);
 }
 
 button, textarea, input, select {
-  font-family: inherit !important;
+  font-family: inherit;
   color: inherit;
 }
 button:active, button:focus, textarea:active, textarea:focus, input:active, input:focus, select:active, select:focus {
@@ -295,7 +341,7 @@ button, select {
 }
 
 .donut-data {
-    font-size: 0.18em;
+    font-size: 0.2em;
     line-height: 1;
     transform: translateY(0.5em);
     text-align: center;
@@ -324,6 +370,14 @@ button, select {
   .l-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.l-grid__item {
+  height: 650px;
+  box-shadow: 0 1px 0 0 var(--c-black-light),0 -1px 0 0 var(--c-black-light);
+  border-radius: 0.8rem;
+  margin-bottom: 0.1rem;
+  overflow: hidden;
 }
 
 .c-card {
@@ -359,13 +413,23 @@ button, select {
   }
 }
 
+#gameContent {
+    height: 200px;
+    overflow-y: auto;
+}
+
+#leaderboardContent {
+  height: 500px;
+  overflow-y: auto;
+ }
+
 .c-list {
   margin: 0;
   padding: 0;
   list-style-type: none;
 }
 .c-list__item-score {
-  padding: 0.4rem 0;
+  padding: 0.6rem 0;
 }
 .c-list__item {
   padding: 1.6rem 0;
@@ -388,6 +452,31 @@ button, select {
     grid-template-columns: 3.2rem 3fr 1fr 1fr;
     grid-column-gap: 0.8rem;
   }
+}
+
+.searchForm input {
+  width: 60%;
+  padding: 4% 7%;
+  border-radius: 8px;
+  color: #fff;
+  font-family: inherit;
+  background-color: var(--c-black-light);
+  border: 1px solid var(--c-black-light);
+  font-family: Overpass;
+}
+
+.searchForm {
+    justify-content: right;
+    display: flex;
+}
+
+.searchForm input::placeholder {
+  opacity: 0.5;
+}
+
+.searchForm input:focus {
+  outline: none;
+  border-color: #e81cff;
 }
 
 .c-list__game-history {
@@ -470,8 +559,8 @@ button, select {
   }
 }
 .c-avatar--lg {
-  width: 9.6rem;
-  height: 9.6rem;
+  width: 8.5rem;
+  height: 8.5rem;
 }
 
 .c-button {
@@ -623,24 +712,24 @@ button, select {
   color: var(--medium) !important;
 }
 
-.u-bg--yellow {
-  background: var(--yellow) !important;
+.u-bg--pink1 {
+  background: var(--c-pink) !important;
 }
 
 .u-text--yellow {
   color: var(--yellow) !important;
 }
 
-.u-bg--orange {
-  background: var(--orange) !important;
+.u-bg--pink3 {
+  background: var(--c-pink-3) !important;
 }
 
 .u-text--orange {
   color: var(--orange) !important;
 }
 
-.u-bg--c-teal {
-  background: var(--c-teal) !important;
+.u-bg--pink2 {
+  background: var(--c-pink-2) !important;
 }
 
 .u-text--c-teal {
