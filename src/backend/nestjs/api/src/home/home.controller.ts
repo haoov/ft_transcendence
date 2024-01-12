@@ -9,7 +9,7 @@ export class HomeController {
 
 	@Get("/leaderboard")
 	getLeaderboard(): Promise<UserStat[]> {
-	  return this.homeService.getLeaderboard();
+	  return this.homeService.getAllUserStats();
 	}
 
 	@Get("/stats/:id")

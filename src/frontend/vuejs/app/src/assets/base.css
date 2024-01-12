@@ -6,11 +6,12 @@
 	--c-grey-light: rgb(211, 211, 211);
 	--c-white: rgb(255, 255, 255);
 	--c-blue-dark : rgb(19, 27, 41);
-	--c-pink: rgb(233, 58, 166);
-	--c-pink-fade-1: rgba(233, 58, 166, 0.70);
-	--c-pink-fade-2: rgba(233, 58, 166, 0.30);
+	--c-pink: #e81cff;
+	--c-pink-2: #f2a1ff;
+	--c-pink-3: #fbd4ff;
 	--c-blue-light: #40c9ff;
 	--c-teal: #00CEC9;
+	--c-teal-dark: #1f6362;
 
 	--text-color: var(--c-white);
 
