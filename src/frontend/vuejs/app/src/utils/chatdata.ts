@@ -41,6 +41,10 @@ async function fetchChannels() : Promise<Channel[]> {
 	return axios.get('http://localhost:3000/api/chat/channels').then((res) => { return res.data });
 };
 
+async function fetchJoinableChannels(id: number) : Promise<Channel[]> {
+	return axios.get(`http://localhost:3000/api/chat/channels/joinable/${id}`).then((res) => { return res.data });
+}
+
 async function fetchCurrentUserChannels(id: number) : Promise<Channel []> {
 	return axios.get(`http://localhost:3000/api/chat/channels/${id}`).then((res) => { return res.data });
 }
@@ -72,6 +76,10 @@ export default {
 
 	getChannels() : Object {
 		return fetchChannels();
+	},
+
+	getJoinableChannels(id: number) : Object {
+		return fetchJoinableChannels(id);
 	},
 
 	getStore() : Object {

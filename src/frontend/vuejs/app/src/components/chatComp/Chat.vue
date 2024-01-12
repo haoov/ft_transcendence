@@ -51,8 +51,11 @@ socket.on('NewConnection', async () => {
 });
 
 onBeforeRouteLeave(() => {
-	localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString());
 	socket.disconnect();
+	if (!store.activeChannel) {
+		return ;
+	}
+	localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString());
 });
 
 const closeModal = () => {
