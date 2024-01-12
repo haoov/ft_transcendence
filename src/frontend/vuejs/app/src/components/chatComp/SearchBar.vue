@@ -124,7 +124,7 @@ label {
 }
 
 input {
-  width: 80%;
+  width: 100%;
   padding: 3% 7%;
   border-radius: 8px;
   color: #fff;
@@ -185,7 +185,7 @@ li {
 }
 
 .cancel-icon {
-    right: 70px;
+    right: 5px;
 	cursor: pointer;
 }
 </style>

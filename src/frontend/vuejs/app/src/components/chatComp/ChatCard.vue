@@ -23,9 +23,9 @@
   grid-template-columns: 1fr 3fr;
   width: 70vh;
   height: 80vh;
-  border-radius: 8px;
-  box-shadow: 0 0 10px #fe019a;
-  animation: gradient 10s ease infinite;
+  border-radius: 0.8rem;
+  background: var(--surface);
+  box-shadow: 0px 0px 0px 1px var(--c-black-light)
 }
 
 </style>

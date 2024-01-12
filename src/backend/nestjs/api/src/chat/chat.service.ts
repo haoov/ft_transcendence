@@ -69,6 +69,17 @@ export class ChatService {
 		return channel.users;
 	}
 
+	//Permet de recuperer les channels qui ne sont ni prives ni secret et qui ne sont pas deja dans la liste des channels de l'utilisateur
+	async getJoinableChannels(userId: number): Promise<Channel []> {
+		const channels = await this.channelRepository
+		.createQueryBuilder("channel")
+		.leftJoin("channel.users", "user")
+		.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
+		.andWhere("user.id != :userId", { userId })
+		.getMany();
+		return channels;
+	}
+
 	//Permet de créer un channel dans la base de données
 	async createChannel(channel: any): Promise<Channel> {
 		const users : User [] = [];

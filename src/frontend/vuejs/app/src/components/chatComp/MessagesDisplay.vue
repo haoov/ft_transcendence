@@ -1,11 +1,15 @@
 <template>
 	<div class="Messages-div" ref="">
-		<Message
+		<ul
 			v-for="(message, index) in messages"
-			:id="index"
-			:data="message"
-			:key="message.id"
-		></Message>
+			:id="index === messages.length - 1 ? 'last' : ''"
+		>
+			<Message
+				:id="index"
+				:data="message"
+				:key="message.id"
+			></Message>
+		</ul>
 	</div>
 </template>
 
@@ -75,6 +79,12 @@ socket.on("newMessage", (message : any) => {
   margin-top: 2px;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0 0 5px 7px;
+  padding: 0;
 }
 
 p {
