@@ -39,6 +39,10 @@ socket.on(ServerEvents.waiting, () => {
 	state.value = "waiting";
 });
 
+socket.on(ServerEvents.waitingForOpponent, () => {
+	state.value = "waiting for opponent";
+});
+
 socket.on(ServerEvents.finished, (winnerUsername) => {
 	state.value = "finished";
 	displayMenu.value = true;
@@ -97,8 +101,8 @@ onMounted(() => {
 	animate();
 })
 
-onBeforeRouteLeave(() => {
-	socket.disconnect();
+onBeforeRouteLeave((to) => {
+	socket.emit(ClientEvents.leave);
 })
 </script>
 
@@ -106,7 +110,7 @@ onBeforeRouteLeave(() => {
 	<score :p1="p1" :p2="p2"></score>
 	<div id="game">
 		<gameMenu
-			v-if="displayMenu == true"
+			v-if="displayMenu"
 			v-on:click="assignMode"
 			v-on:stopWaiting="stopWait"
 			:state="state"

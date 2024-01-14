@@ -5,6 +5,10 @@ export enum ClientEvents {
 	down = "down",
 	left = "left",
 	right = "right",
+	stopWaiting = "stopWaiting",
+	leave = "leave",
+	gamePlay = "gamePlay",
+	gameForfeit = "gameForfeit",
 };
 export enum ServerEvents {
 	position = "position",
@@ -12,4 +16,7 @@ export enum ServerEvents {
 	disconnect = "disconnect",
 	waiting = "waiting",
 	playing = "playing",
+	gameReady = "gameReady",
+	waitingForOpponent = "waitingForOpponent",
+	disableNotifications = "disableNotifications",
 };
