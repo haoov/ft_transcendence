@@ -7,7 +7,8 @@ import { UserService } from 'src/user/user.service';
 import { userStatus } from 'src/user/enum/userStatus.enum';
 import { gameParams } from './interfaces/gameParams';
 import { GameService } from './game.service';
-import { rules } from './data/opts';
+import { UserGateway } from 'src/user/user.gateway';
+import { Inject, forwardRef } from '@nestjs/common';
 
 
 // Outil de gestion des web socket events
@@ -20,6 +21,7 @@ export class GameGateway
 	roomId: number;
 
 	constructor(	private readonly userService: UserService,
+								@Inject(forwardRef(() => UserGateway)) private readonly userGateway: UserGateway,
 								private readonly gameService: GameService) {
 		this.rooms = [];
 		this.roomId = 0;
@@ -28,21 +30,23 @@ export class GameGateway
 	handleConnection(client: Socket) {
 		//wait for connected event from client side
 		client.on(clientEvents.connected, (data: User) => {
+			console.log("game connection: " + data.username);
 			//store user data in socket
 			client.data.user = data;
-			//if user is playing, add socket to room
-			const room: Room = this.findRoom(client);
-			if (room) {
-				if (room.isFull()) {
-					client.emit(serverEvents.started, room.getUsers(), room.getParams());
-				}
-				room.addSocket(client);
-			}
+			//if user is already in a room
+			// const room: Room = this.findRoom(client);
+			// if (room) {
+			// 	if (room.isFull()) {
+			// 		client.emit(serverEvents.started, room.getUsers(), room.getParams());
+			// 	}
+			// 	room.addSocket(client);
+			// }
 		});
 	}
 
 	async handleDisconnect(client: Socket) {
 		if (client.data.user) {
+			console.log("game disconnection: " + client.data.user.username);
 			const room: Room = this.findRoom(client);
 			if (room) {
 				room.removeSocket(client);
@@ -64,12 +68,14 @@ export class GameGateway
 			return (room.isOpen() && room.getParams().game == params.game);
 		});
 		if (openRoom) {
+			openRoom.addUser(client.data.user);
 			openRoom.addSocket(client);
-			this.closeRoom(openRoom);
+			//notify waiting user that the game is ready
+			this.userGateway.gameReady(openRoom);
+			client.emit(serverEvents.waitingForOpponent);
 		}
 		else {
-			const newRoom = this.createRoom(params, client.data.user);
-			newRoom.addSocket(client);
+			const newRoom = this.createRoom(params, client);
 			if (params.mode == "singlePlayer") {
 				this.closeRoom(newRoom);
 			}
@@ -96,7 +102,7 @@ export class GameGateway
 	@SubscribeMessage(clientEvents.move)
 	move(client: Socket, direction: string) {
 		const room: Room = this.findRoom(client);
-		if (room) {
+		if (room && room.isValidSocket(client)) {
 			room.gameMove(client, direction);
 		}
 	}
@@ -104,9 +110,16 @@ export class GameGateway
 	@SubscribeMessage(clientEvents.useSpell)
 	useSpell(client: Socket, type: string) {
 		const room: Room = this.findRoom(client);
-		if (room) {
+		if (room && room.isValidSocket(client)) {
 			room.gameUseSpell(client, type);
 		}
+	}
+
+	@SubscribeMessage(clientEvents.leave)
+	leave(client: Socket) {
+		const room: Room = this.findRoom(client);
+		if (room)
+			room.removeSocket(client);
 	}
 
 	@SubscribeMessage(clientEvents.stopWaiting)
@@ -130,14 +143,18 @@ export class GameGateway
 		}
 	}
 
-	createRoom(params: gameParams, p1: User) {
-		const newRoom = new Room(this.roomId.toString(), params, p1);
+	createRoom(params: gameParams, client: Socket) {
+		console.log("creating room: " + this.roomId);
+		const newRoom = new Room(this.roomId.toString(), params);
 		++this.roomId;
+		newRoom.addUser(client.data.user);
+		newRoom.addSocket(client);
 		this.rooms.push(newRoom);
 		return newRoom;
 	}
 
 	closeRoom(room: Room) {
+		console.log("closing room: " + room.getName());
 		room.getUsers().forEach(async (user) => {
 			await this.userService.updateUserStatus(user, userStatus.playing);
 		});
@@ -146,6 +163,7 @@ export class GameGateway
 	}
 
 	deleteRoom(room: Room) {
+		console.log("deleting room: " + room.getName());
 		room.getSockets().forEach(async (socket) => {
 			socket.leave(room.getName());
 			await this.userService.updateUserStatus(socket.data.user, userStatus.undefined);

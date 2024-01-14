@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { GameController } from './game.controller';
 import { GameService } from './game.service';
 import { GameGateway } from './game.gateway';
@@ -7,8 +7,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GameEntity } from 'src/postgreSQL/entities';
 
 @Module({
-	imports: [UserModule, TypeOrmModule.forFeature([GameEntity])],
+	imports: [forwardRef(() => UserModule), TypeOrmModule.forFeature([GameEntity])],
 	controllers: [GameController],
 	providers: [GameGateway, GameService],
+	exports: [GameService, GameGateway]
 })
 export class GameModule {}

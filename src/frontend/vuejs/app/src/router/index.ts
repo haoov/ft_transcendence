@@ -10,13 +10,7 @@ const router = createRouter({
 
 router.beforeEach((to) => {
 	if (to.name != "login") {
-		const connectSocket: any = inject('socket');
-		axios.get("http://localhost:3000/api/auth").then(
-			//onSuccess
-			() => {
-				connectSocket();
-			},
-			//onFailure
+		axios.get("http://localhost:3000/api/auth").catch(
 			() => {
 				router.push("/login");
 			}

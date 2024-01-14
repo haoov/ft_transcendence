@@ -6,6 +6,9 @@ export enum clientEvents {
 	gameParams = "gameParams",
 	move = "move",
 	useSpell = "useSpell",
+	leave = "leave",
+	gamePlay = "gamePlay",
+	gameForfeit = "gameForfeit",
 };
 
 export enum serverEvents {
@@ -14,5 +17,9 @@ export enum serverEvents {
 	started = "started",
 	finished = "finished",
 	waiting = "waiting",
+	waitingForOpponent = "waitingForOpponent",
 	playing = "playing",
+	gameReady = "gameReady",
+	gameInvite = "gameInvite",
+	disableNotifications = "disableNotifications",
 };

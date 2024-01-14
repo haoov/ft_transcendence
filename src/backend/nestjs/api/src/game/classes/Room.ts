@@ -15,15 +15,12 @@ export class Room {
 	private params: gameParams;
 	private game: Pong;
 
-	constructor(name: string, params: gameParams, p1: User, p2?: User) {
+	constructor(name: string, params: gameParams) {
 		this.users = [];
 		this.name = name;
 		this.public = true;
 		this.full = (params.mode == "singlePlayer" ? true : false);
 		this.sockets = [];
-		this.users.push(p1);
-		if (p2)
-			this.users.push(p2);
 		this.params = params;
 		this.game = new Pong(params);
 	}
@@ -40,15 +37,23 @@ export class Room {
 		socket.data.room = this.name;
 		this.sockets.push(socket);
 		socket.join(this.name);
-		if (socket.data.user.id != this.users[0].id) {
-			this.users.push(socket.data.user);
-			this.full = true;
-		}
+		// if (socket.data.user.id != this.users[0].id) {
+		// 	this.users.push(socket.data.user);
+		// 	this.full = true;
+		// }
 	}
 
 	removeSocket(socket: Socket): void {
 		this.sockets.splice(this.sockets.indexOf(socket), 1);
 		socket.leave(this.name);
+	}
+
+	addUser(user: User): void {
+		if (!this.isFull()) {
+			this.users.push(user);
+			if (this.users.length > 1)
+				this.full = true;
+		}
 	}
 
 	getType(): string {
@@ -128,6 +133,13 @@ export class Room {
 
 	checkSockets(user: User): boolean {
 		if (this.sockets.find((socket) => {return (socket.data.user.id == user.id);}))
+			return true;
+		else
+			return false;
+	}
+
+	isValidSocket(client: Socket): boolean {
+		if (this.sockets.find((socket) => {return (socket.id == client.id);}))
 			return true;
 		else
 			return false;
