@@ -18,7 +18,7 @@
 				:display="globalSocket.getDisplayValue(ServerEvents.gameReady)"
 				text="Ready to play!"
 				v-on:decline="globalSocket.getSocket().emit(ClientEvents.gameForfeit)"
-				v-on:accept="globalSocket.getSocket().emit(ClientEvents.gamePlay); router.push('/game');"
+				v-on:accept="router.push('/game');"
 			></Notification>
     </div>
 </template>
