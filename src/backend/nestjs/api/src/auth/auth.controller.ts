@@ -15,7 +15,7 @@ export class AuthController {
 	) {}
 
 	@Get()
-	@UseGuards(AuthentificatedGuard)
+	@UseGuards(Authentificated2faGuard)
 	checkAuth() {}
 
 	@Get("login")
@@ -26,7 +26,9 @@ export class AuthController {
 
 	@Get("42-redirect")
 	@UseGuards(Intra42Guard)
-	async redirect(@Res({ passthrough: true }) res: Response) {
+	async redirect(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+		const user: User = req.user as User;
+			if (user) console.log(user.twofa_enabled);
 		res.status(302).redirect("/");
 	}
 
@@ -34,13 +36,16 @@ export class AuthController {
 	@UseGuards(AuthentificatedGuard)
 	async get2FA(@Req() req: Request) {
 		const user: User = req.user as User;
-		return await this.userService.getUser(user.email);
+		const userDB = await this.userService.getUser(user.email);
+		return { "twofa_status": user.twofa_enabled };
 	}
 
 	@Post('2fa/turn-on')
 	@UseGuards(AuthentificatedGuard)
 	async swithOn2fa(@Req() req: Request, @Body() body: Body2faDTO) {
 		const user: User = req.user as User;
+		if (!user.twofa_secret)
+			throw new UnauthorizedException('no secret generated');
 		const isCodeValid = this.authService.is2faValid(
 			body.twofaCode,
 			user,
@@ -66,6 +71,10 @@ export class AuthController {
 	@UseGuards(AuthentificatedGuard)
 	async authentificate(@Req() req: Request, @Body() body: Body2faDTO) {
 		const user: User = req.user as User;
+		if (!user.twofa_enabled)
+			throw new UnauthorizedException('no 2fa needed');
+		if (!user.twofa_secret)
+			throw new UnauthorizedException('no secret generated');
 		const isCodeValid = this.authService.is2faValid(
 			body.twofaCode,
 			user,
