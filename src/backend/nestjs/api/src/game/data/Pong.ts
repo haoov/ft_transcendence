@@ -62,9 +62,15 @@ class Pong {
 
 	start() {
 		this.started = true;
+		this.compute();
 	}
 
-	update() {
+	stop() {
+		this.started = false;
+	}
+
+	async compute() {
+
 		if (this.started) {
 			if (this.game == "super") {
 				this.ball.moove(this.players, this.field, this.effect);
@@ -78,7 +84,25 @@ class Pong {
 				if (this.players[i].score == rules.WIN_SCORE)
 					this.finished = true;
 			}
+			setTimeout(() => {this.compute();}, 8.333);
 		}
+	}
+
+	reset() {
+		this.ball.reset();
+		for (let i = 0; i < this.players.length; ++i)
+			this.players[i].paddle.reset();
+	}
+
+	getPlayers(): Player[] {
+		return this.players;
+	}
+
+	getMode(): string {
+		return this.mode;
+	}
+
+	getData() {
 		return {
 			ballPosition: this.ball.position,
 			ballScale: this.ball.scale,
@@ -98,20 +122,6 @@ class Pong {
 			p2Score: this.players[1].score,
 			finished: this.finished,
 		};
-	}
-
-	reset() {
-		this.ball.reset();
-		for (let i = 0; i < this.players.length; ++i)
-			this.players[i].paddle.reset();
-	}
-
-	getPlayers(): Player[] {
-		return this.players;
-	}
-
-	getMode(): string {
-		return this.mode;
 	}
 };
 

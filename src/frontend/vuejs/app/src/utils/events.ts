@@ -1,10 +1,10 @@
 export enum ClientEvents {
 	connected = "connected",
+	gameParams = "gameParams",
+	update = "update",
 	mode = "mode",
-	up = "up",
-	down = "down",
-	left = "left",
-	right = "right",
+	move = "move",
+	useSpell = "useSpell",
 	stopWaiting = "stopWaiting",
 	leave = "leave",
 	gamePlay = "gamePlay",
@@ -12,6 +12,8 @@ export enum ClientEvents {
 };
 export enum ServerEvents {
 	position = "position",
+	started = "started",
+	updated = "updated",
 	finished = "finished",
 	disconnect = "disconnect",
 	waiting = "waiting",
