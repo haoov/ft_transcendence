@@ -14,8 +14,8 @@
 			link: '/chat',
 		},
 		{
-			name: 'PROFILE',
-			link: '/profile'
+			name: 'SETTINGS',
+			link: '/settings'
 		}
 	];
 </script>

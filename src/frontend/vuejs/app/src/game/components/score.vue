@@ -24,7 +24,7 @@
 <style scoped>
 	.score-container {
 		display: flex;
-		width: 700px;
+		width: 720px;
 		border-radius: 5rem;
 		background: padding-box,
 								linear-gradient(145deg, transparent 15%, var(--c-grey),transparent);

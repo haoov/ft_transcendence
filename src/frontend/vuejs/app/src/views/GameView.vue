@@ -1,6 +1,7 @@
 <script setup lang="ts">
 	import NavigationBar from "@/components/navigationBar.vue";
 	import Game from "../components/game.vue"
+
 </script>
 
 <template>
@@ -21,4 +22,4 @@
 		flex-direction: column;
 		align-items: center;
 	}
-</style>
+</style>@/injectables/STF
