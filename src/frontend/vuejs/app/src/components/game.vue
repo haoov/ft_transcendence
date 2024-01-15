@@ -90,7 +90,7 @@ onMounted(() => {
 		console.log("leaving game");
 		game.stopGame();
 		gameSocket.getSocket().off(ServerEvents.updated);
-		//gameSocket.getSocket().off(ServerEvents.started);
+		gameSocket.getSocket().off(ServerEvents.started);
 		gameSocket.getSocket().off(ServerEvents.finished);
 	})
 })
