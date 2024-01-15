@@ -5,6 +5,7 @@ import ChatView from "@/views/ChatView.vue";
 import type GameSocket from "@/game/gameSocket";
 import { inject } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
+import SettingView from "@/views/SettingView.vue";
 
 const routes = [
 	{
@@ -32,6 +33,11 @@ const routes = [
 		name: "chat",
 		component: ChatView,
 		children: [],
+	},
+	{
+		path: "/settings",
+		name: "settings",
+		component: SettingView,
 	}
 ];
 
