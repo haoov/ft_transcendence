@@ -1,6 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { UserStat } from './interfaces';
 import { HomeService } from './home.service';
+import { GameStat } from './interfaces/gamestat.interface';
 
 @Controller('home')
 export class HomeController {
@@ -8,11 +9,16 @@ export class HomeController {
 
 	@Get("/leaderboard")
 	getLeaderboard(): Promise<UserStat[]> {
-	  return this.homeService.getLeaderboard();
+	  return this.homeService.getAllUserStats();
 	}
 
-	@Get("/stats/:username")
-	getUserRank(@Param('username') username :string): Promise<UserStat> {
-		return this.homeService.getOneUserStats(username);
+	@Get("/stats/:id")
+	getUserStats(@Param('id') id :number): Promise<UserStat> {
+		return this.homeService.getOneUserStats(id);
+	}
+
+	@Get("/game-history/:id")
+	getUserGameHistory(@Param('id') id :number): Promise<GameStat[]> {
+		return this.homeService.getUserGameHistory(id);
 	}
 }
