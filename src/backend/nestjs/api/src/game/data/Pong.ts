@@ -38,6 +38,12 @@ class Pong {
 			player.paddle.move(direction, this.field);
 	}
 
+	useSpell(side: string, type: string) {
+		const player: Player = this.players.find((currentPlayer) => {return (currentPlayer.side == side);});
+		if (player.spellBook.spellEnabled(type))
+			player.spellBook.useSpell(type, this.ball, player.paddle);
+	}
+
 	initParams() {
 		return {
 			window: window,
@@ -56,9 +62,15 @@ class Pong {
 
 	start() {
 		this.started = true;
+		this.compute();
 	}
 
-	update() {
+	stop() {
+		this.started = false;
+	}
+
+	async compute() {
+
 		if (this.started) {
 			if (this.game == "super") {
 				this.ball.moove(this.players, this.field, this.effect);
@@ -72,24 +84,8 @@ class Pong {
 				if (this.players[i].score == rules.WIN_SCORE)
 					this.finished = true;
 			}
+			setTimeout(() => {this.compute();}, 8.333);
 		}
-		return {
-			ballPosition: this.ball.position,
-			ballScale: this.ball.scale,
-			ballEffect: (this.ball.effect != null ? this.ball.effect.type : "none"),
-			p1PaddlePosition: this.players[0]?.paddle.position,
-			p1PaddleScale: this.players[0]?.paddle.scale,
-			p1Effect: (this.players[0]?.paddle.effect != null ? this.players[0]?.paddle.effect.type : "none"),
-			p2PaddlePosition: this.players[1]?.paddle.position,
-			p2PaddleScale: this.players[1]?.paddle.scale,
-			p2Effect: (this.players[1]?.paddle.effect != null ? this.players[1]?.paddle.effect.type : "none"),
-			effectPosition: this.effect.position,
-			effectRotationSpeed: this.effect.rotationSpeed,
-			effectOn: this.effect.on,
-			p1Score: this.players[0].score,
-			p2Score: this.players[1].score,
-			finished: this.finished,
-		};
 	}
 
 	reset() {
@@ -104,6 +100,28 @@ class Pong {
 
 	getMode(): string {
 		return this.mode;
+	}
+
+	getData() {
+		return {
+			ballPosition: this.ball.position,
+			ballScale: this.ball.scale,
+			ballEffect: this.ball.getEffect(),
+			p1PaddlePosition: this.players[0].paddle.position,
+			p1PaddleScale: this.players[0].paddle.scale,
+			p1Effect: this.players[0].paddle.effect,
+			p1Spells: this.players[0].spellBook.getSpells(),
+			p2PaddlePosition: this.players[1].paddle.position,
+			p2PaddleScale: this.players[1].paddle.scale,
+			p2Effect: this.players[1].paddle.effect,
+			p2Spells: this.players[1].spellBook.getSpells(),
+			effectPosition: this.effect.position,
+			effectRotationSpeed: this.effect.rotationSpeed,
+			effectOn: this.effect.on,
+			p1Score: this.players[0].score,
+			p2Score: this.players[1].score,
+			finished: this.finished,
+		};
 	}
 };
 
