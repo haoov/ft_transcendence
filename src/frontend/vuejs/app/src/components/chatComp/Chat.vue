@@ -12,6 +12,11 @@
 				<EditChannelForm></EditChannelForm>
 			</Suspense>
 		</Modal>
+		<Modal v-if="store.isAddUserModalOpen" :function="closeAddUserModalForm">
+			<Suspense>
+				<AddUserForm></AddUserForm>
+			</Suspense>
+		</Modal>
 	</div>
 </template>
 
@@ -21,6 +26,7 @@ import ChatCard from './ChatCard.vue';
 import Modal from './Modal.vue';
 import ChannelModal from './ChannelModal.vue';
 import EditChannelForm from './EditChannelForm.vue';
+import AddUserForm from './AddUserForm.vue';
 import { Suspense, inject } from 'vue';
 import { io, Socket } from 'socket.io-client';
 import { onBeforeRouteLeave } from 'vue-router';
@@ -64,6 +70,10 @@ const closeModal = () => {
 
 const closeEditModal = () => {
 	$data.closeEditModalForm()
+}
+
+const closeAddUserModalForm = () => {
+	$data.closeAddUserModalForm()
 }
 
 </script>
