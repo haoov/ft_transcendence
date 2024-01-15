@@ -41,9 +41,6 @@ class MessageEntity {
 	@Column()
 	datestamp: Date;
 
-	@Column()
-	timestamp: string;
-
 }
 
 export { MessageEntity, ChannelEntity };

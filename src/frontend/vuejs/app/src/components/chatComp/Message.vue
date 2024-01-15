@@ -16,16 +16,20 @@
 </template>
 
 <script setup lang="ts">
+import moment from 'moment-timezone';
+
 
 	const props : any = defineProps({
 		data: Object,
 		id: Number
 	});
-
+	
 	const username : string = props.data.sender.name;
 	const profilePic : string = props.data.sender.avatar;
 	const message : string = props.data.message.text;
-	const timestamp : string = props.data.message.time;
+	const DateRawStamp : string = props.data.message.time;
+	const timeFr = moment.tz(DateRawStamp, 'Europe/Paris');
+	const timestamp : string = timeFr.format('HH:mm:ss');
 	const id : string = props.id.toString();
 
 </script>

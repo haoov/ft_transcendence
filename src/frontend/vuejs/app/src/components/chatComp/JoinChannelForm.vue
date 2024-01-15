@@ -75,7 +75,6 @@ const store = $data.getStore();
 const socket = store.socket;
 const currentUser = await $data.getCurrentUser();
 const channelList = await $data.getJoinableChannels(currentUser.id);
-console.log(channelList);
 const channelToJoin = ref<Channel>();
 const password = ref('');
 const passwordError = ref(false);

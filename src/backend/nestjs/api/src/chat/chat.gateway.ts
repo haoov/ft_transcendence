@@ -20,7 +20,7 @@ function buildMsg(senderName, profilePic, message) {
 		},
 		message: {
 			text : message.text,
-			time: message.timestamp,
+			time: message.datestamp,
 		}
 	}
 };
@@ -40,7 +40,6 @@ export class ChatGateway implements OnGatewayConnection {
 		let currentChannel : string = null;
 
 		socket.on('join', (channel: any ) => {
-			console.log('join', channel);
 			if (currentChannel) {
 				socket.leave(currentChannel);
 			}

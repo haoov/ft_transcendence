@@ -4,7 +4,7 @@
 
 - Rajouter la recherche utilisateur lors de la creation de channel
 
-- Refuser les messages plus grands que XX characteres
+- [DONE] Refuser les messages plus grands que XX characteres
 
 - Rajouter un + Pour rajouter des utilisateurs a un channel
 
