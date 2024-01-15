@@ -1,18 +1,18 @@
 <script setup lang="ts">
-	import Leaderboard from '@/components/leaderboard.vue';
+	import Settings from '@/components/settings.vue';
     import navigationBar from '@/components/navigationBar.vue';
 </script>
 
 <template>
-    <div class="home-body">
+    <div class="setting-body">
 	    <navigationBar></navigationBar>
-        <Suspense><Leaderboard></Leaderboard></Suspense>
+        <Suspense><Settings></Settings></Suspense>
     </div>
 </template>
 
 <style>
 
-    .home-body {
+    .setting-body {
         height: 100%;
         background: linear-gradient(	to right,
                                         var(--c-black),

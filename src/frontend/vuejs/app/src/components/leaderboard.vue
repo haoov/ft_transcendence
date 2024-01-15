@@ -3,7 +3,6 @@
 import axios from "axios";
 import type { UserStat, User, GameStat } from "@/utils";
 import { computed, onMounted, ref } from "vue";
-import { makeClipAdditive } from "three/src/animation/AnimationUtils.js";
 
 const players = ref<UserStat[]>([]);
 const imagesLoaded = ref<boolean>(false);
@@ -140,9 +139,9 @@ onMounted(async () => {
             </div>
             <div class="u-text--right">
                 <div class="u-mt--16 u-text--small u-text--overpass">My Rank</div>
-                <h2>{{ myStats?.rank }}</h2>
+                <h2 class="u-text--oswald">{{ myStats?.rank }}</h2>
                 <div class="u-mt--24 u-text--small u-text--overpass">My Wins</div>
-                <h2>{{ myStats?.wins }}</h2>
+                <h2 class="u-text--oswald">{{ myStats?.wins }}</h2>
             </div>
           </div>
         </div>
@@ -186,7 +185,7 @@ onMounted(async () => {
                     <span class="c-game-history__score" :style="{ '--score-color': getScoreColor(game.winFlag)}"> {{ game.userScore }} - {{ game.opponentScore }} </span>
                   </div>
                   <div class="c-game-history__opponent">{{ game.opponent.username }}</div>
-                  <div class="u-text-left u-text--extra-small c-stats u-text--overpass">{{ game.type }}</div>
+                  <div class="u-text-left u-text--extra-small u-text--overpass">{{ game.type }}</div>
                 </div>
               </li>
             </div>
@@ -271,6 +270,7 @@ h1,h2,h3,h4,h5,h6 {
   margin-top: 0.8rem;
   margin-bottom: 0.8rem;
   color: inherit;
+  letter-spacing: 4px;
 }
 
 a {
@@ -409,7 +409,7 @@ button, select {
 
 .c-card {
   border-radius: 0.8rem;
-  background: var(--surface);
+  background: var(--c-surface);
   width: 100%;
   margin-bottom: 1.6rem;
   box-shadow: 0px 0px 0px 1px var(--c-black-light)
