@@ -41,8 +41,8 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				if (socketIds.length == 0) {
 					this.usersSockets.delete(client.data.user.id);
 					this.userService.updateUserStatus(client.data.user, userStatus.offline);
-					console.log("user disconnection: " + client.data.user.username);
 				}
+				console.log("user disconnection: " + client.data.user.username);
 			}
 		}
 	}

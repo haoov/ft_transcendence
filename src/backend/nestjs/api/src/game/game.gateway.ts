@@ -34,13 +34,13 @@ export class GameGateway
 			//store user data in socket
 			client.data.user = data;
 			//if user is already in a room
-			// const room: Room = this.findRoom(client);
-			// if (room) {
-			// 	if (room.isFull()) {
-			// 		client.emit(serverEvents.started, room.getUsers(), room.getParams());
-			// 	}
-			// 	room.addSocket(client);
-			// }
+			const room: Room = this.findRoom(client);
+			if (room) {
+				if (room.isFull()) {
+					client.emit(serverEvents.started, room.getUsers(), room.getParams());
+				}
+				room.addSocket(client);
+			}
 		});
 	}
 
@@ -90,9 +90,9 @@ export class GameGateway
 	update(client: Socket) {
 		const room: Room = this.findRoom(client);
 		if (room) {
-			const update = room.getGameUpdate();
-			this.server.to(room.getName()).emit(serverEvents.updated, update);
-			if (update.finished) {
+			const data = room.getGameData();
+			client.emit(serverEvents.updated, data);
+			if (data.finished) {
 				this.endGame(room);
 				this.deleteRoom(room);
 			}
@@ -102,15 +102,14 @@ export class GameGateway
 	@SubscribeMessage(clientEvents.move)
 	move(client: Socket, direction: string) {
 		const room: Room = this.findRoom(client);
-		if (room && room.isValidSocket(client)) {
+		if (room)
 			room.gameMove(client, direction);
-		}
 	}
 
 	@SubscribeMessage(clientEvents.useSpell)
 	useSpell(client: Socket, type: string) {
 		const room: Room = this.findRoom(client);
-		if (room && room.isValidSocket(client)) {
+		if (room) {
 			room.gameUseSpell(client, type);
 		}
 	}
@@ -137,6 +136,7 @@ export class GameGateway
 	}
 
 	endGame(room: Room) {
+		room.stopGame();
 		this.server.to(room.getName()).emit(serverEvents.finished, room.getWinner().username);
 		if (room.getParams().mode == "multiPlayer") {
 			this.gameService.createGame(room.getStats());

@@ -1,16 +1,7 @@
 <script setup lang="ts">
 	import NavigationBar from "@/components/navigationBar.vue";
 	import Game from "../components/game.vue"
-	import STF from "@/STF";
-	import Notification from "@/components/notification.vue";
-	import { ClientEvents, ServerEvents } from "@/utils";
-	import { provide } from "vue";
 
-	const stf = new STF();
-
-	const socket = await stf.connectNewSocket();
-
-	provide("stf", stf);
 </script>
 
 <template>

@@ -9,16 +9,18 @@ interface INotifications {
 
 type INotificationsKey = keyof INotifications;
 
-class STF {
+class GlobalSocket {
 	private readonly socket: Socket
+	private socketReady: boolean;
 	private readonly notifications: INotifications;
 
 	constructor() {
 		this.socket = io("http://localhost:3000/users");
+		this.socketReady = false;
 		this.notifications = reactive({gameReady: false});
 	}
 
-	async connectNewSocket(): Promise<Socket> {
+	async initSocket() {
 		await axios.get("http://localhost:3000/api/user/me").then((response) => {
 			this.socket.emit(ClientEvents.connected, response.data);
 		});
@@ -30,7 +32,7 @@ class STF {
 				this.setDisplayValue(key, false);
 			});
 		});
-		return this.socket;
+		this.socketReady = true;
 	}
 
 	getDisplayValue(notification: string): boolean {
@@ -44,6 +46,10 @@ class STF {
 	getSocket(): Socket {
 		return this.socket;
 	}
+
+	socketIsReady(): boolean {
+		return this.socketReady;
+	}
 }
 
-export default STF;
+export default GlobalSocket;

@@ -2,12 +2,12 @@
 	import Leaderboard from '@/components/leaderboard.vue';
 	import navigationBar from '@/components/navigationBar.vue';
 	import Notification from '@/components/notification.vue';
-	import STF from '@/STF';
+	import GlobalSocket from '@/GlobalSocket';
 	import router from '@/router';
 	import { ClientEvents, ServerEvents } from '@/utils';
+	import { inject } from 'vue';
 
-	const stf = new STF();
-	const socket = await stf.connectNewSocket();
+	const globalSocket: GlobalSocket = inject("globalSocket") as GlobalSocket;
 </script>
 
 <template>
@@ -15,10 +15,10 @@
 	    <navigationBar></navigationBar>
       <Suspense><Leaderboard></Leaderboard></Suspense>
 			<Notification
-				:display="stf.getDisplayValue(ServerEvents.gameReady)"
+				:display="globalSocket.getDisplayValue(ServerEvents.gameReady)"
 				text="Ready to play!"
-				v-on:decline="socket.emit(ClientEvents.gameForfeit)"
-				v-on:accept="socket.emit(ClientEvents.gamePlay); router.push('/game');"
+				v-on:decline="globalSocket.getSocket().emit(ClientEvents.gameForfeit)"
+				v-on:accept="globalSocket.getSocket().emit(ClientEvents.gamePlay); router.push('/game');"
 			></Notification>
     </div>
 </template>
@@ -32,4 +32,3 @@
 
 
 </style>
-@/injectables/STF

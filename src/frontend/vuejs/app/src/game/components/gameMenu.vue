@@ -3,13 +3,13 @@
 	import { ref, computed, inject } from "vue";
 	import loader from "@/components/loader.vue"
 	import selector from "@/components/selector.vue"
-	import STF from "@/STF";
+	import GlobalSocket from "@/GlobalSocket";
 	import { ClientEvents, ServerEvents } from "@/utils";
 
 	const props = defineProps(["state", "winner"]);
 	const emit = defineEmits(['click', 'stopWaiting']);
 
-	const stf: STF = inject("stf") as STF;
+	const globalSocket: GlobalSocket = inject("globalSocket") as GlobalSocket;
 	const games: string[] = ["classic", "super"];
 	const difficulties: string[] = ["easy", "medium", "hard"];
 	const modes: string[] = ["singlePlayer", "multiPlayer"];
@@ -79,18 +79,18 @@
 				v-on:click="play"
 				>Play</button>
 		</div>
-		<div v-else-if="state != 'finished' && !stf.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
+		<div v-else-if="state != 'finished' && !globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
 			<loader :text="state"></loader>
 			<button v-if="state == 'waiting'" class="custumButton" id="stopWaiting" v-on:click="stopWaiting">Stop waiting</button>
 		</div>
-		<div v-else-if="!stf.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
+		<div v-else-if="!globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
 			<span>{{ winner }} won!</span>
 			<button class="custumButton" id="reset" v-on:click="reloadMenu()">New game</button>
 		</div>
-		<div v-if="stf.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
+		<div v-if="globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
 			<span>Game Ready</span>
-			<button class="custumButton" v-on:click="stf.getSocket().emit(ClientEvents.gamePlay)">Play</button>
-			<button class="custumButton" v-on:click="stf.getSocket().emit(ClientEvents.gameForfeit)">Forfeit</button>
+			<button class="custumButton" v-on:click="globalSocket.getSocket().emit(ClientEvents.gamePlay)">Play</button>
+			<button class="custumButton" v-on:click="globalSocket.getSocket().emit(ClientEvents.gameForfeit)">Forfeit</button>
 		</div>
 	</div>
 

@@ -1,4 +1,4 @@
-import { Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { Pong } from "../data/Pong";
 import { gameParams } from "../interfaces/gameParams";
 import { User } from "src/user/user.interface";
@@ -19,7 +19,7 @@ export class Room {
 		this.users = [];
 		this.name = name;
 		this.public = true;
-		this.full = (params.mode == "singlePlayer" ? true : false);
+		this.full = false;
 		this.sockets = [];
 		this.params = params;
 		this.game = new Pong(params);
@@ -27,6 +27,10 @@ export class Room {
 
 	startGame(): void {
 		this.game.start();
+	}
+
+	stopGame(): void {
+		this.game.stop();
 	}
 
 	getUsers(): User[] {
@@ -37,10 +41,6 @@ export class Room {
 		socket.data.room = this.name;
 		this.sockets.push(socket);
 		socket.join(this.name);
-		// if (socket.data.user.id != this.users[0].id) {
-		// 	this.users.push(socket.data.user);
-		// 	this.full = true;
-		// }
 	}
 
 	removeSocket(socket: Socket): void {
@@ -106,8 +106,8 @@ export class Room {
 		return this.params;
 	}
 
-	getGameUpdate(): any {
-		return this.game.update();
+	getGameData(): any {
+		return this.game.getData();
 	}
 
 	gameMove(socket: Socket, direction: string): void {
@@ -133,13 +133,6 @@ export class Room {
 
 	checkSockets(user: User): boolean {
 		if (this.sockets.find((socket) => {return (socket.data.user.id == user.id);}))
-			return true;
-		else
-			return false;
-	}
-
-	isValidSocket(client: Socket): boolean {
-		if (this.sockets.find((socket) => {return (socket.id == client.id);}))
 			return true;
 		else
 			return false;

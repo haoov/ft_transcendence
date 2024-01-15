@@ -255,4 +255,8 @@ export class Game {
 		}
 		obj.material.needsUpdate = true;
 	}
+
+	stopGame() {
+		this.started = false;
+	}
 }

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { inject, onMounted, ref } from 'vue';
 import { Game } from "../game/game";
 import axios from 'axios';
-import io from "socket.io-client";
-import { Socket } from "socket.io-client";
 import { ClientEvents, ServerEvents } from '@/utils';
 import gameMenu from '@/game/components/gameMenu.vue';
 import score from '@/game/components/score.vue';
 import spells from '@/game/components/spells.vue';
+import GameSocket from '@/game/gameSocket';
 import { onBeforeRouteLeave } from 'vue-router';
 
-const state = ref("");
+const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
+
 const displayMenu = ref(true);
 const map = ref("random");
 const difficulty = ref("");
@@ -18,56 +18,35 @@ const p1 = ref({username: "Player1", avatar: "", score: 0, spells: [false, false
 const p2 = ref({username: "Player2", avatar: "", score: 0, spells: [false, false, false, false]});
 const winner = ref("");
 const initParams = (await axios.get("http://localhost:3000/api/game/params")).data;
-const socket: Socket = io("http://localhost:3000/game");
 
 function assignMode(gameParams: {game: string, mode: string, difficulty: string, map: string}) {
 	difficulty.value = gameParams.difficulty;
 	map.value = gameParams.map;
-	socket.emit("gameParams", gameParams);
+	gameSocket.getSocket().emit(ClientEvents.gameParams, gameParams);
 }
-
-function stopWait() {
-	socket.emit("stopWaiting");
-	state.value = "";
-}
-
-await axios.get("http://localhost:3000/api/user/me").then((response) => {
-		socket.emit(ClientEvents.connected, response.data);
-});
-
-socket.on(ServerEvents.waiting, () => {
-	state.value = "waiting";
-});
-
-socket.on(ServerEvents.waitingForOpponent, () => {
-	state.value = "waiting for opponent";
-});
-
-socket.on(ServerEvents.finished, (winnerUsername) => {
-	state.value = "finished";
-	displayMenu.value = true;
-	winner.value = winnerUsername;
-});
 
 onMounted(() => {
 	const game: Game = new Game("game", initParams);
 
-	document.addEventListener("keydown", (event) => {
-		if (event.key == "w" || event.key == "W")
-			socket.emit("move", "up");
-		if (event.key == "s" || event.key == "S")
-			socket.emit("move", "down");
-		if (event.key == "1")
-			socket.emit("useSpell", "fire");
-		if (event.key == "2")
-			socket.emit("useSpell", "ice");
-		if (event.key == "3")
-			socket.emit("useSpell", "small");
-		if (event.key == "4")
-			socket.emit("useSpell", "big");
-	})
-
-	socket.on("started", (users: any, params: any) => {
+	if (!gameSocket.moveEventsSet()) {
+		document.addEventListener("keydown", (event) => {
+				if (event.key == "w" || event.key == "W")
+					gameSocket.getSocket().emit(ClientEvents.move, "up");
+				if (event.key == "s" || event.key == "S")
+					gameSocket.getSocket().emit(ClientEvents.move, "down");
+				if (event.key == "1")
+					gameSocket.getSocket().emit(ClientEvents.useSpell, "fire");
+				if (event.key == "2")
+					gameSocket.getSocket().emit(ClientEvents.useSpell, "ice");
+				if (event.key == "3")
+					gameSocket.getSocket().emit(ClientEvents.useSpell, "small");
+				if (event.key == "4")
+					gameSocket.getSocket().emit(ClientEvents.useSpell, "big");
+			});
+		gameSocket.setMoveEvents();
+	}
+	gameSocket.getSocket().on(ServerEvents.started, (users: any, params: any) => {
+		console.log("game started");
 		p1.value.username = users[0].username;
 		p1.value.avatar = users[0].avatar;
 		if (users.length > 1) {
@@ -79,30 +58,41 @@ onMounted(() => {
 		}
 		game.createField(initParams.params.FIELD_WIDTH, initParams.params.FIELD_HEIGHT, params.map);
 		game.started = true;
-		state.value = "playing";
+		gameSocket.setUserState("playing");
 		displayMenu.value = false;
-	})
-
-	socket.on("updated", (data) => {
+		animate();
+	});
+	gameSocket.getSocket().on(ServerEvents.updated, (data) => {
+		console.log("game updated");
+		displayMenu.value = false;
 		game.update(data);
 		p1.value.score = data.p1Score;
 		p2.value.score = data.p2Score;
 		p1.value.spells = data.p1Spells;
 		p2.value.spells = data.p2Spells;
 	});
+	gameSocket.getSocket().on(ServerEvents.finished, (winnerUsername) => {
+		gameSocket.setUserState("finished");
+		displayMenu.value = true;
+		winner.value = winnerUsername;
+		game.stopGame();
+	});
 
 	function animate() {
 		requestAnimationFrame(animate);
-		if (game.hasStarted() && state.value != "finished")
-			socket.emit("update");
-		game.renderer.render(game.scene, game.camera);
+		if (game.hasStarted() && gameSocket.getUserState() != "finished") {
+			gameSocket.getSocket().emit(ClientEvents.update);
+			game.renderer.render(game.scene, game.camera);
+		}
 	}
 
-	animate();
-})
-
-onBeforeRouteLeave((to) => {
-	socket.emit(ClientEvents.leave);
+	onBeforeRouteLeave(() => {
+		console.log("leaving game");
+		game.stopGame();
+		gameSocket.getSocket().off(ServerEvents.updated);
+		//gameSocket.getSocket().off(ServerEvents.started);
+		gameSocket.getSocket().off(ServerEvents.finished);
+	})
 })
 </script>
 
@@ -112,15 +102,15 @@ onBeforeRouteLeave((to) => {
 		<gameMenu
 			v-if="displayMenu"
 			v-on:click="assignMode"
-			v-on:stopWaiting="stopWait"
-			:state="state"
+			v-on:stopWaiting="gameSocket.stopWaiting()"
+			:state="gameSocket.getUserState()"
 			:winner="winner"
 		></gameMenu>
 	</div>
 	<spells
 		:p1Spells="p1.spells"
 		:p2Spells="p2.spells"
-		v-on:useSpell="(spell) => {socket.emit('useSpell', spell)}"
+		v-on:useSpell="(spell) => {gameSocket.getSocket().emit('useSpell', spell)}"
 	></spells>
 
 	<video
