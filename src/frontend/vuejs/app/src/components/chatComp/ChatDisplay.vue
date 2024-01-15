@@ -25,7 +25,8 @@ const store = data.getStore();
 
 .chat-display-div {
   display: grid;
-  grid-template-rows: 1fr 6fr 0.5fr;
+  /* grid-template-rows: 1fr 6fr 0.5fr; */
+  grid-template-rows: 1fr minmax(auto, 550px) minmax(25px, auto);
   align-content: stretch;
   width: 100%;
   height: 100%;
@@ -35,27 +36,7 @@ const store = data.getStore();
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  border-radius: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-
-::-webkit-scrollbar-thumb:hover,
-::-webkit-scrollbar-thumb:active {
-  background-color: #07cece;
-  box-shadow:0 0 6px #07cece;
-}
-
-::-webkit-scrollbar-track:hover,
-::-webkit-scrollbar-track:active {
-  background-color: transparent;
+  width: 0;
 }
 
 </style>

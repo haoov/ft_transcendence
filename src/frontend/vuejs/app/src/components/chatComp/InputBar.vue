@@ -1,16 +1,19 @@
 <template>
-	<div class="input-bar-div">
-		<form class="form-message" @submit.prevent="sendMessage">
-			<input 
+	<div class="handle-error">
+		<p v-if="inputErrorLenght" style="color: red;">Message too long</p>
+		<div :class="inputClass">
+			<form class="form-message" @submit.prevent="sendMessage">
+				<input 
 				type="text"
 				autocomplete="off"
 				name="text"
-				class="input"
 				placeholder="messages"
 				v-model="input"
 				:disabled="!activeChannel"
-			>
-		</form>
+				class="input"
+				>
+			</form>
+		</div>
 	</div>
 </template>
 
@@ -23,7 +26,6 @@ type Message = {
 	channelId: number;
 	text: string;
 	datestamp: string;
-	timestamp: string;
 };
 
 const input = ref<string>("");
@@ -31,39 +33,61 @@ const $data : any = inject('$data');
 const store = $data.getStore();
 const myUser = await $data.getCurrentUser();
 const socket : Socket = store.socket;
-const DateRawStamp : string = new Date().toISOString();
 const $store = $data.getStore();
 const activeChannel = computed(() => $store.activeChannel);
 
+const inputClass = computed(() => {
+	if (input.value.length > 1024) return "input-bar-div error";
+	else return "input-bar-div";
+});
+const inputErrorLenght = computed(() => {
+	if (input.value.length > 1024) return true;
+	else return false;
+});
+
 const sendMessage = () => {
+	if (input.value === "") return;
+	else if (input.value.length > 1024) {
+		return;
+	}
+	const DateRawStamp : string = new Date().toISOString();
 	const newMessage: Message = {
 		senderId: myUser.id,
 		channelId: activeChannel.value.id,
 		text: input.value,
-		datestamp: DateRawStamp.substring(0, 10),
-		timestamp: DateRawStamp.substring(12, 19)
+		datestamp: DateRawStamp
 	};
 	input.value = "";
 	socket.emit('newMessage', newMessage);
 };
 
+watch(activeChannel, () => {
+	input.value = "";
+});
+
 </script>
 
 <style scoped>
-.input-bar-div {
+.handle-error {
   display: flex;
-  justify-content: column;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  height: 100%;
+  height: fit-content;
+  overflow: hidden;
+  border-radius: 0 0 0.8rem 0;
+}
+
+.input-bar-div {
+  width: 100%;
+  border-radius: 0 0 0.8rem 0;
+  height: fit-content;
   overflow: hidden;
 }
 
 .form-message {
-  display: flex;
-  justify-content: column;
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  height: fit-content;
 }
 .input {
   color: white;
@@ -76,11 +100,22 @@ const sendMessage = () => {
   height: auto;
 }
 
+.error {
+  border: solid red 0.5px;
+}
+
+p {
+  margin: 0;
+  padding: 0;
+  font-size: 0.8em;
+}
+
 .input:not(:disabled):focus {
   color : black;
   background-color: #cacaca;
   transform: scale(1.05);
-  box-shadow: 13px 13px 100px #969696, -13px -13px 100px #ffffff;
+  border-radius: 0 0 0 0.8rem;
 }
 
 </style>
+

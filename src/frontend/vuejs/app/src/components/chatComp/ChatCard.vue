@@ -25,7 +25,8 @@
   height: 80vh;
   border-radius: 0.8rem;
   background: var(--surface);
-  box-shadow: 0px 0px 0px 1px var(--c-black-light)
+  box-shadow: 0px 0px 0px 1px var(--c-black-light);
+  overflow: auto;
 }
 
 </style>
