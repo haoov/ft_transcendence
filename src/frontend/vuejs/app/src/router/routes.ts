@@ -2,6 +2,7 @@ import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import GameView from "@/views/GameView.vue";
 import ChatView from "@/views/ChatView.vue";
+import SettingView from "@/views/SettingView.vue";
 
 const routes = [
 	{
@@ -24,6 +25,11 @@ const routes = [
 		name: "chat",
 		component: ChatView,
 		children: [],
+	},
+	{
+		path: "/settings",
+		name: "settings",
+		component: SettingView,
 	}
 ];
 

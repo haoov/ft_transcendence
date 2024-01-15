@@ -12,11 +12,12 @@
 	--c-blue-light: #40c9ff;
 	--c-teal: #00CEC9;
 	--c-teal-dark: #1f6362;
+	--c-surface: #16171A;
 
 	--text-color: var(--c-white);
 
 	/* Leaderboard */
-	--black: #000000;
+	/* --black: #000000;
 	--white: #ffffff;
 	--darkest: #101010;
 	--darker: #16171A;
@@ -32,7 +33,7 @@
 	--orange: #E17055;
 	--bg: var(--darkest);
 	--color: var(--lightest);
-	--surface: var(--darker);
+	--surface: var(--darker); */
 }
 
 /*CUSTUM FONTS*/
