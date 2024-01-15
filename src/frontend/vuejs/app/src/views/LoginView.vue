@@ -15,10 +15,10 @@
 <style>
 	.login.body {
 		height: 100%;
-		background: linear-gradient(	to right,
-																var(--c-black),
-																var(--c-blue-dark),
-																var(--c-black)	);
+		background: linear-gradient(to right,
+			var(--c-black),
+			var(--c-blue-dark),
+			var(--c-black)	);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
