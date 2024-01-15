@@ -34,18 +34,10 @@ export class ChatGateway implements OnGatewayConnection {
 
 	@WebSocketServer()
 	server: Server;
+	private listCurrentActiveChannel: Map<number, ChannelEntity> = new Map<number, ChannelEntity>();
 	private usersSocketList : Map<number, Socket> = new Map<number, Socket>();
 
 	handleConnection(socket: Socket) {
-		let currentChannel : string = null;
-
-		socket.on('join', (channel: any ) => {
-			if (currentChannel) {
-				socket.leave(currentChannel);
-			}
-			socket.join(channel.id.toString());
-			currentChannel = channel.id.toString();
-		});
 		this.server.emit('NewConnection');
 		socket.on('userConnected', (user: any) => {
 			this.usersSocketList.set(user.id, socket);
@@ -58,6 +50,19 @@ export class ChatGateway implements OnGatewayConnection {
 				this.usersSocketList.delete(key);
 			}
 		});
+	}
+
+	@SubscribeMessage('JoinCurrentChannel')
+	async onJoinCurrentChannel(@MessageBody() data: any) {
+		const channel = data.channel;
+		const userId = data.userId;
+		const socket = this.usersSocketList.get(userId);
+		let currentChannel = this.listCurrentActiveChannel.get(userId);
+		if (currentChannel) {
+			socket.leave(currentChannel.id.toString());
+		}
+		this.listCurrentActiveChannel.set(userId, channel);
+		socket.join(channel.id.toString());
 	}
 
 	@SubscribeMessage('newMessage')
@@ -112,6 +117,19 @@ export class ChatGateway implements OnGatewayConnection {
 			for (const user of users) {
 				this.usersSocketList.get(user.id).emit('channelDeleted', channelId);
 			}
+		}
+	}
+
+	@SubscribeMessage('addUserToChannel')
+	async onAddUserToChannel(@MessageBody() data: Object ) {
+		const channelId = data['channelId'];
+		const users = data['users'];
+		const userIdList = users.map((user) => user.id);
+		const channelToUpdate = await this.chatService.getChannelById(channelId);
+		for (const userId of userIdList) {
+			await this.chatService.addUserToChannel(channelToUpdate.id, userId);
+			this.usersSocketList.get(userId).emit('channelJoined', true);
+			this.usersSocketList.get(userId).emit('channelUpdated', channelId);
 		}
 	}
 }

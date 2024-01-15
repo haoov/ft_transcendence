@@ -60,6 +60,7 @@ const store = reactive({
 	currentUser: null as User | null,
 	isModalOpen: false,
 	isEditModalOpen: false,
+	isAddUserModalOpen: false,
 	activeChannel: null as Channel | null,
 	socket: null as Socket | null,
 });
@@ -144,6 +145,14 @@ export default {
 
 	closeEditModalForm() {
 		store.isEditModalOpen = false;
+	},
+
+	openAddUserModalForm() {
+		store.isAddUserModalOpen = true;
+	},
+
+	closeAddUserModalForm() {
+		store.isAddUserModalOpen = false;
 	},
 
 };

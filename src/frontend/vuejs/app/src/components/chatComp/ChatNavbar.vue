@@ -5,7 +5,7 @@
 				<ChannelWidget
 					:channel="channel"
 					:key="channel.id"
-					@click="setActiveChannel(channel)"
+					@click="setActiveChannel(channel, currentUser.id)"
 				></ChannelWidget>
 			</ul>
 			<NewChannelWidget></NewChannelWidget>
@@ -29,8 +29,12 @@ onMounted(() => {
 	$data.loadChannels(currentUser.id);
 });
 
-const setActiveChannel = (channel : any) => {
-	socket.emit('join', channel);
+const setActiveChannel = (channel : any, currentUserId: number) => {
+	console.log('setActiveChannel', channel);
+	socket.emit('JoinCurrentChannel', {
+		'channel':channel,
+		'currentUserId':currentUserId
+		});
 	$data.setActiveChannel(channel);
 };
 
@@ -48,6 +52,7 @@ socket.on('channelDeleted', (channelIdDeleted : number) => {
 });
 
 socket.on('channelUpdated', (channelUpdated : any) => {
+	console.log('channelUpdated', channelUpdated);
 	$data.updateChannel(channelUpdated);
 });
 
