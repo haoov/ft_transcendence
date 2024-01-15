@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onMounted, ref } from 'vue';
+import { inject, onBeforeMount, onMounted, ref } from 'vue';
 import { Game } from "../game/game";
 import axios from 'axios';
 import { ClientEvents, ServerEvents } from '@/utils';
@@ -24,6 +24,8 @@ function assignMode(gameParams: {game: string, mode: string, difficulty: string,
 	map.value = gameParams.map;
 	gameSocket.getSocket().emit(ClientEvents.gameParams, gameParams);
 }
+
+onBeforeMount(() => {})
 
 onMounted(() => {
 	const game: Game = new Game("game", initParams);
