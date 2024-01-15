@@ -3,6 +3,7 @@
 import axios from "axios";
 import type { UserStat, User, GameStat } from "@/utils";
 import { computed, onMounted, ref } from "vue";
+import { makeClipAdditive } from "three/src/animation/AnimationUtils.js";
 
 const players = ref<UserStat[]>([]);
 const imagesLoaded = ref<boolean>(false);
@@ -97,8 +98,25 @@ function getPieProportions() : string {
 
 function getDateStr(dt: Date) : string {
   let date = new Date(dt);
-  return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0');
+  return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });  
 }
+
+
+function getHourStr(dt: Date) : string {
+  let date = new Date(dt);
+  let hours = date.getHours().toString().padStart(2, '0');
+  let minutes = date.getMinutes().toString().padStart(2, '0');
+  return hours + ':' + minutes;
+
+}
+
+function getScoreColor(winFlag: boolean): string {
+  if (winFlag)
+    return "var(--c-pink)";
+  else
+    return "var(--c-grey)"
+}
+
 
 onMounted(async () => {
   await fetchMe();
@@ -135,7 +153,6 @@ onMounted(async () => {
           <div class="">
             <div class="svg-pie">
               <svg width="50%" height="50%" viewBox="0 0 40 40">
-                <!-- <circle class="donut-hole" cx="20" cy="20" r="15.91549430918954" fill="#fff"></circle> -->
                 <circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
                 <circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
                         stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"
@@ -151,26 +168,29 @@ onMounted(async () => {
 
           <ul class="c-list">
             <li class="u-mb--8">
-              <div class="c-list__game-history">
-                <div class="u-text--left u-text--small u-text--overpass">Date</div>
-                <div class="u-text--center u-text--small u-text--overpass">Score</div>
-                <div class="u-text--left u-text--small u-text--overpass">Mode</div>
+              <div class="c-list__game-history u-text--small">
+                <div class="u-text--overpass u-text--left">Date</div>
+                <div class="u-text--overpass u-text--right">Score</div>
+                <div class="u-text--overpass u-text--left">Opponent</div>
+                <div class="u-text--overpass u-text--left">Mode</div>
               </div>
             </li>
-            <div v-if="myGames.length" id="gameContent">
+            <div v-if="myGames.length" id="gameContent" class="scroll">
               <li v-for="(game, index) in myGames" :key="game.id" class="c-list__item-score">
                 <div class="c-list__game-history">
-                  <div class="u-bg--transparent u-text--mini">{{ getDateStr(game.date) }}</div>
-                  <div class="c-list__score-grid">
-                    <div :class="{ 'win': game.winFlag }" class="c-score-grid__me">{{ me?.username }}</div>
-                    <div class="c-score-grid__score">{{ game.userScore }} - {{ game.opponentScore }}</div>
-                    <div :class="{ 'win': !game.winFlag }" class="c-score-grid__opponent">{{ game.opponent.username }}</div>
+                  <div>
+                    <div class="u-bg--transparent u-text--mini u-text--overpass">{{ getDateStr(game.date) }}</div>
+                    <div class="u-bg--transparent u-text--mini u-text--italic u-text--grey">{{ getHourStr(game.date) }}</div>
                   </div>
+                  <div class="u-text--right">
+                    <span class="c-game-history__score" :style="{ '--score-color': getScoreColor(game.winFlag)}"> {{ game.userScore }} - {{ game.opponentScore }} </span>
+                  </div>
+                  <div class="c-game-history__opponent">{{ game.opponent.username }}</div>
                   <div class="u-text-left u-text--extra-small c-stats u-text--overpass">{{ game.type }}</div>
                 </div>
               </li>
             </div>
-            <div v-else>No game</div>
+            <div v-else id="gameContent" class="empty_field">No game</div>
           </ul>
 
 
@@ -189,7 +209,7 @@ onMounted(async () => {
             id="searchUser"
             type="text"
             autocomplete="off"
-            placeholder="Search..."
+            placeholder="search..."
             >
           </div>
         </div>
@@ -203,7 +223,7 @@ onMounted(async () => {
                 <div class="u-text--right u-text--small u-text--overpass u-mr--8"># Wins</div>
               </div>
             </li>
-            <div v-if="playersDisplayed.length" id="leaderboardContent"> 
+            <div v-if="playersDisplayed.length" id="leaderboardContent" class="scroll"> 
               <!-- premier element -->
               <li v-for="(player, index) in playersDisplayed" :key="player.id" class="c-list__item">
                 <div class="c-list__grid">
@@ -212,7 +232,12 @@ onMounted(async () => {
                     <img v-if="imagesLoaded" class="c-avatar c-media__img" :src="getAvatarSrc(player.id)"/>
                     <div class="c-media__content">
                       <div class="c-media__title u-text--overpass">{{ player.username }}</div>
-                      <a class="c-media__link u-text--small u-text--overpass" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">lien</a>
+                      <a v-if="player.id!=me?.id" class="u-mr--8" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">
+                        <img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
+                      </a>
+                      <a v-if="player.id!=me?.id" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">
+                        <img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
+                      </a>
                     </div>
                   </div>
                   <div class="u-text--right c-stats u-mt--8">
@@ -224,7 +249,7 @@ onMounted(async () => {
                 </div>
               </li>
             </div>
-            <div v-else>No user</div>
+            <div v-else id="leaderboardContent" class="empty_field">No user</div>
 
           </ul>
         </div>
@@ -254,6 +279,8 @@ a {
   transition: all 120ms ease-out 0s;
   display: inline-block;
   border-radius: 0.4rem;
+  font-size: 1.2rem;
+  font-family: Overpass;
 }
 a:hover {
   background: var(--c-teal-dark);
@@ -414,14 +441,44 @@ button, select {
 }
 
 #gameContent {
-    height: 200px;
+    height: 160px;
     overflow-y: auto;
 }
 
 #leaderboardContent {
   height: 500px;
   overflow-y: auto;
- }
+}
+.scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  background-color: var(--c-grey);
+  border-radius: 8px;
+}
+
+.scroll::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.scroll::-webkit-scrollbar-thumb:hover,
+.scroll::-webkit-scrollbar-thumb:active {
+  background-color: var(--c-pink);
+}
+
+.scroll::-webkit-scrollbar-track:hover,
+.scroll::-webkit-scrollbar-track:active {
+  background-color: transparent;
+}
+
+.empty_field {
+  display: flex;
+  justify-content: center;
+  font-family: Overpass;
+  font-style: italic;
+  font-size: 1.4rem;
+}
 
 .c-list {
   margin: 0;
@@ -455,7 +512,7 @@ button, select {
 }
 
 .searchForm input {
-  width: 60%;
+  width: 80%;
   padding: 4% 7%;
   border-radius: 8px;
   color: #fff;
@@ -481,34 +538,25 @@ button, select {
 
 .c-list__game-history {
   display: grid;
-  grid-template-columns: 1.1fr 3.5fr 0.8fr;
-  grid-column-gap: 2rem;
+  grid-template-columns: .9fr 1fr 2fr 1.5fr;
+  grid-column-gap: 2.5rem;
   align-items: end;
+  margin-left: 1rem;
+  margin-right: 1rem;
 }
 
-.c-list__score-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr 2fr;
-  grid-column-gap: 1.3rem;
-  align-items: end;
-}
-
-.c-score-grid__score {
+.c-game-history__score {
   font-size: 1.4rem;
   font-family: Oswald;
-  justify-content: center;
-  display: flex;
   border-radius: 0.4rem;
-  background: var(--c-grey);
-  box-shadow: 0px 0px 0px 0.4rem var(--c-grey);
+  background: var(--score-color);
+  box-shadow: 0.4rem 0 0 var(--score-color), -0.4rem 0 0 var(--score-color);
+  border-right: 0.4rem solid var(--score-color);
+  border-left: 0.4rem solid var(--score-color);
+  margin-right: 0.4rem;
 }
-.c-score-grid__me {
-  font-size: 1.2rem;
-  font-family: Overpass;
-  justify-content: right;
-  display: flex;
-}
-.c-score-grid__opponent {
+
+.c-game-history__opponent {
   font-size: 1.2rem;
   font-family: Overpass;
   justify-content: left;
@@ -610,7 +658,7 @@ button, select {
   color: var(--dark);
   border-radius: 0.4rem;
 }
-@media screen and (max-width: 700px) {
+@media screen and (max-w idth: 700px) {
   .c-flag {
     width: 2.4rem;
     height: 2.4rem;
@@ -661,6 +709,10 @@ button, select {
   font-family: Overpass, system-ui;
 }
 
+.u-text--italic {
+  font-style: italic;
+}
+
 .u-text--left {
   text-align: left;
 }
@@ -671,41 +723,19 @@ button, select {
   text-align: right;
 }
 
-.u-bg--light {
-  background: var(--lightest) !important;
-}
-
-.u-text--light {
-  color: var(--lightest) !important;
-}
-
-.u-bg--primary {
-  background: var(--primary) !important;
-}
-
-.u-text--primary {
-  color: var(--primary) !important;
-}
-
-.u-bg--dark {
-  background: var(--darkest) !important;
-}
-
-.u-text--dark {
-  color: var(--darkest) !important;
+.u-text--grey {
+  color: var(--c-grey) !important;
 }
 
 .u-bg--transparent {
   background: transparent !important;
 }
 
-.u-text--transparent {
-  color: transparent !important;
+.u-text--dark {
+  color: var(--c-black-light);
+  
 }
 
-.u-bg--medium {
-  background: var(--medium) !important;
-}
 
 .u-text--medium {
   font-size: 2rem;
@@ -716,16 +746,8 @@ button, select {
   background: var(--c-pink) !important;
 }
 
-.u-text--yellow {
-  color: var(--yellow) !important;
-}
-
 .u-bg--pink3 {
   background: var(--c-pink-3) !important;
-}
-
-.u-text--orange {
-  color: var(--orange) !important;
 }
 
 .u-bg--pink2 {
