@@ -3,16 +3,19 @@ import { Ball } from "./ball";
 import { Field } from "./field";
 import { Paddle } from "./paddle";
 import { params, rules } from "./opts";
+import { SpellBook } from "./spellBook";
 
 class Player {
 	side: string;
 	paddle: Paddle;
 	score: number;
+	spellBook: SpellBook;
 
 	constructor(side: string, field: Field) {
 		this.side = side;
 		this.paddle = new Paddle(this.side, field);
 		this.score = 0;
+		this.spellBook = new SpellBook();
 	}
 
 	hitBall(ball: Ball): boolean {

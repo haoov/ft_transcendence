@@ -1,3 +1,4 @@
+import { ConsoleLogger } from "@nestjs/common";
 import { Effect } from "./effect";
 import { Field } from "./field";
 import { Vec3, params } from "./opts"
@@ -10,14 +11,14 @@ class Ball {
 	vecSpeed: Vec3;
 	scale: Vec3;
 	radius: number;
-	effect: Effect;
-	lastHit: Paddle;
+	effect: string;
+	lastHit: Player;
 
 	constructor() {
 		this.position = {x: 0, y: 0, z: 0};
 		this.speed = params.BALL_SPEED;
 		this.vecSpeed = {x: this.speed, y: 0, z: 0};
-		this.effect = new Effect("none");
+		this.effect = "none";
 		this.radius = params.BALL_RADIUS;
 		this.scale = {x: 1, y: 1, z: 1};
 	}
@@ -34,11 +35,14 @@ class Ball {
 		for (let i = 0; i < players.length; ++i) {
 			if (players[i].hitBall(this)) {
 				this.paddleBounce(players[i].paddle);
-				this.lastHit = players[i].paddle;
+				this.lastHit = players[i];
 			}
 		}
-		if (effect && effect.on && effect.hitBall(this)) {
-				effect.apply(this, this.lastHit);
+		if (effect && effect.on && effect.hitBall(this) && this.lastHit) {
+			if (!this.lastHit.spellBook.spellEnabled(effect.type)) {
+				this.lastHit.spellBook.enableSpell(effect.type);
+				effect.on = false;
+			}
 		}
 		if (this.position.y + this.scale.y * params.BALL_RADIUS >= field.borders.top || this.position.y - this.scale.y * params.BALL_RADIUS <= field.borders.bottom)
 			this.vecSpeed.y *= -1;
@@ -65,22 +69,45 @@ class Ball {
 		else {
 			this.position.x = paddle.position.x - params.BALL_RADIUS - paddle.width / 2 - 0.001;
 		}
-		if (this.effect.type != "none") {
-			this.effect.transmit(paddle);
+		if (this.effect != "none") {
+			this.transmitEffect(paddle);
 			this.resetEffect();
 		}
 		else
 			paddle.resetEffect();
 	}
 
+
+	transmitEffect(paddle: Paddle) {
+		paddle.effect = this.effect;
+		switch (this.effect) {
+			case "ice":
+				paddle.speed *= 0.5;
+				break;
+			case "fire":
+				paddle.speed *= 2;
+				break;
+			case "small":
+				paddle.scale.y *= 0.5;
+				paddle.height *= paddle.scale.y;
+				break;
+			default: break;
+		}
+	}
+
 	resetEffect() {
 		this.scale = {x: 1, y: 1, z: 1};
 		this.radius = params.BALL_RADIUS;
-		this.effect.type = "none";
+		this.effect = "none";
+	}
+
+	getEffect(): string {
+		return this.effect;
 	}
 
 	reset() {
 		this.resetEffect();
+		this.lastHit = null;
 		this.position = {x: 0, y: 0, z: 0};
 		this.speed = params.BALL_SPEED;
 		this.vecSpeed = {x: 0, y: 0, z: 0};

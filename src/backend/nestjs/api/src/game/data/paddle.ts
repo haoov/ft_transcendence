@@ -12,7 +12,7 @@ class Paddle {
 	position: Vec3;
 	scale: Vec3;
 	speed: number;
-	effect: Effect;
+	effect: string;
 
 	constructor(side: string, field: Field) {
 		this.side = side;
@@ -25,7 +25,7 @@ class Paddle {
 			this.startPosition = {x: field.borders.left + this.width, y: 0, z: 0};
 		this.position = {x: this.startPosition.x, y: this.startPosition.y, z: this.startPosition.z};
 		this.scale = {x: 1, y: 1, z: 1};
-		this.effect = new Effect("none");
+		this.effect = "none";
 	}
 
 	move(direction: string, field: Field) {
@@ -57,17 +57,27 @@ class Paddle {
 		const distance = ball.position.y - this.position.y;
 
 		// Move the paddle proportionally to the distance
-		if (distance > 0)
-				this.position.y += Math.min(distance, this.speed * reactivityFactor);
-		else if (distance < 0)
-				this.position.y -= Math.max(distance, this.speed * reactivityFactor);
+		if (distance > 0) {
+				const nextPosition = this.position.y + Math.min(distance, this.speed * reactivityFactor);
+				if (nextPosition > field.borders.top - this.height / 2)
+					this.position.y = field.borders.top - this.height / 2;
+				else
+					this.position.y = nextPosition;
+		}
+		else if (distance < 0) {
+				const nextPosition = this.position.y - Math.max(distance, this.speed * reactivityFactor);
+				if (nextPosition < field.borders.bottom + this.height / 2)
+					this.position.y = field.borders.bottom + this.height / 2;
+				else
+					this.position.y = nextPosition;
+		}
 	}
 
 	resetEffect() {
 		this.scale.y = 1;
 		this.speed = params.PADDLE_SPEED;
 		this.height = params.PADDLE_HEIGHT;
-		this.effect.type = "none";
+		this.effect = "none";
 	}
 
 	reset() {
