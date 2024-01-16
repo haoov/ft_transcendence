@@ -56,7 +56,7 @@ socket.on('channelUpdated', (channelUpdated : any) => {
 	$data.updateChannel(channelUpdated);
 });
 
-</script>
+</script>center
 
 <style scoped>
 
@@ -75,7 +75,7 @@ socket.on('channelUpdated', (channelUpdated : any) => {
 nav {
 	display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
     width: 100%;
     min-height: 50%;

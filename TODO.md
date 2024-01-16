@@ -15,7 +15,6 @@
 - Faire en sorte qu'on puisse KICK et BANNE d'un channel 
 	- Faire un modal qui appelle une card profile qui permet d'inviter/kick/ban/dm 
 
-
 -----------------------------------------------------------
 
 - Implementer la creation des channels
