@@ -2,7 +2,7 @@ import './assets/main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import $data from './chatdata'
+import $data from '@/utils/chatdata'
 import GlobalSocket from './GlobalSocket'
 import GameSocket from '@/game/gameSocket'
 

@@ -16,7 +16,6 @@ interface Channel {
 	mode: string;
 	password: string;
 	users: User [];
-	messages: MessageRaw [];
 }
 
 export { MessageRaw, Channel };

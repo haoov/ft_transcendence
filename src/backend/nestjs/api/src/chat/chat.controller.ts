@@ -69,4 +69,8 @@ export class ChatController {
 		return await this.chatService.getCurrentUserChannels(parseInt(userId));
 	}
 
+	@Get('/channels/joinable/:userId')
+	async getJoinableChannels(@Param('userId') userId: string): Promise<Channel []> {
+		return await this.chatService.getJoinableChannels(parseInt(userId));
+	}
 }
