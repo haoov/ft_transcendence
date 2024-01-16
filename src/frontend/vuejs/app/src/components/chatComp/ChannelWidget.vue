@@ -39,6 +39,7 @@ const channelName = ref(props.channel?.name);
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  margin: 5px;
 }
 
 .active {
