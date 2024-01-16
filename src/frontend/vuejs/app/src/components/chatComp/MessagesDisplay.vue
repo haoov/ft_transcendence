@@ -64,6 +64,9 @@ onUpdated(() => {
 });
 
 socket.on("newMessage", (message : any) => {
+	if (activeChannel.value.id !== message.message.channelId) {
+		return;
+	}
 	store.messages.push(message);
 });
 
