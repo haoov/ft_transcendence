@@ -100,7 +100,7 @@ const selectedOption = ref(activeChannel.value.mode);
 const password = ref('');
 const nameError = ref(false);
 const passwordError = ref(false);
-const options = ['Public', 'Private', 'Protected', 'Secret'];
+const options = ['Public', 'Protected', 'Secret'];
 const userIds = ref([]);
 const isSubmitDisabled = computed(() => {
 	if (selectedOption.value === 'Protected') {
