@@ -1,14 +1,16 @@
 <template>
 	<div class="channel-navbar">
 		<nav>
-			<ul v-for="(channel, index) in channels">
-				<ChannelWidget
+			<div>
+				<ul v-for="(channel, index) in channels">
+					<ChannelWidget
 					:channel="channel"
 					:key="channel.id"
 					@click="setActiveChannel(channel, currentUser.id)"
-				></ChannelWidget>
-			</ul>
-			<NewChannelWidget></NewChannelWidget>
+					></ChannelWidget>
+				</ul>
+			</div>
+			<NewChannelWidget title="Add/Join Channel"></NewChannelWidget>
 		</nav>
 	</div>
 </template>
@@ -30,8 +32,8 @@ onMounted(() => {
 });
 
 const setActiveChannel = (channel : any, currentUserId: number) => {
-	socket.emit('JoinCurrentChannel', {
-		'channel':channel,
+	socket.emit('setActiveChannel', {
+		'channelId':channel.id,
 		'currentUserId':currentUserId
 		});
 	$data.setActiveChannel(channel);
@@ -51,7 +53,6 @@ socket.on('channelDeleted', (channelIdDeleted : number) => {
 });
 
 socket.on('channelUpdated', (channelUpdated : any) => {
-	console.log('channelUpdated', channelUpdated);
 	$data.updateChannel(channelUpdated);
 });
 
