@@ -171,7 +171,7 @@ socket.on('channelJoined', (ret : boolean) => {
 }
 
 .join-channel-form-container .form-group input {
-  width: 100%;
+  width: 80%;
   padding: 3% 7%;
   border-radius: 8px;
   color: #fff;
