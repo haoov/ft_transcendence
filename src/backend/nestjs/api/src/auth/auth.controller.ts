@@ -43,7 +43,8 @@ export class AuthController {
 	@Post('2fa/turn-on')
 	@UseGuards(AuthentificatedGuard)
 	async swithOn2fa(@Req() req: Request, @Body() body: Body2faDTO) {
-		const user: User = req.user as User;
+		const user_tmp: User = req.user as User;
+		const user = await this.userService.getUser(user_tmp.email);
 		if (!user.twofa_secret)
 			throw new UnauthorizedException('no secret generated');
 		const isCodeValid = this.authService.is2faValid(
