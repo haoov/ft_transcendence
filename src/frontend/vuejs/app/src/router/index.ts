@@ -12,7 +12,7 @@ const router = createRouter({
 router.beforeEach((to) => {
 	if (to.name != "login") {
 		const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
-		axios.get("http://localhost:3000/api/auth").then(
+		axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth`).then(
 			() => {
 				if (!globalSocket.socketIsReady())
 					globalSocket.initSocket();
