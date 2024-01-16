@@ -30,7 +30,6 @@ onMounted(() => {
 });
 
 const setActiveChannel = (channel : any, currentUserId: number) => {
-	console.log('setActiveChannel', channel);
 	socket.emit('JoinCurrentChannel', {
 		'channel':channel,
 		'currentUserId':currentUserId
@@ -78,6 +77,7 @@ nav {
     justify-content: center;
     align-items: center;
     width: 100%;
+    min-height: 50%;
     height: auto;
 	overflow-x: hidden;
 	overflow-y: auto;
