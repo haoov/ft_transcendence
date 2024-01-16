@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onMounted, ref } from 'vue';
+import { inject, onBeforeMount, onMounted, ref } from 'vue';
 import { Game } from "../game/game";
 import axios from 'axios';
 import { ClientEvents, ServerEvents } from '@/utils';
@@ -17,13 +17,15 @@ const difficulty = ref("");
 const p1 = ref({username: "Player1", avatar: "", score: 0, spells: [false, false, false, false]});
 const p2 = ref({username: "Player2", avatar: "", score: 0, spells: [false, false, false, false]});
 const winner = ref("");
-const initParams = (await axios.get("http://localhost:3000/api/game/params")).data;
+const initParams = (await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/game/params`)).data;
 
 function assignMode(gameParams: {game: string, mode: string, difficulty: string, map: string}) {
 	difficulty.value = gameParams.difficulty;
 	map.value = gameParams.map;
 	gameSocket.getSocket().emit(ClientEvents.gameParams, gameParams);
 }
+
+onBeforeMount(() => {})
 
 onMounted(() => {
 	const game: Game = new Game("game", initParams);
@@ -43,7 +45,7 @@ onMounted(() => {
 				if (event.key == "4")
 					gameSocket.getSocket().emit(ClientEvents.useSpell, "big");
 			});
-		gameSocket.setMoveEvents();
+		gameSocket.setMoveEvents(true);
 	}
 	gameSocket.getSocket().on(ServerEvents.started, (users: any, params: any) => {
 		console.log("game started");

@@ -57,21 +57,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	@SubscribeMessage(clientEvents.gamePlay)
-	gamePlay(client: Socket) {
-		const room: Room = this.gameGateway.findRoom(client);
-		this.gameGateway.closeRoom(room);
-		this.disableNotifications(room.getUsers());
-	}
-
-	@SubscribeMessage(clientEvents.gameForfeit)
-	gameForfeit(client: Socket) {
-		const room: Room = this.gameGateway.findRoom(client);
-		room.quitGame(client);
-		this.gameGateway.endGame(room);
-		this.disableNotifications(room.getUsers());
-	}
-
 	disableNotifications(users: User[]) {
 		users.forEach((user) => {
 			const sockets: Socket[] = this.usersSockets.get(user.id);
