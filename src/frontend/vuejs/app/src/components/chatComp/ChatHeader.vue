@@ -86,6 +86,7 @@ const opendAddUserForm = () => {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+  cursor: pointer;
 }
 
 .log {
@@ -103,7 +104,7 @@ svg {
 p {
   color: #fe019a;
   background-size: 100%;
-  font-size: 2rem;
+  font-size: 3.5rem;
   margin: auto;
 }
 </style>
