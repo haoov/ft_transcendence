@@ -99,10 +99,10 @@ export class Game {
 		//init textures
 		this.textureLoader = new th.TextureLoader();
 		this.textures = {
-			tennisCourt: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=tennisCourt"),
-			questionMark: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=questionMark"),
-			ice: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=ice"),
-			fire: this.textureLoader.load("http://localhost:3000/api/game/textures?texture=fire"),
+			tennisCourt: this.textureLoader.load(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/game/textures?texture=tennisCourt`),
+			questionMark: this.textureLoader.load(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/game/textures?texture=questionMark`),
+			ice: this.textureLoader.load(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/game/textures?texture=ice`),
+			fire: this.textureLoader.load(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/game/textures?texture=fire`),
 		};
 
 		//init lights
@@ -125,7 +125,7 @@ export class Game {
 	};
 
 	createBall(radius: number) {
-		const ballGeometry = new th.SphereGeometry(radius, 100, 100);
+		const ballGeometry = new th.SphereGeometry(radius, 10, 10);
 		const ballMaterial = new th.MeshPhongMaterial();
 		const ball = new th.Mesh(ballGeometry, ballMaterial);
 		ball.castShadow = true;
@@ -136,7 +136,7 @@ export class Game {
 	createPaddle(init: initParams) {
 		const paddleGeometry = new RoundedBoxGeometry(init.params.PADDLE_WIDTH,
 																									init.params.PADDLE_HEIGHT,
-																									init.params.PADDLE_DEPTH, 100);
+																									init.params.PADDLE_DEPTH, 5);
 		const paddleMaterial = new th.MeshPhongMaterial();
 		const paddle = new th.Mesh(paddleGeometry, paddleMaterial);
 		paddle.castShadow = true;
@@ -189,7 +189,7 @@ export class Game {
 	}
 
 	createEffect() {
-		const geometry = new th.BoxGeometry(0.2, 0.2, 0.2, 100, 100, 100);
+		const geometry = new th.BoxGeometry(0.2, 0.2, 0.2, 5, 5, 5);
 		const material = new th.MeshPhongMaterial();
 		const effect = new th.Mesh(geometry, material);
 		effect.material.map = this.textures.questionMark;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 	import Chat from '@/components/chatComp/Chat.vue';
 	import navigationBar from '@/components/navigationBar.vue';
-	import Notification from '@/components/notification.vue';
+	import gameNotification from '@/game/components/gameNotification.vue';
 	import router from '@/router';
 	import { ClientEvents, ServerEvents } from '@/utils';
 
@@ -12,12 +12,12 @@
 		<navigationBar></navigationBar>
 		<Chat></Chat>
 	</div>
-	<!-- <Notification
+	<!-- <gameNotification
 		:display="stf.getDisplayValue(ServerEvents.gameReady)"
 		text="Ready to play!"
 		v-on:decline="socket.emit(ClientEvents.gameForfeit)"
 		v-on:accept="socket.emit('play'); router.push('/game');"
-	></Notification> -->
+	></gameNotification> -->
 </template>
 
 <style scoped>

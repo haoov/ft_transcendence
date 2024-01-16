@@ -77,7 +77,6 @@ export class HomeService {
 			.orderBy('game.id', 'DESC')
 			.getMany();
 		const gameStats = games.map((game) => {
-			console.log(game);
 			if (game.winner.id == id) {
 				return {
 					id: game.id,

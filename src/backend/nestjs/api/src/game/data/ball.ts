@@ -59,7 +59,7 @@ class Ball {
 		const normIntersect = this.position.y - paddle.position.y;
 		const bouceAngle = normIntersect * params.MAX_BOUNCE_ANGLE;
 
-		this.speed += 0.002;
+		this.speed += 0.001;
 		this.vecSpeed.x = -this.speed * Math.cos(bouceAngle);
 		this.vecSpeed.y = this.speed * Math.sin(bouceAngle);
 		if (this.position.x < 0) {

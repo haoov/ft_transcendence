@@ -121,6 +121,7 @@ export class Room {
 	}
 
 	quitGame(socket: Socket): void {
+		console.log(socket.data.user.username + " quitGame");
 		if (socket.data.user.id == this.users[0].id)
 			this.game.getPlayers()[1].topScore();
 		else
