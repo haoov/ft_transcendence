@@ -24,7 +24,7 @@
   width: 70vh;
   height: 80vh;
   border-radius: 0.8rem;
-  background: var(--surface);
+  background: var(--c-surface);
   box-shadow: 0px 0px 0px 1px var(--c-black-light);
   overflow: auto;
 }

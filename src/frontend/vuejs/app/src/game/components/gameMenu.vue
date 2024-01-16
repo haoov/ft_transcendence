@@ -1,17 +1,19 @@
 <script setup lang="ts">
 
-	import { ref, computed } from "vue";
+	import { ref, computed, inject } from "vue";
 	import loader from "@/components/loader.vue"
 	import selector from "@/components/selector.vue"
-import router from "@/router";
+	import GlobalSocket from "@/GlobalSocket";
+	import { ClientEvents, ServerEvents } from "@/utils";
 
-	defineProps(["state", "winner"]);
+	const props = defineProps(["state", "winner"]);
+	const emit = defineEmits(['click', 'stopWaiting']);
 
+	const globalSocket: GlobalSocket = inject("globalSocket") as GlobalSocket;
 	const games: string[] = ["classic", "super"];
 	const difficulties: string[] = ["easy", "medium", "hard"];
 	const modes: string[] = ["singlePlayer", "multiPlayer"];
 	const maps: string[] = ["classic", "tennis", "space", "random"];
-
 	const selectedGame = ref("");
 	const selectedMode = ref("");
 	const selectedDifficulty = ref("");
@@ -21,8 +23,6 @@ import router from "@/router";
 		return 	!selectedGame.value || !selectedMode.value
 						|| (selectedMode.value == "singlePlayer" && (!selectedDifficulty.value || !selectedMap.value));
 	});
-
-	const emit = defineEmits(['click', 'stopWaiting']);
 
 	function play() {
 		emit("click", {
@@ -37,7 +37,7 @@ import router from "@/router";
 	}
 
 	function stopWaiting() {
-		emit("stopWaiting");
+		emit(ClientEvents.stopWaiting);
 		selectedGame.value = "";
 		selectedMap.value = "classic";
 		selectedMode.value = "";
@@ -72,15 +72,25 @@ import router from "@/router";
 				:values="maps"
 				@select="(value) => {selectedMap = value}"
 			></selector>
-			<button class="custumButton" id="play" type="submit" :disabled="isDisabled" v-on:click="play">Play</button>
+			<button
+				class="custumButton"
+				id="play" type="submit"
+				:disabled="isDisabled"
+				v-on:click="play"
+				>Play</button>
 		</div>
-		<div v-else-if="state != 'finished'" class="menu-box">
+		<div v-else-if="state != 'finished' && !globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
 			<loader :text="state"></loader>
 			<button v-if="state == 'waiting'" class="custumButton" id="stopWaiting" v-on:click="stopWaiting">Stop waiting</button>
 		</div>
-		<div v-else class="menu-box">
+		<div v-else-if="!globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
 			<span>{{ winner }} won!</span>
 			<button class="custumButton" id="reset" v-on:click="reloadMenu()">New game</button>
+		</div>
+		<div v-if="globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
+			<span>Game Ready</span>
+			<button class="custumButton" v-on:click="globalSocket.getSocket().emit(ClientEvents.gamePlay)">Play</button>
+			<button class="custumButton" v-on:click="globalSocket.getSocket().emit(ClientEvents.gameForfeit)">Forfeit</button>
 		</div>
 	</div>
 
@@ -92,10 +102,10 @@ import router from "@/router";
 		position: absolute;
 		width: 720px;
 		height: 480px;
-		margin: 1px;
 		background: transparent;
 		backdrop-filter: blur(3px);
 		border-radius: 1rem;
+		box-shadow: 0 0 0 1px var(--c-black-light);
 		display: flex;
 		flex-direction: column;
 		justify-content: center;

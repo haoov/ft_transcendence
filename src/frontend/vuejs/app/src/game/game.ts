@@ -46,9 +46,11 @@ interface updatedParams {
 	p1PaddlePosition: Vec3,
 	p1PaddleScale: Vec3,
 	p1Effect: string,
+	p1Spells: boolean[],
 	p2PaddlePosition: Vec3,
 	p2PaddleScale: Vec3,
 	p2Effect: string,
+	p2Spells: boolean[],
 	effectPosition: Vec3,
 	effectRotationSpeed: number,
 	effectOn: boolean,
@@ -252,5 +254,9 @@ export class Game {
 			default: break;
 		}
 		obj.material.needsUpdate = true;
+	}
+
+	stopGame() {
+		this.started = false;
 	}
 }
