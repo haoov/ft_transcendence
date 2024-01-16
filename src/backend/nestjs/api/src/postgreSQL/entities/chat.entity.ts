@@ -22,8 +22,6 @@ class ChannelEntity {
 	@ManyToMany(() => UserEntity) @JoinTable()
 	users: User [];
 
-	@OneToMany(() => MessageEntity, message => message.channel)
-	messages: MessageEntity [];
 }
 
 @Entity()
@@ -42,12 +40,6 @@ class MessageEntity {
 
 	@Column()
 	datestamp: Date;
-
-	@Column()
-	timestamp: string;
-
-	@ManyToOne(() => ChannelEntity, channel => channel.messages)
-	channel: ChannelEntity;
 
 }
 
