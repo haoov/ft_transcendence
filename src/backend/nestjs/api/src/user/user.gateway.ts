@@ -1,69 +1,86 @@
-import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway} from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
 import { Socket } from 'socket.io'
 import { User } from 'src/user/user.interface';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UserEntity } from '../postgreSQL/entities/user.entity';
+import { clientEvents, serverEvents } from '../game/enum';
+import { UserService } from './user.service';
 import { userStatus } from './enum/userStatus.enum';
-import { clientEvents } from '../game/enum';
-
-// DRAFT : ne fonctionne pas bien 
+import { Room } from 'src/game/classes';
+import { GameGateway } from 'src/game/game.gateway';
+import { Inject, forwardRef } from '@nestjs/common';
 
 // Outil de gestion des web socket events
-@WebSocketGateway({ namespace: 'connect' })
-export class UserGateway 
-	implements OnGatewayConnection, OnGatewayDisconnect {
+@WebSocketGateway({ namespace: 'users' })
+export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
+	private usersSockets: Map<number, Socket[]>;
 	
-	clients: Socket[];
-
-	constructor(@InjectRepository(UserEntity) private usersRepository: Repository<UserEntity>) {
-		this.clients = [];
+	constructor(	private readonly userService: UserService,
+								@Inject(forwardRef(() => GameGateway)) private readonly gameGateway: GameGateway) {
+		this.usersSockets = new Map<number, Socket[]>();
 	}
 
-	// Set the user as 'online' 
-	async handleConnection(client: Socket) {
-		client.on(clientEvents.connected, async (data: User) => {
-			client.data.user = data;
-			this.clients.push(client);
-			try {
-				const user: User = await this.usersRepository.findOneBy({ email: data.email });
-				if (user.status === userStatus.undefined || user.status === userStatus.offline) {
-					user.status = userStatus.online;
-					await this.usersRepository.save(user);
-					//console.log("status on active pour " + user.username);
-				}
-			}
-			catch (err) {
-				throw err;
-			};
+	handleConnection(client: Socket) {
+		client.on(clientEvents.connected, async (user: User) => {
+			client.data.user = user;
+			const socketIds: Socket[] = this.usersSockets.get(user.id);
+			if (socketIds)
+				socketIds.push(client);
+			else
+				this.usersSockets.set(user.id, [client]);
+			await this.userService.updateUserStatus(user, userStatus.online);
+			console.log("user connection: " + user.username);
 		});
 	}
 
-	// Set the user as 'offline'
-	async handleDisconnect(client: Socket) {
-		try {
-			if (client.data.user) {	
-				// Check if several windows opened
-				const windows: Socket[] = this.clients.filter((socket) => socket.data.id === client.data.id);
-				if (windows.length === 1) {
-					// Updating status
-					const user: User = await this.usersRepository.findOneBy({ email: client.data.user.email });
-					user.status = userStatus.offline;
-					await this.usersRepository.save(user);
-					//console.log("status on offline pour " + user.username);
+	handleDisconnect(client: Socket) {
+		if (client.data.user) {
+			const socketIds: Socket[] = this.usersSockets.get(client.data.user.id);
+			if (socketIds) {
+				const index: number = socketIds.indexOf(client);
+				if (index > -1)
+					socketIds.splice(index, 1);
+				if (socketIds.length == 0) {
+					this.usersSockets.delete(client.data.user.id);
+					this.userService.updateUserStatus(client.data.user, userStatus.offline);
 				}
-			}
-			// Remove from array
-			for(let i: number = 0; i < this.clients.length; i++) {
-				if (this.clients[i] === client) {
-					this.clients.splice(i, 1);
-					break;
-				}
+				console.log("user disconnection: " + client.data.user.username);
 			}
 		}
-		catch (err) {
-			throw err;
-		};
+	}
+
+	gameReady(room: Room) {
+		const sockets: Socket[] = this.usersSockets.get(room.getUsers()[0].id);
+		if (sockets) {
+			sockets.forEach(socket => {
+				socket.emit(serverEvents.gameReady);
+			});
+			console.log("notification gameReady sent to user: " + room.getUsers()[0].id);
+		}
+	}
+
+	@SubscribeMessage(clientEvents.gamePlay)
+	gamePlay(client: Socket) {
+		const room: Room = this.gameGateway.findRoom(client);
+		this.gameGateway.closeRoom(room);
+		this.disableNotifications(room.getUsers());
+	}
+
+	@SubscribeMessage(clientEvents.gameForfeit)
+	gameForfeit(client: Socket) {
+		const room: Room = this.gameGateway.findRoom(client);
+		room.quitGame(client);
+		this.gameGateway.endGame(room);
+		this.disableNotifications(room.getUsers());
+	}
+
+	disableNotifications(users: User[]) {
+		users.forEach((user) => {
+			const sockets: Socket[] = this.usersSockets.get(user.id);
+			if (sockets) {
+				sockets.forEach(socket => {
+					socket.emit(serverEvents.disableNotifications);
+				});
+			}
+		})
 	}
 
 }
