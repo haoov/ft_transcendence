@@ -30,6 +30,7 @@ import AddUserForm from './AddUserForm.vue';
 import { Suspense, inject } from 'vue';
 import { io, Socket } from 'socket.io-client';
 import { onBeforeRouteLeave } from 'vue-router';
+import { parseIsolatedEntityName } from 'typescript';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
@@ -39,29 +40,21 @@ const socket : Socket = store.socket;
 socket.on('NewConnection', async () => {
 	const user = await $data.getCurrentUser();
 	socket.emit('userConnected', user);
-	if (localStorage.getItem('lastActiveChannel')) {
-		const lastChannelId = Number(localStorage.getItem('lastActiveChannel'));
-		const lastActiveChannel = store.channels.find((channel : any) => channel.id === lastChannelId);
-		if (lastActiveChannel) {
-			socket.emit('join', lastActiveChannel);
-			$data.setActiveChannel(lastActiveChannel);
-			return ;
-		}
+});
+
+socket.on('lastActiveChannel', async (id : string) => {
+	const user = await $data.getCurrentUser();
+	$data.loadChannels(user.id);
+	const channel = store.channels.find((channel : any) => channel.id === parseInt(id));
+	if (channel) {
+		$data.setActiveChannel(channel);
+	} else {
+		$data.setActiveChannel(null);
 	}
-	else if (store.channels.length > 0) {
-		socket.emit('join', store.channels[0]);
-		$data.setActiveChannel(store.channels[0]);
-		return ;
-	}
-	$data.setActiveChannel(null);
 });
 
 onBeforeRouteLeave(() => {
 	socket.disconnect();
-	if (!store.activeChannel) {
-		return ;
-	}
-	localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString());
 });
 
 const closeModal = () => {

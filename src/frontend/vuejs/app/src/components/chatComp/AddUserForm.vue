@@ -111,7 +111,7 @@ const submitForm = () => {
 		channelId: store.activeChannel.id,
 		users: listUsersToAdd.value
 	});
-	$data.closeAddUserModalForm;
+	$data.closeAddUserModalForm();
 }
 
 </script>
