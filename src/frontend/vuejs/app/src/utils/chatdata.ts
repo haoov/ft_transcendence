@@ -1,5 +1,6 @@
 import axios from "axios";
 import io from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { reactive } from "vue";
 
 interface Channel {
@@ -40,6 +41,10 @@ async function fetchChannels() : Promise<Channel[]> {
 	return axios.get('http://localhost:3000/api/chat/channels').then((res) => { return res.data });
 };
 
+async function fetchJoinableChannels(id: number) : Promise<Channel[]> {
+	return axios.get(`http://localhost:3000/api/chat/channels/joinable/${id}`).then((res) => { return res.data });
+}
+
 async function fetchCurrentUserChannels(id: number) : Promise<Channel []> {
 	return axios.get(`http://localhost:3000/api/chat/channels/${id}`).then((res) => { return res.data });
 }
@@ -48,12 +53,6 @@ async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
 	return axios.get(`http://localhost:3000/api/chat/messages/${id}`).then((res) => { return res.data });
 };
 
-const socket = io('http://localhost:3000/chat');
-socket.on('NewConnection', async () => {
-	const user = await fetchCurrentUser();
-	socket.emit('userConnected', user);
-});
-
 const store = reactive({
 	channels: [] as Channel[],
 	messages: [] as Message [],
@@ -61,13 +60,12 @@ const store = reactive({
 	currentUser: null as User | null,
 	isModalOpen: false,
 	isEditModalOpen: false,
+	isAddUserModalOpen: false,
 	activeChannel: null as Channel | null,
+	socket: null as Socket | null,
 });
 
 export default {
-	getSocket() {
-		return socket;
-	},
 
 	getUsers() : Promise<User []> {
 		return fetchUsers();
@@ -81,8 +79,16 @@ export default {
 		return fetchChannels();
 	},
 
+	getJoinableChannels(id: number) : Object {
+		return fetchJoinableChannels(id);
+	},
+
 	getStore() : Object {
 		return store;
+	},
+
+	setSocket(socket: Socket) {
+		store.socket = socket;
 	},
 
 	loadChannels(idUser: number) {
@@ -95,9 +101,18 @@ export default {
 		store.channels.unshift(channel)
 	},
 
+	deleteChannel(channelId: number) {
+		const index = store.channels.findIndex((c) => c.id === channelId);
+		store.channels.splice(index, 1);
+	},
+
+	updateChannel(channel: Channel) {
+		const index = store.channels.findIndex((c) => c.id === channel.id);
+		store.channels[index] = channel;
+	},
+
 	setActiveChannel(channel: Channel) {
 		store.activeChannel = channel;
-		// localStorage.setItem('lastActiveChannel', store.activeChannel.id.toString()); // Permet de stocker la dernier channel active dans le local storage
 	},
 
 	loadMessagesByChannel(idChannel: number) {
@@ -130,6 +145,14 @@ export default {
 
 	closeEditModalForm() {
 		store.isEditModalOpen = false;
+	},
+
+	openAddUserModalForm() {
+		store.isAddUserModalOpen = true;
+	},
+
+	closeAddUserModalForm() {
+		store.isAddUserModalOpen = false;
 	},
 
 };

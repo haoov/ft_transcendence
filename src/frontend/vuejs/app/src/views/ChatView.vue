@@ -8,8 +8,10 @@
 </script>
 
 <template>
-	<navigationBar></navigationBar>
-	<Chat></Chat>
+	<div class="chat body">
+		<navigationBar></navigationBar>
+		<Chat></Chat>
+	</div>
 	<!-- <Notification
 		:display="stf.getDisplayValue(ServerEvents.gameReady)"
 		text="Ready to play!"
@@ -19,4 +21,14 @@
 </template>
 
 <style scoped>
-</style>@/injectables/STF@/GlobalSocket
+	.chat.body {
+		height: 100%;
+		background: linear-gradient(	to right,
+																var(--c-black),
+																var(--c-blue-dark),
+																var(--c-black)	);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+</style>
