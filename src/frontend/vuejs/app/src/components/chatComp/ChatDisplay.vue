@@ -25,7 +25,6 @@ const store = data.getStore();
 
 .chat-display-div {
   display: grid;
-  /* grid-template-rows: 1fr 6fr 0.5fr; */
   grid-template-rows: 1fr minmax(auto, 550px) minmax(25px, auto);
   align-content: stretch;
   width: 100%;
