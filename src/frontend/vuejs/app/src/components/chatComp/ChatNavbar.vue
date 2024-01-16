@@ -3,9 +3,9 @@
 		<nav>
 			<ul v-for="(channel, index) in channels">
 				<ChannelWidget
-				:channel="channel"
-				:key="channel.id"
-				@click="setActiveChannel(channel)"
+					:channel="channel"
+					:key="channel.id"
+					@click="setActiveChannel(channel, currentUser.id)"
 				></ChannelWidget>
 			</ul>
 			<NewChannelWidget></NewChannelWidget>
@@ -20,8 +20,8 @@ import { Socket } from "socket.io-client";
 import { inject, onMounted, computed } from 'vue';
 
 const $data : any = inject('$data');
-const socket : Socket = $data.getSocket();
 const store = $data.getStore();
+const socket : Socket = store.socket;
 const currentUser = await $data.getCurrentUser();
 const channels = computed (() => store.channels);
 
@@ -29,13 +29,30 @@ onMounted(() => {
 	$data.loadChannels(currentUser.id);
 });
 
-const setActiveChannel = (channel : any) => {
-	socket.emit('join', channel);
+const setActiveChannel = (channel : any, currentUserId: number) => {
+	socket.emit('JoinCurrentChannel', {
+		'channel':channel,
+		'currentUserId':currentUserId
+		});
 	$data.setActiveChannel(channel);
 };
 
 socket.on('newChannelCreated', (newChannelCreated : any) => {
 	$data.addChannel(newChannelCreated);
+});
+
+socket.on('channelDeleted', (channelIdDeleted : number) => {
+	$data.deleteChannel(channelIdDeleted);
+	if (store.channels.length > 0) {
+		store.activeChannel = store.channels[store.channels.length - 1];
+	} else {
+		store.activeChannel = null;
+	}
+});
+
+socket.on('channelUpdated', (channelUpdated : any) => {
+	console.log('channelUpdated', channelUpdated);
+	$data.updateChannel(channelUpdated);
 });
 
 </script>
@@ -60,6 +77,7 @@ nav {
     justify-content: center;
     align-items: center;
     width: 100%;
+    min-height: 50%;
     height: auto;
 	overflow-x: hidden;
 	overflow-y: auto;
