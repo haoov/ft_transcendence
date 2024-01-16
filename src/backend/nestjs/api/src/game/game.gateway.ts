@@ -127,6 +127,22 @@ export class GameGateway
 		await this.userService.updateUserStatus(client.data.user, userStatus.undefined);
 	}
 
+	@SubscribeMessage(clientEvents.gamePlay)
+	gamePlay(client: Socket) {
+		const room: Room = this.findRoom(client);
+		this.closeRoom(room);
+		this.userGateway.disableNotifications(room.getUsers());
+	}
+
+	@SubscribeMessage(clientEvents.gameForfeit)
+	gameForfeit(client: Socket) {
+		const room: Room = this.findRoom(client);
+		room.quitGame(client);
+		this.endGame(room);
+		this.deleteRoom(room);
+		this.userGateway.disableNotifications(room.getUsers());
+	}
+
 	findRoom(client: Socket): Room {
 		return this.rooms.find((room) => {
 			return (room.getUsers().find((user) => {
