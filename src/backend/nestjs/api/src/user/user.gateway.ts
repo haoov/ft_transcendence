@@ -27,7 +27,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			else
 				this.usersSockets.set(user.id, [client]);
 			await this.userService.updateUserStatus(user, userStatus.online);
-			console.log("user connection: " + user.username);
+			// console.log("user connection: " + user.username);
 		});
 	}
 
@@ -42,7 +42,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					this.usersSockets.delete(client.data.user.id);
 					this.userService.updateUserStatus(client.data.user, userStatus.offline);
 				}
-				console.log("user disconnection: " + client.data.user.username);
+				// console.log("user disconnection: " + client.data.user.username);
 			}
 		}
 	}
@@ -53,7 +53,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			sockets.forEach(socket => {
 				socket.emit(serverEvents.gameReady);
 			});
-			console.log("notification gameReady sent to user: " + room.getUsers()[0].id);
+			// ("notification gameReady sent to user: " + room.getUsers()[0].id);
 		}
 	}
 

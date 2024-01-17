@@ -2,13 +2,13 @@
 
 import axios from "axios";
 import type { User } from "@/utils";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { toast, type ToastType } from 'vue3-toastify';
 import "vue3-toastify/dist/index.css"
 
-const imagesLoaded = ref<boolean>(false);
+
 const me = ref<User>({
-	id: 0,
+  id: 0,
 	username: "",
 	avatar: "",
 	email: "",
@@ -17,6 +17,13 @@ const me = ref<User>({
 	games_lost: []
 });
 const usernameSet = ref<string>("");
+const avatarSet = ref<File | null>(null);
+const avatarSrc = computed(() => {
+  return avatarSet.value ? URL.createObjectURL(avatarSet.value) : me.value.avatar;
+});
+const disableSave = computed(() => {
+  return (!usernameSet.value || usernameSet.value === me.value.username) && avatarSet.value === null;
+});
 
 // FETCHING DATA
 async function fetchMe() {
@@ -28,24 +35,14 @@ async function fetchMe() {
     });
 }
 
-// function loadAllImages() {
-//       let loadPromises = players.value.map(player => {
-//         return new Promise((resolve, reject) => {
-//           let img = new Image();
-//           img.src = player.avatar;
-//           img.onload = resolve;
-//           img.onerror = reject;
-//         });
-//       });
-
-//       Promise.all(loadPromises)
-//         .then(() => { imagesLoaded.value = true; })
-// }
-
-
 // UTIL FUNCTIONS
-function  getMyAvatarSrc() : string | undefined {
-  return me.value?.avatar;
+function updateProfile() {
+  if (usernameSet.value && usernameSet.value !== me.value.username) {
+    updateUsername();
+  }
+  if (avatarSet.value) {
+    updateAvatar();
+  }
 }
 
 function  updateUsername() {
@@ -65,6 +62,30 @@ function  updateUsername() {
       }
     });
 }
+
+function  updateAvatar() {
+  const formData = new FormData();
+  formData.append('avatar', avatarSet.value as Blob);
+  axios
+    .put("http://localhost:3000/api/user/update/avatar", formData)
+  //   .then( (data) => { 
+  //     me.value = data.data;
+  //     usernameSet.value = data.data.username;
+  //    sendToast("success", "Username has been updated!");
+  //   })
+  //   .catch( (err) => {
+  //     console.log(err.response.status);
+  //     if (err.response.status == 409) {
+  //       sendToast("error", "Username is already in use!");
+  //     }
+  //   });
+}
+
+function selectFile(event: Event) {
+  const inputEvent = event as InputEvent;
+  const target = inputEvent.target as HTMLInputElement;
+  avatarSet.value = target.files ? target.files[0] : null;
+};
 
 function sendToast(type: ToastType, message: string) {
   toast(message, {
@@ -87,7 +108,7 @@ onMounted(async () => {
 <div class="l-wrapper">
 	<div class="l-grid">
 		<div class ="u-justify--center u-display--flex">
-			<img class="c-avatar" :src="getMyAvatarSrc()"/>
+			<img class="c-avatar" :src="avatarSrc"/>
 		</div>
   		<div class="formTitle">Username</div>
 		<div class="formField">
@@ -103,8 +124,21 @@ onMounted(async () => {
 		<div class="formField">
 			<div class="forbidden">{{ me.email }}</div>
 		</div>
+
+    <form enctype="multipart/form-data">
+		<div class="field">
+			<label for="file" class="label">Upload file</label>
+			<input
+				id="file"
+				type="file"
+				@change="selectFile"
+				accept="image/*" />
+			<button>Upload</button>
+		</div>
+	  </form>
+
 		<div class ="u-justify--center u-display--flex">
-			<button id="saveButton" :disabled="!usernameSet || usernameSet === me.username" @click="updateUsername()">Save</button>
+			<button id="saveButton" :disabled="disableSave" @click="updateProfile()">Save</button>
 		</div>
 	</div>    
 </div>

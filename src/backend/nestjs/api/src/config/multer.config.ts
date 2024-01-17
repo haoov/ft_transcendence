@@ -3,8 +3,8 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 
 export const multerConfig: MulterModuleOptions = {
-	storage: diskStorage({
-		destination: '../user/avatar-uploads',
+	storage: diskStorage ({
+		destination: './src/user/avatar-uploads',
 		filename: (req, file, callback) => {
 			const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
 			callback(null, file.fieldname + '-' + uniqueSuffix + extname(file.originalname));

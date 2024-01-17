@@ -26,16 +26,15 @@ export class UserController {
 		return this.userService.getUserById(id);
 	}
 
-	// @Post(':id/upload-avatar')
-	// @UseInterceptors(FileInterceptor('avatar', multerConfig))
-	// uploadAvatar(@Param("id") id: number, @UploadedFile() file: Express.Multer.File) {
-	//   // Handle the uploaded file, save file details to the database, and delete the old avatar if it exists.
-	//   // Return appropriate response.
-	// }
-
 	@Put('update/username')
 	updateUsername(@Req() req: Request): Promise<User> {
 		return this.userService.updateUsername(req);
+	}
+
+	@Put('update/avatar')
+	@UseInterceptors(FileInterceptor('avatar', multerConfig))
+	uploadAvatar(@UploadedFile() file: Express.Multer.File) {
+		console.log('uploadAvatar');
 	}
 
 	@Delete(":username")
