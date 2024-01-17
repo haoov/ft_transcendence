@@ -78,10 +78,9 @@ h4 {
   color: #e9e8e8 !important ;
   font-weight: 500 !important;
   text-transform: none !important;
-  letter-spacing: .05em !important;
   margin-top: 0 !important;
   margin-bottom: 0 !important;
-  font-family: Oswald,system-ui !important;
+  font-family: Overpass !important;
 }
 
 h5 {
