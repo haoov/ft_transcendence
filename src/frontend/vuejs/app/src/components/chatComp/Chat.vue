@@ -34,7 +34,7 @@ import { parseIsolatedEntityName } from 'typescript';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
-$data.setSocket(io('http://localhost:3000/chat'));
+$data.setSocket(io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`));
 const socket : Socket = store.socket; 
 
 socket.on('NewConnection', async () => {
