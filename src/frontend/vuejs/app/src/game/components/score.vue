@@ -23,16 +23,26 @@
 
 <style scoped>
 	.score-container {
+		align-self: flex-start;
 		display: flex;
 		width: 720px;
 		border-radius: 5rem;
-		background: padding-box,
-								linear-gradient(145deg, transparent 15%, var(--c-grey),transparent);
-		background-size: 200% 100%;
+		background: linear-gradient(to left,var(--c-white),10%, transparent);
 		padding: 0px 10px 0px 10px;
 		margin-top: 20px;
+		margin-bottom: 5px;
 		justify-content: space-between;
 		align-items: center;
+		animation: slide 0.3s ease-in;
+	}
+
+	@keyframes slide {
+		0% {
+			width: 0%;
+		}
+		100% {
+			width: 720px;
+		}
 	}
 
 	.score-div {

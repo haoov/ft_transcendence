@@ -42,16 +42,26 @@
 
 <style scoped>
 	.spells {
+		align-self: flex-end;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		width: 720px;
 		height: 50px;
 		border-radius: 5rem;
-		background: linear-gradient(145deg, var(--c-grey), transparent 35%);
-		background-size: 200% 100%;
+		background: linear-gradient(to right,var(--c-white),10%, transparent);
 		padding: 0px 10px 0px 10px;
-		margin-top: 2px;
+		margin-top: 5px;
+		animation: slide 0.3s ease-in;
+	}
+
+	@keyframes slide {
+		0% {
+			width: 0%;
+		}
+		100% {
+			width: 720px;
+		}
 	}
 
 	.spellBar {

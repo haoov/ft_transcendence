@@ -10,6 +10,7 @@ export class Room {
 	private name: string;
 	private public: boolean;
 	private full: boolean;
+	private closed: boolean;
 	private users: User[];
 	private sockets: Socket[];
 	private params: gameParams;
@@ -20,12 +21,14 @@ export class Room {
 		this.name = name;
 		this.public = true;
 		this.full = false;
+		this.closed = false;
 		this.sockets = [];
 		this.params = params;
 		this.game = new Pong(params);
 	}
 
 	startGame(): void {
+		this.closed = true;
 		this.game.start();
 	}
 
@@ -38,14 +41,18 @@ export class Room {
 	}
 
 	addSocket(socket: Socket): void {
+		console.log("adding socket " + socket.id + " to room: " + this.name);
 		socket.data.room = this.name;
 		this.sockets.push(socket);
 		socket.join(this.name);
 	}
 
 	removeSocket(socket: Socket): void {
-		this.sockets.splice(this.sockets.indexOf(socket), 1);
-		socket.leave(this.name);
+		if (this.sockets.find((s) => {return (s.id == socket.id);})) {
+			console.log("removing socket " + socket.id + " from room: " + this.name);
+			this.sockets.splice(this.sockets.indexOf(socket), 1);
+			socket.leave(this.name);
+		}
 	}
 
 	addUser(user: User): void {
@@ -70,6 +77,10 @@ export class Room {
 
 	isFull(): boolean {
 		return this.full;
+	}
+
+	isClosed(): boolean {
+		return this.closed;
 	}
 
 	getSockets(): Socket[] {
@@ -130,6 +141,14 @@ export class Room {
 
 	isOpen(): boolean {
 		return (this.public && !this.full);
+	}
+
+	hasUser(user: User): boolean {
+		const userIn: User = this.users.find((u) => {return (u.id == user.id);});
+		if (userIn)
+			return true;
+		else
+			return false;
 	}
 
 	checkSockets(user: User): boolean {

@@ -16,10 +16,8 @@ export enum serverEvents {
 	ready = "ready",
 	started = "started",
 	finished = "finished",
-	waiting = "waiting",
-	waitingForOpponent = "waitingForOpponent",
-	playing = "playing",
 	gameReady = "gameReady",
 	gameInvite = "gameInvite",
 	disableNotifications = "disableNotifications",
+	updateStatus = "updateStatus",
 };

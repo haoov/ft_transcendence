@@ -21,4 +21,5 @@ export enum ServerEvents {
 	gameReady = "gameReady",
 	waitingForOpponent = "waitingForOpponent",
 	disableNotifications = "disableNotifications",
+	updateStatus = "updateStatus",
 };
