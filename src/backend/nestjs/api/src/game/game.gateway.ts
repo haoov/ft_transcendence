@@ -130,15 +130,18 @@ export class GameGateway
 	@SubscribeMessage(clientEvents.gamePlay)
 	gamePlay(client: Socket) {
 		const room: Room = this.findRoom(client);
-		this.closeRoom(room);
+		if (room)
+			this.closeRoom(room);
 	}
 
 	@SubscribeMessage(clientEvents.gameForfeit)
 	gameForfeit(client: Socket) {
 		const room: Room = this.findRoom(client);
-		room.quitGame(client);
-		this.endGame(room);
-		this.deleteRoom(room);
+		if (room) {
+			room.quitGame(client);
+			this.endGame(room);
+			this.deleteRoom(room);
+		}
 	}
 
 	findRoom(client: Socket): Room {
@@ -175,12 +178,11 @@ export class GameGateway
 	}
 
 	manageSocket(client: Socket, room: Room) {
+		room.addSocket(client);
 		if (room.isClosed())
 			client.emit(serverEvents.started, room.getUsers(), room.getParams());
-		else {
-			room.addSocket(client);
+		else
 			client.emit(serverEvents.updateStatus, "waiting");
-		}
 	}
 
 	closeRoom(room: Room) {
