@@ -74,13 +74,13 @@ import moment from 'moment-timezone';
 }
 
 h4 {
-  font-size: 1em !important ;
-  color: #e9e8e8 !important ;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  font-family: Overpass !important;
+  font-size: 1em;
+  color: #e9e8e8;
+  font-weight: 500;
+  text-transform: none;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: Overpass;
 }
 
 h5 {
