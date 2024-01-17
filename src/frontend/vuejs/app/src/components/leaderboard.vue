@@ -300,6 +300,95 @@ button, select {
   cursor: pointer;
 }
 
+.l-wrapper {
+  width: 100%;
+  max-width: 960px;
+  margin: auto;
+  padding: 1.6rem 1.6rem 3.2rem;
+}
+@media screen and (max-width: 750px) {
+  .l-wrapper {
+    max-width: 450px;
+  }
+}
+
+.l-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1.5fr;
+  grid-column-gap: 1.6rem;
+  grid-row-gap: 1.6rem;
+  position: relative;
+}
+@media screen and (max-width: 750px) {
+  .l-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.l-grid__item {
+  height: 650px;
+  box-shadow: 0 1px 0 0 var(--c-black-light),0 -1px 0 0 var(--c-black-light);
+  border-radius: 0.8rem;
+  margin-bottom: 0.1rem;
+  overflow: hidden;
+}
+
+.c-card {
+  border-radius: 0.8rem;
+  background: var(--c-surface);
+  width: 100%;
+  margin-bottom: 1.6rem;
+  box-shadow: 0px 0px 0px 1px var(--c-black-light)
+}
+.c-card__body, .c-card__header {
+  padding: 2.4rem;
+}
+@media screen and (max-width: 750px) {
+  .c-card__body, .c-card__header {
+    padding: 1.2rem;
+  }
+}
+.c-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0;
+}
+@media screen and (max-width: 750px) {
+  .c-card__header {
+    flex-direction: column;
+  }
+}
+
+@media screen and (max-width: 750px) {
+  .c-place {
+    transform: translateY(4px);
+  }
+}
+
+#gameContent {
+    height: 132px;
+    overflow-y: auto;
+}
+@media screen and (min-width: 750px) and (max-width: 863px) {
+  #gameContent {
+    height: 157px;
+    overflow-y: auto;
+  }
+}
+@media screen and (max-width: 750px) {
+  #gameContent {
+    height: 175px;
+    overflow-y: auto;
+  }
+}
+
+
+#leaderboardContent {
+  height: 500px;
+  overflow-y: auto;
+}
+
 .svg-pie {
     width: 100%;
     font-size: 16px;
@@ -321,9 +410,9 @@ button, select {
     }
 }
 
-@media (min-width: 992px) {
+@media (max-width: 750px) {
     .svg-pie {
-        width: 80%;
+        width: 75%;
     }
 }
 
@@ -379,76 +468,7 @@ button, select {
     font-family: Overpass;
 }
 
-.l-wrapper {
-  width: 100%;
-  max-width: 960px;
-  margin: auto;
-  padding: 1.6rem 1.6rem 3.2rem;
-}
 
-.l-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1.5fr;
-  grid-column-gap: 1.6rem;
-  grid-row-gap: 1.6rem;
-  position: relative;
-}
-@media screen and (max-width: 700px) {
-  .l-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.l-grid__item {
-  height: 650px;
-  box-shadow: 0 1px 0 0 var(--c-black-light),0 -1px 0 0 var(--c-black-light);
-  border-radius: 0.8rem;
-  margin-bottom: 0.1rem;
-  overflow: hidden;
-}
-
-.c-card {
-  border-radius: 0.8rem;
-  background: var(--c-surface);
-  width: 100%;
-  margin-bottom: 1.6rem;
-  box-shadow: 0px 0px 0px 1px var(--c-black-light)
-}
-.c-card__body, .c-card__header {
-  padding: 2.4rem;
-}
-@media screen and (max-width: 700px) {
-  .c-card__body, .c-card__header {
-    padding: 1.2rem;
-  }
-}
-.c-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 0;
-}
-@media screen and (max-width: 700px) {
-  .c-card__header {
-    flex-direction: column;
-  }
-}
-
-@media screen and (max-width: 700px) {
-  .c-place {
-    transform: translateY(4px);
-  }
-}
-
-#gameContent {
-    height: 160px;
-    overflow-y: auto;
-}
-
-#leaderboardContent {
-  height: 500px;
-  overflow-y: auto;
-}
 .scroll::-webkit-scrollbar {
   width: 6px;
 }
@@ -494,7 +514,7 @@ button, select {
 .c-list__item .c-flag {
   margin-top: 0.8rem;
 }
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 750px) {
   .c-list__item .c-flag {
     margin-top: 0.4rem;
   }
@@ -504,7 +524,7 @@ button, select {
   grid-template-columns: 4.8rem 3fr 1fr 1fr;
   grid-column-gap: 2.4rem;
 }
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 750px) {
   .c-list__grid {
     grid-template-columns: 3.2rem 3fr 1fr 1fr;
     grid-column-gap: 0.8rem;
@@ -538,11 +558,17 @@ button, select {
 
 .c-list__game-history {
   display: grid;
-  grid-template-columns: .9fr 1fr 2fr 1.5fr;
+  grid-template-columns: 1fr 1fr 1.8fr 1.3fr;
   grid-column-gap: 2.5rem;
   align-items: end;
   margin-left: 1rem;
   margin-right: 1rem;
+}
+@media screen and (min-width: 750px) and (max-width: 863px) {
+  .c-list__game-history {
+    grid-template-columns: 0.9fr 0.9fr 1.5fr 1fr;
+    grid-column-gap: 1.2rem;
+  }
 }
 
 .c-game-history__score {

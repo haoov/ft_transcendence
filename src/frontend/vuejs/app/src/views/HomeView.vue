@@ -26,6 +26,7 @@
 <style>
 
 	.home-body {
+			overflow-x: hidden;
 			height: 100%;
 			background: linear-gradient(to right, var(--c-black), var(--c-blue-dark), var(--c-black));
 	}
