@@ -95,10 +95,8 @@ const isSubmitDisabled = computed(() => {
 	// return !channelName.value || nameError.value || passwordError.value;
 	return false;
 });
-
 const submitForm = () => {
 	userIds.value.push(currentUser.id);
-	console.log('User Id list', userIds.value);
 	let newChannel;
 	if (selectedOption.value === 'Private') {
 		if (userIds.value.length < 2) {
