@@ -11,16 +11,16 @@ const router = createRouter({
 
 router.beforeEach((to) => {
 	if (to.name != "login") {
-		const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
-		axios.get("http://localhost:3000/api/auth").then(
-			() => {
-				if (!globalSocket.socketIsReady())
-					globalSocket.initSocket();
-			},
-			() => {
-				router.push("/login");
-			}
-		);
+		// const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
+		// axios.get("http://localhost:3000/api/auth").then(
+		// 	() => {
+		// 		if (!globalSocket.socketIsReady())
+		// 			globalSocket.initSocket();
+		// 	},
+		// 	() => {
+		// 		router.push("/login");
+		// 	}
+		// );
 	}
 })
 
