@@ -1,7 +1,7 @@
 PROJDIR		=	$(realpath $(CURDIR))
 SRC			=	$(CURDIR)/src
 HOSTNAME	=	$(shell hostname)
-LOCAL_ADDR 	= 	$(shell ipconfig getifaddr en0)
+LOCAL_ADDR 	= 	$(shell ip route get 1 | awk '{print $$7}' | tr -d '\n')
 
 ifneq (,$(findstring 42paris,$(HOSTNAME)))
     SUDO =	
