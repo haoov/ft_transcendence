@@ -54,9 +54,10 @@ export class UserService {
 
 
 	async updateUserStatus(user: User, newStatus: string) {
-		if (user) {
-			user.status = newStatus;
-			this.usersRepository.save(user as UserEntity);
+		const updatedUser: User = await this.getUserById(user.id);
+		if (updatedUser) {
+				updatedUser.status = newStatus;
+				this.usersRepository.save(updatedUser as UserEntity);
 		}
 	}
 }

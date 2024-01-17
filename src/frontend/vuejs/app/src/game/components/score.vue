@@ -1,5 +1,16 @@
 <script setup lang="ts">
+import { inject } from 'vue';
+import GameSocket from '../gameSocket';
+import { ClientEvents } from '@/utils';
+
 	defineProps(["p1", "p2"]);
+
+	const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
+
+	function leaveGame() {
+		gameSocket.getSocket().emit(ClientEvents.gameForfeit);
+		window.location.reload();
+	}
 </script>
 
 <template>
@@ -11,6 +22,7 @@
 			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
 			<span class="username">{{ p2.username }}</span>
 		</div>
+		<button class="leave" :disabled="gameSocket.getUserState() != 'playing'" v-on:click="leaveGame()">Leave game</button>
 		<div class="score-div p1">
 			<span class="username">{{ p1.username }}</span>
 			<img v-if="p1.avatar" class="avatar" :src="p1.avatar">
@@ -79,5 +91,20 @@
 
 	.score.p2 {
 		padding-right: 25px;
+	}
+
+	.leave {
+		width: 100px;
+		border-radius: 0.5rem;
+		border: none;
+		padding: .5rem;
+		cursor: pointer;
+		font-size: medium;
+		background-color: var(--c-grey);
+	}
+
+	.leave:not(:disabled) {
+		background-color: var(--c-pink);
+		font-size: medium;
 	}
 </style>
