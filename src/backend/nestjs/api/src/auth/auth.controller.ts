@@ -16,7 +16,7 @@ export class AuthController {
 
 	@Get()
 	@UseGuards(Authentificated2faGuard)
-	checkAuth() {}
+	checkAuth() { return true }
 
 	@Get("login")
 	@UseGuards(Intra42Guard)
@@ -37,7 +37,7 @@ export class AuthController {
 	async get2FA(@Req() req: Request) {
 		const user: User = req.user as User;
 		const userDB = await this.userService.getUser(user.email);
-		return { "twofa_status": user.twofa_enabled };
+		return { "twofa_status": userDB.twofa_enabled };
 	}
 
 	@Post('2fa/turn-on')
@@ -71,7 +71,8 @@ export class AuthController {
 	@Post('2fa/authentificate')
 	@UseGuards(AuthentificatedGuard)
 	async authentificate(@Req() req: Request, @Body() body: Body2faDTO) {
-		const user: User = req.user as User;
+		const user_tmp: User = req.user as User;
+		const user = await this.userService.getUser(user_tmp.email);
 		if (!user.twofa_enabled)
 			throw new UnauthorizedException('no 2fa needed');
 		if (!user.twofa_secret)
@@ -82,7 +83,7 @@ export class AuthController {
 		);
 		if (!isCodeValid)
 			throw new UnauthorizedException('Wrong Auth Code');
-		user.twofa_auth = true;
+		user_tmp.twofa_auth = true;
 		return { "message": "2fa logged"}
 	}
 
