@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, Param, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
@@ -32,6 +32,11 @@ export class UserController {
 	//   // Handle the uploaded file, save file details to the database, and delete the old avatar if it exists.
 	//   // Return appropriate response.
 	// }
+
+	@Put('update/username')
+	updateUsername(@Req() req: Request): Promise<User> {
+		return this.userService.updateUsername(req);
+	}
 
 	@Delete(":username")
 	deleteUser(@Param("username") username: string) {

@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from 'typeorm';
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
@@ -57,6 +57,25 @@ export class UserService {
 		if (user) {
 			user.status = newStatus;
 			this.usersRepository.save(user as UserEntity);
+		}
+	}
+
+	async updateUsername(req: Request): Promise<User> {
+		const reqUser :User = req.user as User;
+		const user: User = await this.usersRepository.findOneBy({ id: reqUser.id }) as User;
+		if (!user)
+			throw new NotFoundException("User not found in database");
+	
+		user.username = req.body.username;
+		try {
+			await this.usersRepository.save(user as UserEntity);
+			return user;
+		} catch (error) {
+			if (error.code === '23505') { // 23505 is the error code for unique_violation in PostgreSQL
+				throw new ConflictException('Username is already taken');
+			} else {
+				throw new InternalServerErrorException('Something went wrong');
+			}
 		}
 	}
 }

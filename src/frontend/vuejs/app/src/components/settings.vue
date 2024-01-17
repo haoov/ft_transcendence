@@ -3,6 +3,8 @@
 import axios from "axios";
 import type { User } from "@/utils";
 import { onMounted, ref } from "vue";
+import { toast, type ToastType } from 'vue3-toastify';
+import "vue3-toastify/dist/index.css"
 
 const imagesLoaded = ref<boolean>(false);
 const me = ref<User>({
@@ -17,19 +19,13 @@ const me = ref<User>({
 const usernameSet = ref<string>("");
 
 // FETCHING DATA
-// async function fetchLeaderboard() {
-//   await axios
-//     .get("http://localhost:3000/api/home/leaderboard")
-//     .then(data => { players.value = data.data;});
-// }
-
 async function fetchMe() {
   await axios
     .get("http://localhost:3000/api/user/me")
     .then( (data) => { 
       me.value = data.data;
-	  usernameSet.value = data.data.username;
-      });
+      usernameSet.value = data.data.username;
+    });
 }
 
 // function loadAllImages() {
@@ -52,6 +48,34 @@ function  getMyAvatarSrc() : string | undefined {
   return me.value?.avatar;
 }
 
+function  updateUsername() {
+  axios
+    .put("http://localhost:3000/api/user/update/username", {
+      username: usernameSet.value
+    })
+    .then( (data) => { 
+      me.value = data.data;
+      usernameSet.value = data.data.username;
+     sendToast("success", "Username has been updated!");
+    })
+    .catch( (err) => {
+      console.log(err.response.status);
+      if (err.response.status == 409) {
+        sendToast("error", "Username is already in use!");
+      }
+    });
+}
+
+function sendToast(type: ToastType, message: string) {
+  toast(message, {
+    "theme": "dark",
+    "type": type,
+    "position": "bottom-center",
+    "hideProgressBar": true,
+    "transition": "slide",
+    "dangerouslyHTMLString": true,
+  })
+}
 
 onMounted(async () => {
   await fetchMe();
@@ -80,7 +104,7 @@ onMounted(async () => {
 			<div class="forbidden">{{ me.email }}</div>
 		</div>
 		<div class ="u-justify--center u-display--flex">
-			<button id="saveButton" :disabled="!usernameSet || usernameSet === me.username">Save</button>
+			<button id="saveButton" :disabled="!usernameSet || usernameSet === me.username" @click="updateUsername()">Save</button>
 		</div>
 	</div>    
 </div>
@@ -140,11 +164,13 @@ button, select {
   border-radius: 0.8rem;
   background: var(--c-surface);
   width: 100%;
+  height: 450px;
   margin-bottom: 1.6rem;
   box-shadow: 0px 0px 0px 1px var(--c-black-light);
   box-sizing: border-box;
   padding: 1.6rem;
 }
+
 
 .formTitle {
 	margin-left: 6rem;
@@ -187,7 +213,7 @@ button, select {
     margin-top: 0.5rem;
     margin-bottom: 1.2rem;
     overflow: hidden;
-	cursor: not-allowed;
+	  cursor: not-allowed;
 }
 
 .formField input::placeholder {
@@ -210,11 +236,18 @@ button, select {
     margin-top: 3.5rem;
     margin-bottom: 1.2rem;
     overflow: hidden;
-	transition: transform 0.1s ease-in-out;
+	  transition: transform 0.1s ease-in-out;
 }
 
 #saveButton:active {
 	transform: scale(0.95);
+}
+
+#saveButton:disabled {
+  background-color: var(--c-grey);
+  border: var(--c-grey);
+  cursor:;
+  transform: none !important;
 }
 
 .c-avatar {
