@@ -30,27 +30,27 @@ interface User {
 };
 
 async function fetchUsers() : Promise<User []> {
-	return axios.get('http://localhost:3000/api/user').then((res) => { return res.data });
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user`).then((res) => { return res.data });
 };
 
 async function fetchCurrentUser() : Promise<any> {
-	return  axios.get('http://localhost:3000/api/user/me').then((res) => { return res.data });
+	return  axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((res) => { return res.data });
 };
 
 async function fetchChannels() : Promise<Channel[]> {
-	return axios.get('http://localhost:3000/api/chat/channels').then((res) => { return res.data });
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels`).then((res) => { return res.data });
 };
 
 async function fetchJoinableChannels(id: number) : Promise<Channel[]> {
-	return axios.get(`http://localhost:3000/api/chat/channels/joinable/${id}`).then((res) => { return res.data });
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/joinable/${id}`).then((res) => { return res.data });
 }
 
 async function fetchCurrentUserChannels(id: number) : Promise<Channel []> {
-	return axios.get(`http://localhost:3000/api/chat/channels/${id}`).then((res) => { return res.data });
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/${id}`).then((res) => { return res.data });
 }
 
 async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
-	return axios.get(`http://localhost:3000/api/chat/messages/${id}`).then((res) => { return res.data });
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/messages/${id}`).then((res) => { return res.data });
 };
 
 const store = reactive({

@@ -19,13 +19,13 @@ const usernameSet = ref<string>("");
 // FETCHING DATA
 // async function fetchLeaderboard() {
 //   await axios
-//     .get("http://localhost:3000/api/home/leaderboard")
+//     .get("http://10.14.3.10:3000/api/home/leaderboard")
 //     .then(data => { players.value = data.data;});
 // }
 
 async function fetchMe() {
   await axios
-    .get("http://localhost:3000/api/user/me")
+    .get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
     .then( (data) => { 
       me.value = data.data;
 	  usernameSet.value = data.data.username;

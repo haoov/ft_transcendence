@@ -3,26 +3,18 @@
 
 	defineProps(["display", "text"]);
 
-	const emit = defineEmits(["accept", "decline"]);
 	let showNotification = ref(false);
 	let accept = ref(false);
 
-	function close() {
-		if (accept.value)
-			emit('accept');
-		else
-			emit('decline');
-	}
 </script>
 
 <template>
 	<Transition name="blurred" v-on:enter="showNotification = true">
-		<div v-if="display" id="background" v-on:click="showNotification = false">
-			<Transition name="slide" v-on:after-leave="close()">
+		<div v-if="display" id="background">
+			<Transition name="slide" v-on:after-leave="$emit('close')">
 				<div v-if="showNotification" id="notification" v-on:click.stop>
 					<span id="text">{{ text }}</span>
-					<button v-on:click="accept = true; showNotification = false">Play</button>
-					<button v-on:click="showNotification = false">Forfeit</button>
+					<button v-on:click="accept = true; showNotification = false">Got to game</button>
 				</div>
 			</Transition>
 		</div>
