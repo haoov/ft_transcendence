@@ -17,16 +17,16 @@ set_local_addr :
 		exit 1; \
 	else \
 		echo "Setting server ip address..."; \
-		sed -i '' 's/\(LOCAL_ADDRESS\).*/\1=$(LOCAL_ADDR)/g' $(SRC)/.env; \
-		sed -i '' 's/\(VITE_HOSTNAME\).*/\1=$(LOCAL_ADDR)/g' $(SRC)/frontend/vuejs/app/.env; \
-		sed -i '' 's/.*\(3000:80\)/      - $(LOCAL_ADDR):3000:80/g' $(SRC)/docker-compose.yml; \
+		sed -i 's/\(LOCAL_ADDRESS\).*/\1=$(LOCAL_ADDR)/g' $(SRC)/.env; \
+		sed -i 's/\(VITE_HOSTNAME\).*/\1=$(LOCAL_ADDR)/g' $(SRC)/frontend/vuejs/app/.env; \
+		sed -i 's/.*\(3000:80\)/      - $(LOCAL_ADDR):3000:80/g' $(SRC)/docker-compose.yml; \
 	fi
 	@echo "Server ip address set to $(LOCAL_ADDR)"
 
 set_localhost :
-	@sed -i '' 's/\(LOCAL_ADDRESS\).*/\1=localhost/g' $(SRC)/.env
-	@sed -i '' 's/\(VITE_HOSTNAME\).*/\1=localhost/g' $(SRC)/frontend/vuejs/app/.env
-	@sed -i '' 's/.*\(3000:80\)/      - 3000:80/g' $(SRC)/docker-compose.yml
+	@sed -i 's/\(LOCAL_ADDRESS\).*/\1=localhost/g' $(SRC)/.env
+	@sed -i 's/\(VITE_HOSTNAME\).*/\1=localhost/g' $(SRC)/frontend/vuejs/app/.env
+	@sed -i 's/.*\(3000:80\)/      - 3000:80/g' $(SRC)/docker-compose.yml
 	@echo "Server ip address set to localhost"
 
 build :
