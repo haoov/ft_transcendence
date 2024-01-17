@@ -23,12 +23,11 @@ class GameSocket {
 			this.user.value = response.data;
 			this.socket.emit(ClientEvents.connected, response.data);
 		});
-		this.socket.on(ServerEvents.waiting, () => {
-			this.userState.value = "waiting";
-		});
-		this.socket.on(ServerEvents.waitingForOpponent, () => {
-			this.userState.value = "waitingForOpponent";
-		});
+		this.socket.on(ServerEvents.updateStatus, (status: string) => {
+			console.log("update status: " + status);
+			if (this.userState.value != "finished")
+				this.userState.value = status;
+		})
 		this.isReady = true;
 	}
 
@@ -42,7 +41,6 @@ class GameSocket {
 
 	stopWaiting(): void {
 		this.socket.emit(ClientEvents.stopWaiting);
-		this.userState.value = "";
 	}
 
 	setUserState(state: string): void {

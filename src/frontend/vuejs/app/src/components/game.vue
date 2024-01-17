@@ -25,28 +25,27 @@ function assignMode(gameParams: {game: string, mode: string, difficulty: string,
 	gameSocket.getSocket().emit(ClientEvents.gameParams, gameParams);
 }
 
+function moveEvents(event: KeyboardEvent) {
+	if (event.key == "w" || event.key == "W")
+		gameSocket.getSocket().emit(ClientEvents.move, "up");
+	if (event.key == "s" || event.key == "S")
+		gameSocket.getSocket().emit(ClientEvents.move, "down");
+	if (event.key == "1")
+		gameSocket.getSocket().emit(ClientEvents.useSpell, "fire");
+	if (event.key == "2")
+		gameSocket.getSocket().emit(ClientEvents.useSpell, "ice");
+	if (event.key == "3")
+		gameSocket.getSocket().emit(ClientEvents.useSpell, "small");
+	if (event.key == "4")
+		gameSocket.getSocket().emit(ClientEvents.useSpell, "big");
+}
+
 onBeforeMount(() => {})
 
 onMounted(() => {
 	const game: Game = new Game("game", initParams);
 
-	if (!gameSocket.moveEventsSet()) {
-		document.addEventListener("keydown", (event) => {
-				if (event.key == "w" || event.key == "W")
-					gameSocket.getSocket().emit(ClientEvents.move, "up");
-				if (event.key == "s" || event.key == "S")
-					gameSocket.getSocket().emit(ClientEvents.move, "down");
-				if (event.key == "1")
-					gameSocket.getSocket().emit(ClientEvents.useSpell, "fire");
-				if (event.key == "2")
-					gameSocket.getSocket().emit(ClientEvents.useSpell, "ice");
-				if (event.key == "3")
-					gameSocket.getSocket().emit(ClientEvents.useSpell, "small");
-				if (event.key == "4")
-					gameSocket.getSocket().emit(ClientEvents.useSpell, "big");
-			});
-		gameSocket.setMoveEvents(true);
-	}
+	document.addEventListener("keydown", moveEvents);
 	gameSocket.getSocket().on(ServerEvents.started, (users: any, params: any) => {
 		console.log("game started");
 		p1.value.username = users[0].username;
@@ -74,6 +73,7 @@ onMounted(() => {
 		p2.value.spells = data.p2Spells;
 	});
 	gameSocket.getSocket().on(ServerEvents.finished, (winnerUsername) => {
+		console.log("game finished");
 		gameSocket.setUserState("finished");
 		displayMenu.value = true;
 		winner.value = winnerUsername;
@@ -91,6 +91,7 @@ onMounted(() => {
 	onBeforeRouteLeave(() => {
 		console.log("leaving game");
 		game.stopGame();
+		document.removeEventListener("keydown", moveEvents);
 		gameSocket.getSocket().off(ServerEvents.updated);
 		gameSocket.getSocket().off(ServerEvents.started);
 		gameSocket.getSocket().off(ServerEvents.finished);
@@ -99,21 +100,23 @@ onMounted(() => {
 </script>
 
 <template>
-	<score :p1="p1" :p2="p2"></score>
-	<div id="game">
-		<gameMenu
-			v-if="displayMenu"
-			v-on:click="assignMode"
-			v-on:stopWaiting="gameSocket.stopWaiting()"
-			:state="gameSocket.getUserState()"
-			:winner="winner"
-		></gameMenu>
+	<div class="game-container">
+		<score :p1="p1" :p2="p2"></score>
+		<div id="game">
+			<gameMenu
+				v-if="displayMenu"
+				v-on:click="assignMode"
+				v-on:stopWaiting="gameSocket.stopWaiting()"
+				:state="gameSocket.getUserState()"
+				:winner="winner"
+			></gameMenu>
+		</div>
+		<spells
+			:p1Spells="p1.spells"
+			:p2Spells="p2.spells"
+			v-on:useSpell="(spell) => {gameSocket.getSocket().emit('useSpell', spell)}"
+		></spells>
 	</div>
-	<spells
-		:p1Spells="p1.spells"
-		:p2Spells="p2.spells"
-		v-on:useSpell="(spell) => {gameSocket.getSocket().emit('useSpell', spell)}"
-	></spells>
 
 	<video
 		id="video"
@@ -130,8 +133,15 @@ onMounted(() => {
 </template>
 
 <style>
+	.game-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
 	canvas {
-		border-radius: 1rem;
+		border-radius: 0.8rem;
 		box-shadow: 0 0 0 1px var(--c-black-light);
 	}
 

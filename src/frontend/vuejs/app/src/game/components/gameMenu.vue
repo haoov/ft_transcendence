@@ -106,7 +106,7 @@
 		height: 480px;
 		background: transparent;
 		backdrop-filter: blur(3px);
-		border-radius: 1rem;
+		border-radius: 0.8rem;
 		box-shadow: 0 0 0 1px var(--c-black-light);
 		display: flex;
 		flex-direction: column;
@@ -119,10 +119,10 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		border: 1px solid var(--c-white);
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
+		box-shadow: 0 0 0 1px var(--c-black-light);
 		padding: 15px;
-		background-color: var(--c-black-light);
+		background-color: var(--c-surface);
 	}
 
 	.custumButton {

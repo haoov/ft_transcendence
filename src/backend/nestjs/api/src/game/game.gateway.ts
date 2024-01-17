@@ -10,12 +10,9 @@ import { GameService } from './game.service';
 import { UserGateway } from 'src/user/user.gateway';
 import { Inject, forwardRef } from '@nestjs/common';
 
-
-// Outil de gestion des web socket events
 @WebSocketGateway({ namespace: 'game' })
 export class GameGateway 
 	implements OnGatewayConnection, OnGatewayDisconnect {
-	// On declare le serveur et les variables
 	@WebSocketServer() server: Server;
 	rooms: Room[];
 	roomId: number;
@@ -35,12 +32,8 @@ export class GameGateway
 			client.data.user = data;
 			//if user is already in a room
 			const room: Room = this.findRoom(client);
-			if (room) {
-				if (room.isFull()) {
-					client.emit(serverEvents.started, room.getUsers(), room.getParams());
-				}
-				room.addSocket(client);
-			}
+			if (room)
+				this.manageSocket(client, room);
 		});
 	}
 
@@ -50,7 +43,7 @@ export class GameGateway
 			const room: Room = this.findRoom(client);
 			if (room) {
 				room.removeSocket(client);
-				if (!room.checkSockets(client.data.user)) {
+				if (!room.checkSockets(client.data.user) && room.getParams().mode == "multiPlayer") {
 					if (room.isFull()) {
 						room.quitGame(client);
 						this.endGame(room);
@@ -64,15 +57,16 @@ export class GameGateway
 
 	@SubscribeMessage(clientEvents.gameParams)
 	async manageRooms(client: Socket, params: gameParams) {
-		const openRoom: Room = this.rooms.find((room) => {
-			return (room.isOpen() && room.getParams().game == params.game);
-		});
+		const openRoom: Room = this.checkOpenRoom(client.data.user, params);
 		if (openRoom) {
-			openRoom.addUser(client.data.user);
-			openRoom.addSocket(client);
-			//notify waiting user that the game is ready
-			this.userGateway.gameReady(openRoom);
-			client.emit(serverEvents.waitingForOpponent);
+			if (openRoom.hasUser(client.data.user))
+				this.manageSocket(client, openRoom);
+			else {
+				openRoom.addUser(client.data.user);
+				openRoom.addSocket(client);
+				this.userGateway.gameReady(openRoom);
+				client.emit(serverEvents.updateStatus, "waiting for opponent");
+			}
 		}
 		else {
 			const newRoom = this.createRoom(params, client);
@@ -81,7 +75,7 @@ export class GameGateway
 			}
 			else {
 				await this.userService.updateUserStatus(client.data.user, userStatus.waiting);
-				client.emit(serverEvents.waiting);
+				client.emit(serverEvents.updateStatus, "waiting");
 			}
 		}
 	}
@@ -123,15 +117,20 @@ export class GameGateway
 
 	@SubscribeMessage(clientEvents.stopWaiting)
 	async stopWaiting(client: Socket) {
-		this.deleteRoom(this.findRoom(client));
-		await this.userService.updateUserStatus(client.data.user, userStatus.undefined);
+		const room = this.findRoom(client);
+		if (room) {
+			if (room.isFull()) {
+				room.quitGame(client);
+				this.endGame(room);
+			}
+			this.deleteRoom(room);
+		}
 	}
 
 	@SubscribeMessage(clientEvents.gamePlay)
 	gamePlay(client: Socket) {
 		const room: Room = this.findRoom(client);
 		this.closeRoom(room);
-		this.userGateway.disableNotifications(room.getUsers());
 	}
 
 	@SubscribeMessage(clientEvents.gameForfeit)
@@ -140,7 +139,6 @@ export class GameGateway
 		room.quitGame(client);
 		this.endGame(room);
 		this.deleteRoom(room);
-		this.userGateway.disableNotifications(room.getUsers());
 	}
 
 	findRoom(client: Socket): Room {
@@ -149,6 +147,13 @@ export class GameGateway
 				return (user.id == client.data.user.id);
 			}));
 		});
+	}
+
+	checkOpenRoom(user: User, params: gameParams): Room {
+		const availableRoom: Room = this.rooms.find((room) => {
+			return (room.isOpen() && room.getParams().game == params.game);
+		});
+		return availableRoom;
 	}
 
 	endGame(room: Room) {
@@ -169,21 +174,33 @@ export class GameGateway
 		return newRoom;
 	}
 
+	manageSocket(client: Socket, room: Room) {
+		if (room.isClosed())
+			client.emit(serverEvents.started, room.getUsers(), room.getParams());
+		else {
+			room.addSocket(client);
+			client.emit(serverEvents.updateStatus, "waiting");
+		}
+	}
+
 	closeRoom(room: Room) {
 		console.log("closing room: " + room.getName());
 		room.getUsers().forEach(async (user) => {
 			await this.userService.updateUserStatus(user, userStatus.playing);
 		});
-		room.startGame();
+		this.userGateway.disableNotifications(room.getUsers());
 		this.server.to(room.getName()).emit(serverEvents.started, room.getUsers(), room.getParams());
+		room.startGame();
 	}
 
 	deleteRoom(room: Room) {
 		console.log("deleting room: " + room.getName());
+		this.server.to(room.getName()).emit(serverEvents.updateStatus, "");
 		room.getSockets().forEach(async (socket) => {
-			socket.leave(room.getName());
+			room.removeSocket(socket);
 			await this.userService.updateUserStatus(socket.data.user, userStatus.undefined);
 		});
 		this.rooms.splice(this.rooms.indexOf(room), 1);
+		this.userGateway.disableNotifications(room.getUsers());
 	}
 }
