@@ -8,7 +8,6 @@
 	import { inject, onMounted } from 'vue';
 
 	const globalSocket: GlobalSocket = inject("globalSocket") as GlobalSocket;
-	console.log(import.meta.env.VITE_HOSTNAME);
 </script>
 
 <template>

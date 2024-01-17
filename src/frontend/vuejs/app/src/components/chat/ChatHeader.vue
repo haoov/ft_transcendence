@@ -45,6 +45,7 @@ import { inject, computed, ref, watch } from 'vue';
 const $data : any = inject('$data');
 const store = $data.getStore();
 const currentUser = await $data.getCurrentUser();
+const listUsers = await $data.getUsers();
 const activeChannel = computed(() => store.activeChannel);
 const isAdmin = computed(() => {
 	if (activeChannel.value.creatorId === currentUser.id) {
@@ -52,9 +53,20 @@ const isAdmin = computed(() => {
 	}
 	return false;
 });
+console.log(activeChannel.value);
+console.log(currentUser.value);
 const channelName = computed(() => {
 	if (!activeChannel.value) {
 		return '';
+	} else if (activeChannel.value.mode === 'Private') {
+		const id1 = activeChannel.value.name.split('#')[1];
+		const id2 = activeChannel.value.name.split('#')[2];
+		console.log(id1, id2);
+		console.log(currentUser.value);
+		// if (id1 === currentUser.id) {
+		// 	return listUsers.value.find((user: any) => user.id === id2).name;
+		// }
+		// return listUsers.value.find((user: any) => user.id === id1).name;
 	}
 	return activeChannel.value.name;
 });
