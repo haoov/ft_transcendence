@@ -54,11 +54,12 @@ export class UserService {
 
 
 	async updateUserStatus(user: User, newStatus: string) {
-		if (user) {
-			user.status = newStatus;
-			this.usersRepository.save(user as UserEntity);
-		}
-	}
+        const updatedUser: User = await this.getUserById(user.id);
+        if (updatedUser) {
+            updatedUser.status = newStatus;
+            this.usersRepository.save(updatedUser as UserEntity);
+        }
+    }
 
 	async updateUsername(req: Request): Promise<User> {
 		const reqUser :User = req.user as User;
@@ -74,7 +75,7 @@ export class UserService {
 			if (error.code === '23505') { // 23505 is the error code for unique_violation in PostgreSQL
 				throw new ConflictException('Username is already taken');
 			} else {
-				throw new InternalServerErrorException('Something went wrong');
+				throw new InternalServerErrorException('Error');
 			}
 		}
 	}
