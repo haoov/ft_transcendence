@@ -4,7 +4,9 @@ import { Repository } from 'typeorm';
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
 import { User } from "./user.interface";
 import { PG_UNIQUE_VIOLATION } from "@drdgvhbh/postgres-error-codes";
-import { Request } from "express";
+import { Request, Response } from "express";
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class UserService {
@@ -78,5 +80,38 @@ export class UserService {
 				throw new InternalServerErrorException('Error');
 			}
 		}
+	}
+
+	async uptadeAvatar(id: number) {
+		const user = await this.getUserById(id);
+
+		if (user.avatar.includes(':3000/api/user/avatar/')) {
+			// Delete old avatar
+			const directoryPath = process.cwd() + '/src/user/avatar-uploads';
+			const files = fs.readdirSync(directoryPath);
+			const userFiles = files.filter(file => file.startsWith(`avatar-user${id}-`));
+			userFiles.sort((a, b) => b.localeCompare(a));
+			  for (let i = 1; i < userFiles.length; i++) {
+				fs.unlinkSync(path.join(directoryPath, userFiles[i]));
+			  }
+		}
+		else {
+			// Updating avatar in database
+			user.avatar = `http://${process.env.LOCAL_ADDRESS}:3000/api/user/avatar/${id}`;
+			this.usersRepository.save(user as UserEntity);
+		}
+	}
+
+	getAvatar(id: number, res: Response) {
+		const directoryPath = process.cwd() + '/src/user/avatar-uploads';
+		const files = fs.readdirSync(directoryPath);
+		const userFiles = files.filter(file => file.startsWith(`avatar-user${id}-`));
+	  
+		// Take the last one
+		userFiles.sort();
+		const avatar = userFiles[userFiles.length - 1];
+	  
+		// Return the image file
+		res.sendFile(path.join(directoryPath, avatar));
 	}
 }

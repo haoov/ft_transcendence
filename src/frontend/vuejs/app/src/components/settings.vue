@@ -280,7 +280,7 @@ button, select {
 #saveButton:disabled {
   background-color: var(--c-grey);
   border: var(--c-grey);
-  cursor:;
+  cursor: not-allowed;
   transform: none !important;
 }
 
