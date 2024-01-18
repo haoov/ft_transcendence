@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import type { UserStat, User, GameStat } from "@/utils";
-import { computed, onActivated, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 const players = ref<UserStat[]>([]);
 const imagesLoaded = ref<boolean>(false);
@@ -23,6 +23,12 @@ const playersDisplayed = computed(() => {
 
 
 // FETCHING DATA
+async function fetchData() {
+  await fetchLeaderboard();
+  await fetchMe();
+  loadAllImages();
+}
+
 async function fetchLeaderboard() {
   await axios
     .get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/leaderboard`)
@@ -32,7 +38,7 @@ async function fetchLeaderboard() {
 async function fetchMe() {
   await axios
     .get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
-    .then( (data) => { 
+    .then( (data) => {
       me.value = data.data;
       // Fetch my stats
       const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/stats/${data.data.id}`;
@@ -78,14 +84,17 @@ function  getRankClass(index: number) : string {
 }
 
 function  getAvatarSrc(id: number) : string {
+  const timestamp = Date.now();
   const user = players.value.filter((user) => {
     return user.id == id;
   });
-  return user[0].avatar;
+  return `${user[0].avatar}?${timestamp}`;
 }
 
 function  getMyAvatarSrc() : string | undefined {
-  return me.value?.avatar;
+    const timestamp = Date.now();
+    if (me.value)
+      return `${me.value.avatar}?${timestamp}`;
 }
 
 function getPieProportions() : string {
@@ -116,12 +125,11 @@ function getScoreColor(winFlag: boolean): string {
     return "var(--c-grey)"
 }
 
-
 onMounted(async () => {
-  await fetchMe();
-  await fetchLeaderboard();
-  loadAllImages();
+  fetchData();
 });
+
+
 
 </script>
 
