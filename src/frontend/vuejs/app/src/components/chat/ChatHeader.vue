@@ -1,6 +1,8 @@
 <template>
 	<div class="header-channel">
-		<div></div>
+		<div class="profile-img-div" >
+			<img v-if="activeChannel?.mode === 'Private'" :src="channelImage" alt="Profile Picture">
+		</div>
 		<p>{{ channelName }}</p>
 		<div class="logos-div">
 			<div class="logo" @click="openEditChannelForm" v-if="activeChannel && isAdmin" title="Edit channel">
@@ -53,24 +55,30 @@ const isAdmin = computed(() => {
 	}
 	return false;
 });
-console.log(activeChannel.value);
-console.log(currentUser.value);
 const channelName = computed(() => {
 	if (!activeChannel.value) {
 		return '';
-	} else if (activeChannel.value.mode === 'Private') {
+	} else if (activeChannel.value?.mode === 'Private') {
 		const id1 = activeChannel.value.name.split('#')[1];
 		const id2 = activeChannel.value.name.split('#')[2];
-		console.log(id1, id2);
-		console.log(currentUser.value);
-		// if (id1 === currentUser.id) {
-		// 	return listUsers.value.find((user: any) => user.id === id2).name;
-		// }
-		// return listUsers.value.find((user: any) => user.id === id1).name;
+		if (id1 === currentUser.id) {
+			return listUsers.find((user: any) => user.id === parseInt(id2)).username;
+		}
+		return listUsers.find((user: any) => user.id === parseInt(id1)).username;
 	}
 	return activeChannel.value.name;
 });
-
+const channelImage = computed(() => {
+	if (activeChannel.value?.mode === 'Private') {
+		const id1 = activeChannel.value.name.split('#')[1];
+		const id2 = activeChannel.value.name.split('#')[2];
+		if (id1 === currentUser.id) {
+			return listUsers.find((user: any) => user.id === parseInt(id2)).avatar;
+		}
+		return listUsers.find((user: any) => user.id === parseInt(id1)).avatar;
+	}
+	return null;
+});
 const openEditChannelForm = () => {
 	$data.openEditModalForm();
 }
@@ -89,12 +97,14 @@ const opendAddUserForm = () => {
   grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
   justify-content: center;
+  justify-items: center;
   background: transparent;
   border-bottom: 2px solid #fe019973;
   box-sizing: border-box;
 }
 
 .logos-div {
+  width: 100%;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
@@ -118,5 +128,17 @@ p {
   background-size: 100%;
   font-size: 3.5rem;
   margin: auto;
+}
+
+.profile-img-div {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+}
+.profile-img-div img {
+  max-width: 100%;
+  max-height: 100%;
 }
 </style>
