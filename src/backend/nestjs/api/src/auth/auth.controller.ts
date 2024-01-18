@@ -28,7 +28,7 @@ export class AuthController {
 	@UseGuards(Intra42Guard)
 	async redirect(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
 		const user: User = req.user as User;
-			if (user) console.log(user.twofa_enabled);
+			if (!user.twofa_auth) res.status(302).redirect("/twofa");
 		res.status(302).redirect("/");
 	}
 
@@ -37,7 +37,10 @@ export class AuthController {
 	async get2FA(@Req() req: Request) {
 		const user: User = req.user as User;
 		const userDB = await this.userService.getUser(user.email);
-		return { "twofa_status": userDB.twofa_enabled };
+		return { 
+			"twofa_status": userDB.twofa_enabled,
+			"twofa_logged": userDB.twofa_auth
+		};
 	}
 
 	@Post('2fa/turn-on')
@@ -83,7 +86,7 @@ export class AuthController {
 		);
 		if (!isCodeValid)
 			throw new UnauthorizedException('Wrong Auth Code');
-		user_tmp.twofa_auth = true;
+		this.userService.set2faAuth(user.email, true);
 		return { "message": "2fa logged"}
 	}
 

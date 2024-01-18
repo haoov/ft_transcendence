@@ -8,7 +8,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-	if (to.name != "login")
+	if (to.name != "login" && to.name != "twofa")
 		await axios.get("http://localhost:3000/api/auth")
 			.catch(() => { router.push("/login");});
 })

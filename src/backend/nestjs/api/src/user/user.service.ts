@@ -49,6 +49,16 @@ export class UserService {
 		}
 	}
 
+	async set2faAuth(email: string, status: boolean) {
+		try {
+			const user: User = await this.getUser(email);
+			user.twofa_auth = status;
+			return this.usersRepository.save(user);
+		} catch (err) {
+			throw err;
+		}
+	}
+
 	async deleteUser(username: string) {
 		const user: User = await this.usersRepository.findOneBy({ username: username }) as User;
 		if (!user)

@@ -4,10 +4,14 @@ import { Strategy, Profile } from "passport-42";
 import { AuthService } from "../auth.service";
 import { UserAuthDTO } from "src/user/dto/userAuth.dto";
 import { User } from "src/user/user.interface";
+import { UserService } from "src/user/user.service";
 
 @Injectable()
 export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
-	constructor(private readonly authService: AuthService) {
+	constructor(
+		private readonly authService: AuthService,
+		private readonly userService: UserService
+	) {
 		super({
 			clientID: process.env.INTRA_CLIENT_ID,
 			clientSecret: process.env.INTRA_CLIENT_SECRET,
@@ -24,6 +28,7 @@ export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
 		const user: User = await this.authService.validateUser(userInfos);
 		if (!user)
 			throw new UnauthorizedException();
+		this.userService.set2faAuth(user.email, false);
 		return user;
 	}
 }
