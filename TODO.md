@@ -1,18 +1,14 @@
-- !!! [IMPORTANT] Message Privee !!!
+- !!! [DONE] Message Privee !!!
+	- NEED TO AVOID DOUBLON
 
 - Implementer les differents etats des channels
 	- [DONE] Join retirer les secret channel
 
-- Rajouter la recherche utilisateur lors de la creation de channel
-
-- [DONE] Rajouter un + Pour rajouter des utilisateurs a un channel
-	- Faire en sorte de syncrhoniser l'apparation du nouveau channel dans la navbar du nouveau user
-
-- [DONE] Faire en sorte que les setting du channel soit dipso uniquement quand on est admin
 - Rajouter les admins dans la bases de donnee pour les channels
 - Faire en sorte de pouvoir rajouter quelqu'un a la liste des admins
 
 - Faire en sorte qu'on puisse KICK et BANNE d'un channel 
+
 	- Faire un modal qui appelle une card profile qui permet d'inviter/kick/ban/dm 
 
 -----------------------------------------------------------
@@ -32,5 +28,10 @@
 - [DONE] Implementer les channels
 - [DONE] LoadChannel via id User
 - [DONE] Probleme ID Channel a fix
+
+- [DONE] Rajouter un + Pour rajouter des utilisateurs a un channel
+	- [DONE] Faire en sorte de syncrhoniser l'apparation du nouveau channel dans la navbar du nouveau user
+
+- [DONE] Faire en sorte que les setting du channel soit dipso uniquement quand on est admin
 
 - [DONE] Refuser les messages plus grands que XX characteres
