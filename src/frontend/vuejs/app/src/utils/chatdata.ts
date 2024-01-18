@@ -61,6 +61,7 @@ const store = reactive({
 	isModalOpen: false,
 	isEditModalOpen: false,
 	isAddUserModalOpen: false,
+	isconfirmationLeavingModalOpen: false,
 	activeChannel: null as Channel | null,
 	socket: null as Socket | null,
 });
@@ -155,4 +156,11 @@ export default {
 		store.isAddUserModalOpen = false;
 	},
 
+	openConfirmationLeavingModal() {
+		store.isconfirmationLeavingModalOpen = true;
+	},
+
+	closeConfirmationLeavingModal() {
+		store.isconfirmationLeavingModalOpen = false;
+	},
 };
