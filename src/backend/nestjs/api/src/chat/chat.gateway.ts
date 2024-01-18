@@ -90,7 +90,7 @@ export class ChatGateway implements OnGatewayConnection {
 
 	@SubscribeMessage('joinChannel')
 	async onJoinChannel(@MessageBody() channel: any) {
-		const channelToJoin = await this.chatService.getChannelById(channel.id);
+		const channelToJoin = await this.chatService.getChannelById(channel.channelId);
 		if (channelToJoin.mode === 'Protected' && channelToJoin.password !== channel.password) {
 			this.usersSocketList.get(channel.userId).emit('channelJoined', false);
 			return;
@@ -98,6 +98,15 @@ export class ChatGateway implements OnGatewayConnection {
 		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
 			this.usersSocketList.get(channel.userId).emit('channelJoined', true);
 			this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
+		}
+	}
+
+	@SubscribeMessage('leaveChannel')
+	async onLeaveChannel(@MessageBody() data: any) {
+		const channelId = data.channelId;
+		const userId = data.userId;
+		if (await this.chatService.removeUserFromChannel(channelId, userId)) {
+			this.usersSocketList.get(userId).emit('channelDeleted', channelId);
 		}
 	}
 
