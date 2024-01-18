@@ -32,16 +32,16 @@ class Ball {
 		this.position.x += this.vecSpeed.x;
 		this.position.y += this.vecSpeed.y;
 
-		for (let i = 0; i < players.length; ++i) {
-			if (players[i].hitBall(this)) {
-				this.paddleBounce(players[i].paddle);
-				this.lastHit = players[i];
+		players.forEach((player) => {
+			if (player.hitBall(this)) {
+				this.paddleBounce(player.paddle);
+				this.lastHit = player;
 			}
-		}
-		if (effect && effect.on && effect.hitBall(this) && this.lastHit) {
+		});
+		if (effect && effect.isOn() && effect.hitBall(this) && this.lastHit) {
 			if (!this.lastHit.spellBook.spellEnabled(effect.type)) {
 				this.lastHit.spellBook.enableSpell(effect.type);
-				effect.on = false;
+				effect.setOff();
 			}
 		}
 		if (this.position.y + this.scale.y * params.BALL_RADIUS >= field.borders.top || this.position.y - this.scale.y * params.BALL_RADIUS <= field.borders.bottom)

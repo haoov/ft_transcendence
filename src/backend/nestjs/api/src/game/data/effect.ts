@@ -10,7 +10,7 @@ class Effect {
 	rotationSpeed: number;
 	speed: number;
 	size: number;
-	on: boolean;
+	private on: boolean;
 
 	constructor(type?: string) {
 		this.position = {x: 0, y: 0, z: 0};
@@ -46,6 +46,18 @@ class Effect {
 		if (aligned && ballX >= this.position.x - this.size && ballX <= this.position.x + this.size)
 			return true;
 		return false;
+	}
+
+	isOn(): boolean {
+		return this.on;
+	}
+
+	setOn() {
+		this.on = true;
+	}
+
+	setOff() {
+		this.on = false;
 	}
 }
 

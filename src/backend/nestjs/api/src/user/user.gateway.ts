@@ -1,10 +1,10 @@
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
 import { Socket } from 'socket.io'
 import { User } from 'src/user/user.interface';
-import { clientEvents, serverEvents } from '../game/enum';
+import { clientEvents, serverEvents } from '../game/enum/events.enum';
 import { UserService } from './user.service';
 import { userStatus } from './enum/userStatus.enum';
-import { Room } from 'src/game/classes';
+import { Room } from 'src/game/classes/Room';
 import { GameGateway } from 'src/game/game.gateway';
 import { Inject, forwardRef } from '@nestjs/common';
 

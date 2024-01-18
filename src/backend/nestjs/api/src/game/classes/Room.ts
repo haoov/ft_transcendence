@@ -139,8 +139,16 @@ export class Room {
 			this.game.getPlayers()[0].topScore();
 	}
 
+	close(): void {
+		this.closed = true;
+	}
+
 	isOpen(): boolean {
-		return (this.public && !this.full);
+		return (!this.closed);
+	}
+
+	isAvailable(): boolean {
+		return (this.public && !this.full && !this.closed);
 	}
 
 	hasUser(user: User): boolean {

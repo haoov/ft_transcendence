@@ -15,10 +15,16 @@ class SpellBook {
 		);
 	}
 
-	getSpells(): boolean[] {
+	getSpellsEnabled(): boolean[] {
 		let spellsEnabled: boolean[] = [];
-		this.spells.forEach((spell) => {spellsEnabled.push(spell)});
+		this.spells.forEach((value) => {spellsEnabled.push(value)});
 		return spellsEnabled;
+	}
+
+	getSpellsTypes(): string[] {
+		let spellsTypes: string[] = [];
+		this.spells.forEach((value, type) => {spellsTypes.push(type)});
+		return spellsTypes;
 	}
 
 	spellEnabled(type: string): boolean {
@@ -60,6 +66,13 @@ class SpellBook {
 				break;
 			default: break;
 		}
+	}
+
+	autoUseSpells(ball: Ball, paddle: Paddle) {
+		this.getSpellsTypes().forEach((type) => {
+			if (this.spellEnabled(type))
+				this.useSpell(type, ball, paddle);
+		});
 	}
 
 	enableSpell(type: string): void {
