@@ -33,6 +33,10 @@ async function fetchUsers() : Promise<User []> {
 	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user`).then((res) => { return res.data });
 };
 
+async function fetchUserById(id: number) : Promise<User> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/${id}`).then((res) => { return res.data });
+}
+
 async function fetchCurrentUser() : Promise<any> {
 	return  axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((res) => { return res.data });
 };
@@ -62,6 +66,7 @@ const store = reactive({
 	isEditModalOpen: false,
 	isAddUserModalOpen: false,
 	isconfirmationLeavingModalOpen: false,
+	isProfileModalOpen: false,
 	activeChannel: null as Channel | null,
 	socket: null as Socket | null,
 });
@@ -70,6 +75,10 @@ export default {
 
 	getUsers() : Promise<User []> {
 		return fetchUsers();
+	},
+
+	getUSerById(id: number) : Promise<User> {
+		return fetchUserById(id);
 	},
 
 	getCurrentUser() : Object {
@@ -162,5 +171,13 @@ export default {
 
 	closeConfirmationLeavingModal() {
 		store.isconfirmationLeavingModalOpen = false;
+	},
+
+	openProfileModal() {
+		store.isProfileModalOpen = true;
+	},
+
+	closeProfileModal() {
+		store.isProfileModalOpen = false;
 	},
 };

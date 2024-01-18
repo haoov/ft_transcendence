@@ -22,6 +22,11 @@
 				<ConfirmationLeaveChannel></ConfirmationLeaveChannel>
 			</Suspense>
 		</Modal>
+		<Modal v-if="store.isProfileModalOpen" :function="closeProfilModal">
+			<Suspense>
+				<ProfilModal></ProfilModal>
+			</Suspense>
+		</Modal>
 	</div>
 </template>
 
@@ -33,6 +38,7 @@ import ChannelModal from './ChannelModal.vue';
 import EditChannelForm from './EditChannelForm.vue';
 import AddUserForm from './AddUserForm.vue';
 import ConfirmationLeaveChannel from './ConfirmationLeaveChannel.vue';
+import ProfilModal from './ProfilModal.vue';
 import { Suspense, inject } from 'vue';
 import { io, Socket } from 'socket.io-client';
 import { onBeforeRouteLeave } from 'vue-router';
@@ -77,6 +83,10 @@ const closeAddUserModalForm = () => {
 
 const closeLeaveConfirmation = () => {
 	$data.closeConfirmationLeavingModal()
+}
+
+const closeProfilModal = () => {
+	$data.closeProfileModal()
 }
 
 </script>

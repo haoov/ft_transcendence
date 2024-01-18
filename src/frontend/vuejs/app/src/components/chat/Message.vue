@@ -1,7 +1,7 @@
 <template>
 	<div class="message-div" :id="id">
-		<div class="profile-img-div">
-			<img :src="profilePic" alt="Profile Picture">
+		<div class="profile-img-div" @click="openProfilModal">
+			<img :src="profilePic" alt="Profile Picture" >
 		</div>
 		<div class="core-message-div">
 			<div class="user-info-div">
@@ -17,20 +17,24 @@
 
 <script setup lang="ts">
 import moment from 'moment-timezone';
+import { inject } from 'vue';
 
+const props : any = defineProps({
+	data: Object,
+	id: Number
+});
+const $data : any = inject('$data');
+const username : string = props.data.sender.name;
+const profilePic : string = props.data.sender.avatar;
+const message : string = props.data.message.text;
+const DateRawStamp : string = props.data.message.time;
+const timeFr = moment.tz(DateRawStamp, 'Europe/Paris');
+const timestamp : string = timeFr.format('HH:mm:ss');
+const id : string = props.id.toString();
 
-	const props : any = defineProps({
-		data: Object,
-		id: Number
-	});
-	
-	const username : string = props.data.sender.name;
-	const profilePic : string = props.data.sender.avatar;
-	const message : string = props.data.message.text;
-	const DateRawStamp : string = props.data.message.time;
-	const timeFr = moment.tz(DateRawStamp, 'Europe/Paris');
-	const timestamp : string = timeFr.format('HH:mm:ss');
-	const id : string = props.id.toString();
+const openProfilModal = () => {
+	$data.openProfileModal();
+}
 
 </script>
 
@@ -46,11 +50,28 @@ import moment from 'moment-timezone';
 	border-radius: 50%;
 	overflow: hidden;
 	display: inline-flex;
+	cursor: pointer;
 }
+
+.dropdown {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-grey-light);
+}
+
+.dropdown-content {
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  width: 100px;
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-grey-light);
+}
+
 .profile-img-div img {
   max-width: 100%;
   max-height: 100%;
 }
+
 .core-message-div {
   display: flex;
   flex-direction: column;
@@ -94,4 +115,15 @@ p {
 	color:rgb(240, 240, 240);
 	height: auto;
 }
+
+.test-transi-enter-from,
+.test-transi-leave-to {
+	opacity: 0;
+}
+
+.test-transi-enter-active,
+.test-transi-leave-active {
+	transition: opacity 0.5s ease-in-out;
+}
+
 </style>
