@@ -127,7 +127,7 @@
 
 	.custumButton {
 		width: 100px;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		border: none;
 		padding: .5rem;
 		cursor: pointer;
