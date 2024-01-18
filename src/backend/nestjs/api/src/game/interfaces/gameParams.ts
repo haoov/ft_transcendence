@@ -3,5 +3,4 @@ export interface gameParams {
 	mode: string,
 	difficulty?: string,
 	map?: string,
-	public: boolean
 }

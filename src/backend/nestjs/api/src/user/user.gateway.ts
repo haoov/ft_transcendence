@@ -7,6 +7,7 @@ import { userStatus } from './enum/userStatus.enum';
 import { Room } from 'src/game/classes/Room';
 import { GameGateway } from 'src/game/game.gateway';
 import { Inject, forwardRef } from '@nestjs/common';
+import { gameParams } from 'src/game/interfaces/gameParams';
 
 // Outil de gestion des web socket events
 @WebSocketGateway({ namespace: 'users' })
@@ -44,6 +45,18 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				}
 				console.log("user disconnection: " + client.data.user.username);
 			}
+		}
+	}
+
+	@SubscribeMessage(clientEvents.gameInvite)
+	async gameInvite(client: Socket, opponentID: number) {
+		const opponent: User = await this.userService.getUserById(opponentID);
+		console.log("game invite from " + client.data.user.username + " to " + opponent.username);
+		const sockets: Socket[] = this.usersSockets.get(opponentID);
+		if (sockets) {
+			sockets.forEach(socket => {
+				socket.emit(serverEvents.gameInvite, client.data.user);
+			});
 		}
 	}
 

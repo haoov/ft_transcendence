@@ -3,6 +3,7 @@ import { Pong } from "../data/Pong";
 import { gameParams } from "../interfaces/gameParams";
 import { User } from "src/user/user.interface";
 import { Game } from "../interfaces/game.interface";
+import { ConsoleLogger } from "@nestjs/common";
 
 const computer = {id: 0, username: "computer", status: "undefined", avatar: "", email: "", games_won: [], games_lost: []};
 
@@ -16,10 +17,10 @@ export class Room {
 	private params: gameParams;
 	private game: Pong;
 
-	constructor(name: string, params: gameParams) {
+	constructor(name: string, params: gameParams, setPrivate?: boolean) {
 		this.users = [];
 		this.name = name;
-		this.public = true;
+		this.public = (setPrivate ? false : true);
 		this.full = false;
 		this.closed = false;
 		this.sockets = [];
@@ -58,9 +59,18 @@ export class Room {
 	addUser(user: User): void {
 		if (!this.isFull()) {
 			this.users.push(user);
-			if (this.users.length > 1)
-				this.full = true;
+		this.checkFull();
 		}
+	}
+
+	checkFull(): void {
+		let count = 0;
+		this.users.forEach((user) => {
+			if (this.sockets.find((socket) => {return (socket.data.user.id == user.id);}))
+				++count;
+		});
+		if (count == 2)
+			this.full = true;
 	}
 
 	getType(): string {
