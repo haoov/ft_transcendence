@@ -6,6 +6,7 @@
 	import router from '@/router';
 	import { ClientEvents, ServerEvents } from '@/utils';
 	import { inject, onMounted } from 'vue';
+	import NotificationsProvider from '@/components/notificationsProvider.vue';
 
 	const globalSocket: GlobalSocket = inject("globalSocket") as GlobalSocket;
 	console.log(import.meta.env.VITE_HOSTNAME);
@@ -20,6 +21,7 @@
 				text="Ready to play!"
 				v-on:close="router.push('/game');"
 			></gameNotification>
+			<NotificationsProvider></NotificationsProvider>
     </div>
 </template>
 
