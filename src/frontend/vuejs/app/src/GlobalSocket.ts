@@ -15,13 +15,13 @@ class GlobalSocket {
 	private readonly notifications: INotifications;
 
 	constructor() {
-		this.socket = io("http://localhost:3000/users");
+		this.socket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/users`);
 		this.socketReady = false;
 		this.notifications = reactive({gameReady: false});
 	}
 
 	async initSocket() {
-		await axios.get("http://localhost:3000/api/user/me").then((response) => {
+		await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((response) => {
 			this.socket.emit(ClientEvents.connected, response.data);
 		});
 		this.socket.on(ServerEvents.gameReady, () => {

@@ -1,10 +1,14 @@
 <template>
 	<div class="Messages-div" ref="">
-		<ul 
+		<ul
 			v-for="(message, index) in messages"
-			:id="index == messages.length - 1 ? 'last' : ''"
+			:id="index === messages.length - 1 ? 'last' : ''"
 		>
-			<Message :data="message" :id="index" :key="message.id"></Message>
+			<Message
+				:id="index"
+				:data="message"
+				:key="message.id"
+			></Message>
 		</ul>
 	</div>
 </template>
@@ -38,7 +42,7 @@ function scrollToBottomSmooth() {
 
 const data : any = inject('$data');
 const store = data.getStore();
-const socket: Socket = data.getSocket();
+const socket: Socket = store.socket;
 
 const activeChannel = computed(() => store.activeChannel);
 const messages = computed(() => store.messages);
@@ -60,6 +64,9 @@ onUpdated(() => {
 });
 
 socket.on("newMessage", (message : any) => {
+	if (activeChannel.value.id !== message.message.channelId) {
+		return;
+	}
 	store.messages.push(message);
 });
 
@@ -78,10 +85,9 @@ socket.on("newMessage", (message : any) => {
 }
 
 ul {
-  width: 100%;
-  height: fit-content;
+  list-style-type: none;
+  margin: 0 0 5px 7px;
   padding: 0;
-  margin: 0;
 }
 
 p {

@@ -93,9 +93,11 @@ services:
       dockerfile: ./Dockerfile
     image: vuejs
     ports:
-      - 3000:80
+      - 10.12.3.7:3000:80
     networks:
       - ft_transcendence
+    environment:
+      - SERVER_HOSTNAME=${LOCAL_ADDRESS}
     depends_on:
       nestjs:
         condition: service_healthy
