@@ -18,12 +18,14 @@ const me = ref<User>({
 });
 const usernameSet = ref<string>("");
 const avatarSet = ref<File | null>(null);
+const avatarToUpdate = ref<boolean>(false);
 const avatarSrc = computed(() => {
   return avatarSet.value ? URL.createObjectURL(avatarSet.value) : me.value.avatar;
 });
 const disableSave = computed(() => {
-  return (!usernameSet.value || usernameSet.value === me.value.username) && avatarSet.value === null;
+  return (!usernameSet.value || usernameSet.value === me.value.username) && (!avatarToUpdate.value);
 });
+let fileInput = ref<HTMLElement | null>(null);
 
 // FETCHING DATA
 async function fetchMe() {
@@ -68,23 +70,27 @@ function  updateAvatar() {
   formData.append('avatar', avatarSet.value as Blob);
   axios
     .put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/update/avatar`, formData)
-  //   .then( (data) => { 
-  //     me.value = data.data;
-  //     usernameSet.value = data.data.username;
-  //    sendToast("success", "Username has been updated!");
-  //   })
-  //   .catch( (err) => {
-  //     console.log(err.response.status);
-  //     if (err.response.status == 409) {
-  //       sendToast("error", "Username is already in use!");
-  //     }
-  //   });
+    .then( async (data) => { 
+      avatarToUpdate.value = false;
+      sendToast("success", "Avatar has been updated!");
+    })
+    .catch( (err) => {
+      avatarSet.value = null;
+      sendToast("error", "Invalid format avatar!");
+    });
 }
+
+function uploadFile() {
+  if (fileInput.value) {
+    fileInput.value.click();
+  }
+};
 
 function selectFile(event: Event) {
   const inputEvent = event as InputEvent;
   const target = inputEvent.target as HTMLInputElement;
   avatarSet.value = target.files ? target.files[0] : null;
+  avatarToUpdate.value = true;
 };
 
 function sendToast(type: ToastType, message: string) {
@@ -108,7 +114,17 @@ onMounted(async () => {
 <div class="l-wrapper">
 	<div class="l-grid">
 		<div class ="u-justify--center u-display--flex">
-			<img class="c-avatar" :src="avatarSrc"/>
+      <div class="c-avatar-container" @click="uploadFile">
+        <img class="c-avatar" :src="avatarSrc"/>
+        <form enctype="multipart/form-data" class="uploadPicture">
+          <input
+            id="file"
+            type="file"
+            @change="selectFile"
+            ref="fileInput"
+            accept="image/*" />
+        </form>
+      </div>
 		</div>
   		<div class="formTitle">Username</div>
 		<div class="formField">
@@ -124,18 +140,6 @@ onMounted(async () => {
 		<div class="formField">
 			<div class="forbidden">{{ me.email }}</div>
 		</div>
-
-    <form enctype="multipart/form-data">
-		<div class="field">
-			<label for="file" class="label">Upload file</label>
-			<input
-				id="file"
-				type="file"
-				@change="selectFile"
-				accept="image/*" />
-			<button>Upload</button>
-		</div>
-	  </form>
 
 		<div class ="u-justify--center u-display--flex">
 			<button id="saveButton" :disabled="disableSave" @click="updateProfile()">Save</button>
@@ -227,8 +231,8 @@ button, select {
     font-family: inherit;
     background-color: var(--c-black-light);
     border: 1px solid var(--c-black-light);
-	font-family: Overpass;
-	margin-left: 6rem;
+	  font-family: Overpass;
+	  margin-left: 6rem;
     margin-top: 0.5rem;
     margin-bottom: 1.2rem;
 }
@@ -239,7 +243,7 @@ button, select {
     border-radius: 8px;
     padding: 0.5rem 1rem;
     color: var(--c-grey);
-	font-family: Overpass;
+	  font-family: Overpass;
     background-color: var(--c-black-light);
     border: 1px solid var(--c-black-light);
     font-family: Overpass;
@@ -284,20 +288,53 @@ button, select {
   transform: none !important;
 }
 
-.c-avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 10rem;
-    height: 10rem;
-    box-shadow: 0 0 3px,0 0 5px var(--c-black-light),0 0 7px var(--c-black-light),0 0 10px var(--c-black-light);
-    border-radius: 50%;
-    background: var(--lightest);
-    color: var(--dark);
-    margin-top: 3rem;
-    margin-bottom: 1.5rem;
+.c-avatar-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10rem;
+  height: 10rem;
+  box-shadow: 0 0 3px, 0 0 5px var(--c-black-light), 0 0 7px var(--c-black-light), 0 0 10px var(--c-black-light);
+  border-radius: 50%;
+  background: var(--lightest);
+  color: var(--dark);
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
 }
 
+.c-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.c-avatar-container:hover .image {
+  filter: brightness(70%);
+}
+
+.c-avatar-container::before {
+  content: url('../assets/images/camera-30.png');
+  position: absolute;
+  background-color: rgba(211, 211, 211, 0.5);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: none;
+}
+.c-avatar-container:hover::before {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.uploadPicture {
+  display: none;
+}
 
 .c-button {
   display: inline-block;

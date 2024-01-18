@@ -3,9 +3,8 @@ import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
 import { Request, Response } from "express";
-import { multerConfig } from "src/config/multer.config";
+import { multerConfig } from "src/user/config/multer.config";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { readFileSync } from "fs";
 
 @Controller("user")
 @UseGuards(new AuthentificatedGuard())

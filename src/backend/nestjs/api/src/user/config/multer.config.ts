@@ -20,4 +20,7 @@ export const multerConfig: MulterModuleOptions = {
 			callback(new Error('Only image files are allowed!'), false);
 		}
 	},
+	limits: {
+        fileSize: 1024 * 1024 * 2, // 2MB
+    },
 };

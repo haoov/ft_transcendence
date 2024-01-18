@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import type { UserStat, User, GameStat } from "@/utils";
-import { computed, onMounted, ref } from "vue";
+import { computed, onActivated, onMounted, ref } from "vue";
 
 const players = ref<UserStat[]>([]);
 const imagesLoaded = ref<boolean>(false);
@@ -625,6 +625,7 @@ button, select {
   border-radius: 50%;
   background: var(--lightest);
   color: var(--dark);
+  object-fit: cover;
 }
 @media screen and (max-width: 700px) {
   .c-avatar {
