@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	const uri: string = "http://localhost:3000/api/auth/login";
+	const uri: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/login`;
 </script>
 
 <template>

@@ -25,21 +25,21 @@ const playersDisplayed = computed(() => {
 // FETCHING DATA
 async function fetchLeaderboard() {
   await axios
-    .get("http://localhost:3000/api/home/leaderboard")
+    .get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/leaderboard`)
     .then(data => { players.value = data.data;});
 }
 
 async function fetchMe() {
   await axios
-    .get("http://localhost:3000/api/user/me")
+    .get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
     .then( (data) => { 
       me.value = data.data;
       // Fetch my stats
-      const url1: string = `http://localhost:3000/api/home/stats/${data.data.id}`;
+      const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/stats/${data.data.id}`;
         axios.get(url1).then( data => {
         myStats.value = data.data;})
       // Fetch my games
-      const url2: string = `http://localhost:3000/api/home/game-history/${data.data.id}`;
+      const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
       axios.get(url2).then( data => {
         myGames.value = data.data;})
       });
@@ -684,7 +684,7 @@ button, select {
   color: var(--dark);
   border-radius: 0.4rem;
 }
-@media screen and (max-w idth: 700px) {
+@media screen and (max-width: 700px) {
   .c-flag {
     width: 2.4rem;
     height: 2.4rem;

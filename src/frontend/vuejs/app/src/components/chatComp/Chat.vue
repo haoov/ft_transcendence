@@ -12,6 +12,11 @@
 				<EditChannelForm></EditChannelForm>
 			</Suspense>
 		</Modal>
+		<Modal v-if="store.isAddUserModalOpen" :function="closeAddUserModalForm">
+			<Suspense>
+				<AddUserForm></AddUserForm>
+			</Suspense>
+		</Modal>
 	</div>
 </template>
 
@@ -21,10 +26,36 @@ import ChatCard from './ChatCard.vue';
 import Modal from './Modal.vue';
 import ChannelModal from './ChannelModal.vue';
 import EditChannelForm from './EditChannelForm.vue';
+import AddUserForm from './AddUserForm.vue';
 import { Suspense, inject } from 'vue';
+import { io, Socket } from 'socket.io-client';
+import { onBeforeRouteLeave } from 'vue-router';
+import { parseIsolatedEntityName } from 'typescript';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
+$data.setSocket(io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`));
+const socket : Socket = store.socket; 
+
+socket.on('NewConnection', async () => {
+	const user = await $data.getCurrentUser();
+	socket.emit('userConnected', user);
+});
+
+socket.on('lastActiveChannel', async (id : string) => {
+	const user = await $data.getCurrentUser();
+	$data.loadChannels(user.id);
+	const channel = store.channels.find((channel : any) => channel.id === parseInt(id));
+	if (channel) {
+		$data.setActiveChannel(channel);
+	} else {
+		$data.setActiveChannel(null);
+	}
+});
+
+onBeforeRouteLeave(() => {
+	socket.disconnect();
+});
 
 const closeModal = () => {
 	$data.closeModalForm()
@@ -34,20 +65,20 @@ const closeEditModal = () => {
 	$data.closeEditModalForm()
 }
 
+const closeAddUserModalForm = () => {
+	$data.closeAddUserModalForm()
+}
+
 </script>
 
 <style scoped>
 .chat {
 	position: relative;
-	background: linear-gradient(to right,
-			var(--c-black),
-			var(--c-blue-dark),
-			var(--c-black));
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	width: 100vw;
-	height: 100vh;
+	height: 90vh;
 }
 
 </style>

@@ -28,7 +28,7 @@ const disableSave = computed(() => {
 // FETCHING DATA
 async function fetchMe() {
   await axios
-    .get("http://localhost:3000/api/user/me")
+    .get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
     .then( (data) => { 
       me.value = data.data;
       usernameSet.value = data.data.username;
@@ -47,7 +47,7 @@ function updateProfile() {
 
 function  updateUsername() {
   axios
-    .put("http://localhost:3000/api/user/update/username", {
+    .put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/update/username`, {
       username: usernameSet.value
     })
     .then( (data) => { 
@@ -67,7 +67,7 @@ function  updateAvatar() {
   const formData = new FormData();
   formData.append('avatar', avatarSet.value as Blob);
   axios
-    .put("http://localhost:3000/api/user/update/avatar", formData)
+    .put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/update/avatar`, formData)
   //   .then( (data) => { 
   //     me.value = data.data;
   //     usernameSet.value = data.data.username;

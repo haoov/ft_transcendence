@@ -1,14 +1,16 @@
 <template>
 	<div class="channel-navbar">
 		<nav>
-			<ul v-for="(channel, index) in channels">
-				<ChannelWidget
-				:channel="channel"
-				:key="channel.id"
-				@click="setActiveChannel(channel)"
-				></ChannelWidget>
-			</ul>
-			<NewChannelWidget></NewChannelWidget>
+			<div>
+				<ul v-for="(channel, index) in channels">
+					<ChannelWidget
+					:channel="channel"
+					:key="channel.id"
+					@click="setActiveChannel(channel, currentUser.id)"
+					></ChannelWidget>
+				</ul>
+			</div>
+			<NewChannelWidget title="Add/Join Channel"></NewChannelWidget>
 		</nav>
 	</div>
 </template>
@@ -20,8 +22,8 @@ import { Socket } from "socket.io-client";
 import { inject, onMounted, computed } from 'vue';
 
 const $data : any = inject('$data');
-const socket : Socket = $data.getSocket();
 const store = $data.getStore();
+const socket : Socket = store.socket;
 const currentUser = await $data.getCurrentUser();
 const channels = computed (() => store.channels);
 
@@ -29,8 +31,11 @@ onMounted(() => {
 	$data.loadChannels(currentUser.id);
 });
 
-const setActiveChannel = (channel : any) => {
-	socket.emit('join', channel);
+const setActiveChannel = (channel : any, currentUserId: number) => {
+	socket.emit('setActiveChannel', {
+		'channelId':channel.id,
+		'currentUserId':currentUserId
+		});
 	$data.setActiveChannel(channel);
 };
 
@@ -38,7 +43,20 @@ socket.on('newChannelCreated', (newChannelCreated : any) => {
 	$data.addChannel(newChannelCreated);
 });
 
-</script>
+socket.on('channelDeleted', (channelIdDeleted : number) => {
+	$data.deleteChannel(channelIdDeleted);
+	if (store.channels.length > 0) {
+		store.activeChannel = store.channels[store.channels.length - 1];
+	} else {
+		store.activeChannel = null;
+	}
+});
+
+socket.on('channelUpdated', (channelUpdated : any) => {
+	$data.updateChannel(channelUpdated);
+});
+
+</script>center
 
 <style scoped>
 
@@ -57,9 +75,10 @@ socket.on('newChannelCreated', (newChannelCreated : any) => {
 nav {
 	display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
     width: 100%;
+    min-height: 50%;
     height: auto;
 	overflow-x: hidden;
 	overflow-y: auto;

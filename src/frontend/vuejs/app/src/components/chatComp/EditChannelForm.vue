@@ -1,19 +1,24 @@
 <template>
 <div class="modal-channel-form-container">
-	<div class="new-channel-form-container">
+	<div class="edit-channel-form-container">
 		<form class="form" @submit.prevent="submitForm">
 			<div class="form-group">
 				<label for="channelName">Channel Name :</label>
 				<p v-if="nameError" style="color: red;">Name missing</p>
 				<input 
-				v-model="channelName"
-				name="channelName"
-				id="channelName"
-				type="text"
-				autocomplete="off"
+					v-model="channelName"
+					name="channelName"
+					id="channelName"
+					type="text"
+					autocomplete="off"
 					:class="{ 'is-invalid': nameError }"
 					placeholder="Channel Name"
-					>
+				>
+				<svg v-if="channelName" class="cancel-icon" alt="Cancel Icon" @click=resetChannelName() width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+					<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+					<g id="SVGRepo_iconCarrier"> <path d="M6.99486 7.00636C6.60433 7.39689 6.60433 8.03005 6.99486 8.42058L10.58 12.0057L6.99486 15.5909C6.60433 15.9814 6.60433 16.6146 6.99486 17.0051C7.38538 17.3956 8.01855 17.3956 8.40907 17.0051L11.9942 13.4199L15.5794 17.0051C15.9699 17.3956 16.6031 17.3956 16.9936 17.0051C17.3841 16.6146 17.3841 15.9814 16.9936 15.5909L13.4084 12.0057L16.9936 8.42059C17.3841 8.03007 17.3841 7.3969 16.9936 7.00638C16.603 6.61585 15.9699 6.61585 15.5794 7.00638L11.9942 10.5915L8.40907 7.00636C8.01855 6.61584 7.38538 6.61584 6.99486 7.00636Z" fill="#adadad"/> </g>
+				</svg>
 				</div>
 				<div class="form-group">
 					<label for="channelMode">Channel Mode :</label>
@@ -56,17 +61,35 @@
 				<button 
 					type="button" 
 					class="form-delete-btn"
-					@click="deleteChannel"
+					@click="OpenDeleteConfirmation"
 				>Delete</button>
 			</div>
 		</form>
 	</div>
+	<Modal v-if="toggleDeleteConfirmation" :function="closeDeleteConfirmation">
+		<div class="delete-div">
+			<p>Are you sure you want to delete this channel ?</p>
+			<div class="div-btns">
+				<button 
+					type="button" 
+					class="form-submit-btn"
+					@click="deleteChannel"
+				>Delete</button>
+				<button 
+					type="button" 
+					class="form-delete-btn"
+					@click="cancelDelete"
+				>Cancel</button>
+			</div>
+		</div>
+	</Modal>
 </div>
 </template>
 
 <script setup lang="ts">
 
 import SeachBar from './SearchBar.vue';
+import Modal from './Modal.vue';
 import { ref, computed, inject } from 'vue';
 
 const $data : any = inject('$data');
@@ -77,7 +100,7 @@ const selectedOption = ref(activeChannel.value.mode);
 const password = ref('');
 const nameError = ref(false);
 const passwordError = ref(false);
-const options = ['Public', 'Private', 'Protected', 'Secret'];
+const options = ['Public', 'Protected', 'Secret'];
 const userIds = ref([]);
 const isSubmitDisabled = computed(() => {
 	if (selectedOption.value === 'Protected') {
@@ -85,14 +108,41 @@ const isSubmitDisabled = computed(() => {
 	}
 	return !channelName.value;
 });
+const toggleDeleteConfirmation = ref(false);
+
+const resetChannelName = () => {
+	channelName.value = '';
+};
 
 const submitForm = () => {
-	console.log('edit channel');
-}
+	store.socket.emit('updateChannel', {
+		channelId: activeChannel.value.id,
+		name: channelName.value,
+		mode: selectedOption.value,
+		password: password.value,
+		userIds: userIds.value,
+	});
+	$data.closeEditModalForm();
+};
+
+const OpenDeleteConfirmation = () => {
+	toggleDeleteConfirmation.value = true;
+};
+
+const closeDeleteConfirmation = () => {
+	toggleDeleteConfirmation.value = false;
+};
 
 const deleteChannel = () => {
-	console.log('delete channel');
-}
+	store.socket.emit('deleteChannel', activeChannel.value.id);
+	toggleDeleteConfirmation.value = false;
+	$data.closeEditModalForm();
+};
+
+const cancelDelete = () => {
+	toggleDeleteConfirmation.value = false;
+};
+
 </script>
 
 <style scoped>
@@ -132,28 +182,28 @@ const deleteChannel = () => {
   }
 }
 
-.new-channel-form-container {
+.edit-channel-form-container {
   width: 100%;
   height: 100%;
 }
 
-.new-channel-form-container button:not(:disabled):active {
+.edit-channel-form-container button:not(:disabled):active {
   scale: 0.95;
 }
 
-.new-channel-form-container .form {
+.edit-channel-form-container .form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.new-channel-form-container .form-group {
+.edit-channel-form-container .form-group {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.new-channel-form-container .form-group label {
+.edit-channel-form-container .form-group label {
   display: block;
   margin-bottom: 5px;
   color: #717171;
@@ -161,7 +211,7 @@ const deleteChannel = () => {
   font-size: 12px;
 }
 
-.new-channel-form-container .form-group input {
+.edit-channel-form-container .form-group input {
   width: 80%;
   padding: 3% 7%;
   border-radius: 8px;
@@ -171,17 +221,19 @@ const deleteChannel = () => {
   border: 1px solid #414141;
 }
 
-.new-channel-form-container .form-group input::placeholder {
+.edit-channel-form-container .form-group input::placeholder {
   opacity: 0.5;
 }
 
-.new-channel-form-container .form-group input:focus {
+.edit-channel-form-container .form-group input:focus {
   outline: none;
   border-color: #e81cff;
 }
 
-.new-channel-form-container .form-submit-btn,
-.new-channel-form-container .form-delete-btn {
+.edit-channel-form-container .form-submit-btn,
+.edit-channel-form-container .form-delete-btn,
+.delete-div .form-submit-btn,
+.delete-div .form-delete-btn {
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -207,12 +259,17 @@ const deleteChannel = () => {
   width: 100%;
 }
 
-.new-channel-form-container .form-submit-btn:not(:disabled):hover {
+.edit-channel-form-container .form-submit-btn:not(:disabled):hover {
+  background-color: #fff;
+  border-color: #fff;
+}
+.delete-div .form-submit-btn:hover,
+.delete-div .form-delete-btn:hover {
   background-color: #fff;
   border-color: #fff;
 }
 
-.new-channel-form-container .form-delete-btn:hover {
+.edit-channel-form-container .form-delete-btn:hover {
   color: white;
   background-color: #c91111;
   border-color: #c91111;
@@ -257,6 +314,41 @@ const deleteChannel = () => {
 
 .is-invalid {
   border-color: #ff0000;
+}
+
+.cancel-icon {
+    position: absolute;
+    right: 90px;
+    top: 64px;
+    cursor: pointer;
+}
+
+.delete-div {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #414141;
+  background: linear-gradient(#212121, #212121) padding-box,
+              linear-gradient(145deg, transparent 35%,#e81cff, #40c9ff) border-box;
+  border: 2px solid transparent;
+  padding-top: 32px;
+  padding-right: 24px;
+  padding-bottom: 32px;
+  padding-left: 28px;
+  font-size: 14px;
+  font-family: inherit;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background-size: 200% 100%;
+
 }
 
 </style>

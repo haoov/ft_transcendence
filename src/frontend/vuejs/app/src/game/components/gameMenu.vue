@@ -5,10 +5,12 @@
 	import selector from "@/components/selector.vue"
 	import GlobalSocket from "@/GlobalSocket";
 	import { ClientEvents, ServerEvents } from "@/utils";
+	import GameSocket from "../gameSocket";
 
-	const props = defineProps(["state", "winner"]);
+	const props = defineProps(["winner"]);
 	const emit = defineEmits(['click', 'stopWaiting']);
 
+	const gameSocket: GameSocket = inject("gameSocket") as GameSocket;
 	const globalSocket: GlobalSocket = inject("globalSocket") as GlobalSocket;
 	const games: string[] = ["classic", "super"];
 	const difficulties: string[] = ["easy", "medium", "hard"];
@@ -49,7 +51,7 @@
 <template>
 
 	<div class="menu">
-		<div v-if="!state" class="menu-box">
+		<div v-if="!gameSocket.getUserState()" class="menu-box">
 			<selector
 				:label="'Game'"
 				:values="games"
@@ -79,9 +81,9 @@
 				v-on:click="play"
 				>Play</button>
 		</div>
-		<div v-else-if="state != 'finished' && !globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
-			<loader :text="state"></loader>
-			<button v-if="state == 'waiting'" class="custumButton" id="stopWaiting" v-on:click="stopWaiting">Stop waiting</button>
+		<div v-else-if="gameSocket.getUserState() != 'finished' && !globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
+			<loader :text="gameSocket.getUserState()"></loader>
+			<button	v-if="gameSocket.getUserState() == 'waiting'" class="custumButton" id="stopWaiting" v-on:click="stopWaiting">Stop waiting</button>
 		</div>
 		<div v-else-if="!globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
 			<span>{{ winner }} won!</span>
@@ -89,8 +91,8 @@
 		</div>
 		<div v-if="globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
 			<span>Game Ready</span>
-			<button class="custumButton" v-on:click="globalSocket.getSocket().emit(ClientEvents.gamePlay)">Play</button>
-			<button class="custumButton" v-on:click="globalSocket.getSocket().emit(ClientEvents.gameForfeit)">Forfeit</button>
+			<button class="custumButton" v-on:click="gameSocket.getSocket().emit(ClientEvents.gamePlay)">Play</button>
+			<button class="custumButton" v-on:click="gameSocket.getSocket().emit(ClientEvents.gameForfeit)">Forfeit</button>
 		</div>
 	</div>
 
