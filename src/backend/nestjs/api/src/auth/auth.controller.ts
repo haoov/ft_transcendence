@@ -16,7 +16,7 @@ export class AuthController {
 
 	@Get()
 	@UseGuards(Authentificated2faGuard)
-	checkAuth() { return true }
+	checkAuth() {}
 
 	@Get("login")
 	@UseGuards(Intra42Guard)
@@ -28,7 +28,8 @@ export class AuthController {
 	@UseGuards(Intra42Guard)
 	async redirect(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
 		const user: User = req.user as User;
-			if (!user.twofa_auth) res.status(302).redirect("/twofa");
+		if (user.twofa_enabled && !user.twofa_auth)
+			res.status(302).redirect("/twofa");
 		res.status(302).redirect("/");
 	}
 

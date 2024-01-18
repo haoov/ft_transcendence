@@ -43,6 +43,7 @@ export class UserService {
 		try {
 			const user: User = await this.getUser(email);
 			user.twofa_enabled = mode;
+			user.twofa_auth = mode;
 			return this.usersRepository.save(user);
 		} catch (err) {
 			throw err;
