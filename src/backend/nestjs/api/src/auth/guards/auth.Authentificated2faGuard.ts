@@ -19,7 +19,7 @@ export class Authentificated2faGuard implements CanActivate {
 			return true;
 		}
 		
-		if (user.twofa_auth == true) {
+		if (userDB.twofa_auth == true) {
 			return true;
 		} else {
 			return false;
