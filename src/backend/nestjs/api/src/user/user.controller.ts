@@ -1,10 +1,11 @@
-import { Controller, Delete, Get, Param, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, Param, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { multerConfig } from "src/config/multer.config";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { readFileSync } from "fs";
 
 @Controller("user")
 @UseGuards(new AuthentificatedGuard())
@@ -33,8 +34,14 @@ export class UserController {
 
 	@Put('update/avatar')
 	@UseInterceptors(FileInterceptor('avatar', multerConfig))
-	uploadAvatar(@UploadedFile() file: Express.Multer.File) {
-		console.log('uploadAvatar');
+	uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
+		const user = req.user as User;
+		this.userService.uptadeAvatar(user.id);
+	}
+
+	@Get('avatar/:id')
+	getAvatar(@Param('id') id: number, @Res() res: Response) {
+		return this.userService.getAvatar(id, res);
 	}
 
 	@Delete(":username")
