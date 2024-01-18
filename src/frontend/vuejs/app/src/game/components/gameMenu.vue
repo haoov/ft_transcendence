@@ -6,6 +6,7 @@
 	import GlobalSocket from "@/GlobalSocket";
 	import { ClientEvents, ServerEvents } from "@/utils";
 	import GameSocket from "../gameSocket";
+	import custumButton from "@/components/custumButton.vue";
 
 	const props = defineProps(["winner"]);
 	const emit = defineEmits(['click', 'stopWaiting']);
@@ -22,11 +23,13 @@
 	const selectedMap = ref("classic");
 
 	const isDisabled = computed(() => {
-		return 	!selectedGame.value || !selectedMode.value
-						|| (selectedMode.value == "singlePlayer" && (!selectedDifficulty.value || !selectedMap.value));
+		return 	!selectedGame.value
+						|| !selectedMode.value
+						|| (	selectedMode.value == "singlePlayer"
+									&& (!selectedDifficulty.value || !selectedMap.value));
 	});
 
-	function play() {
+	function selectParams() {
 		emit("click", {
 			game: selectedGame.value,
 			mode: selectedMode.value,
@@ -49,7 +52,7 @@
 </script>
 
 <template>
-
+	<!--Menu select params-->
 	<div class="menu">
 		<div v-if="!gameSocket.getUserState()" class="menu-box">
 			<selector
@@ -74,25 +77,33 @@
 				:values="maps"
 				@select="(value) => {selectedMap = value}"
 			></selector>
-			<button
-				class="custumButton"
-				id="play" type="submit"
-				:disabled="isDisabled"
-				v-on:click="play"
-				>Play</button>
+			<custumButton id="play" :disabled="isDisabled" v-on:click="selectParams()">Play</custumButton>
 		</div>
-		<div v-else-if="gameSocket.getUserState() != 'finished' && !globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
+
+		<!--Menu waiting for opponent-->
+		<div
+			v-else-if="gameSocket.getUserState() != 'finished' && !globalSocket.getDisplayValue(ServerEvents.gameReady)"
+			class="menu-box"
+			>
 			<loader :text="gameSocket.getUserState()"></loader>
-			<button	v-if="gameSocket.getUserState() == 'waiting'" class="custumButton" id="stopWaiting" v-on:click="stopWaiting">Stop waiting</button>
+			<custumButton
+				v-if="gameSocket.getUserState() == 'waiting'"
+				id="stopWaiting"
+				v-on:click="stopWaiting"
+				>Stop waiting</custumButton>
 		</div>
+
+		<!--Menu game finished-->
 		<div v-else-if="!globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
 			<span>{{ winner }} won!</span>
-			<button class="custumButton" id="reset" v-on:click="reloadMenu()">New game</button>
+			<custumButton id="reset" v-on:click="reloadMenu()">New game</custumButton>
 		</div>
+
+		<!--Menu game ready-->
 		<div v-if="globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
 			<span>Game Ready</span>
-			<button class="custumButton" v-on:click="gameSocket.getSocket().emit(ClientEvents.gamePlay)">Play</button>
-			<button class="custumButton" v-on:click="gameSocket.getSocket().emit(ClientEvents.gameForfeit)">Forfeit</button>
+			<custumButton v-on:click="gameSocket.getSocket().emit(ClientEvents.gamePlay)">Play</custumButton>
+			<custumButton v-on:click="gameSocket.getSocket().emit(ClientEvents.gameForfeit)">Forfeit</custumButton>
 		</div>
 	</div>
 
