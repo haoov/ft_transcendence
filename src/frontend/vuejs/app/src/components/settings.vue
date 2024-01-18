@@ -18,12 +18,12 @@ const me = ref<User>({
 });
 const usernameSet = ref<string>("");
 const avatarSet = ref<File | null>(null);
-const avatarToUpdate = ref<boolean>(false);
 const avatarSrc = computed(() => {
-  return avatarSet.value ? URL.createObjectURL(avatarSet.value) : me.value.avatar;
+  const timestamp = Date.now();
+  return avatarSet.value ? URL.createObjectURL(avatarSet.value) : `${me.value.avatar}?${timestamp}`;
 });
 const disableSave = computed(() => {
-  return (!usernameSet.value || usernameSet.value === me.value.username) && (!avatarToUpdate.value);
+  return (!usernameSet.value || usernameSet.value === me.value.username) && (!avatarSet.value);
 });
 let fileInput = ref<HTMLElement | null>(null);
 
@@ -71,7 +71,7 @@ function  updateAvatar() {
   axios
     .put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/update/avatar`, formData)
     .then( async (data) => { 
-      avatarToUpdate.value = false;
+      avatarSet.value = null;
       sendToast("success", "Avatar has been updated!");
     })
     .catch( (err) => {
@@ -90,7 +90,6 @@ function selectFile(event: Event) {
   const inputEvent = event as InputEvent;
   const target = inputEvent.target as HTMLInputElement;
   avatarSet.value = target.files ? target.files[0] : null;
-  avatarToUpdate.value = true;
 };
 
 function sendToast(type: ToastType, message: string) {
