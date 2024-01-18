@@ -9,6 +9,7 @@ export enum clientEvents {
 	leave = "leave",
 	gamePlay = "gamePlay",
 	gameForfeit = "gameForfeit",
+	gameInvite = "gameInvite",
 };
 
 export enum serverEvents {

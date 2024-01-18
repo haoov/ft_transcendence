@@ -1,8 +1,12 @@
 <script setup lang="ts">
 
 import axios from "axios";
-import type { UserStat, User, GameStat } from "@/utils";
-import { computed, onMounted, ref } from "vue";
+import { type UserStat, type User, type GameStat, ClientEvents, ServerEvents } from "@/utils";
+import { computed, inject, onMounted, ref } from "vue";
+import GlobalSocket from "@/GlobalSocket";
+import GameSocket from "@/game/gameSocket";
+import router from "@/router";
+import gameNotification from "@/game/components/gameNotification.vue";
 
 const players = ref<UserStat[]>([]);
 const imagesLoaded = ref<boolean>(false);
@@ -114,6 +118,17 @@ function getScoreColor(winFlag: boolean): string {
     return "var(--c-pink)";
   else
     return "var(--c-grey)"
+}
+
+const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
+const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
+
+function inviteToPlay(id: number) {
+	const gameParams = {
+		game: "classic",
+		mode: "multiPlayer",
+	};
+	globalSocket.getSocket().emit(ClientEvents.gameInvite, id);
 }
 
 
@@ -231,10 +246,12 @@ onMounted(async () => {
                     <img v-if="imagesLoaded" class="c-avatar c-media__img" :src="getAvatarSrc(player.id)"/>
                     <div class="c-media__content">
                       <div class="c-media__title u-text--overpass">{{ player.username }}</div>
-                      <a v-if="player.id!=me?.id" class="u-mr--8" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">
-                        <img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
+                      <a v-if="player.id!=me?.id" class="u-mr--8" target="_blank">
+                        <img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play"
+													v-on:click="inviteToPlay(player.id)"
+												>
                       </a>
-                      <a v-if="player.id!=me?.id" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">
+                      <a v-if="player.id!=me?.id" target="_blank">
                         <img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
                       </a>
                     </div>

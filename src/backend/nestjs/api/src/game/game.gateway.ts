@@ -52,15 +52,18 @@ export class GameGateway
 			console.log("game disconnection: " + client.data.user.username);
 			const room: Room = this.findRoom(client);
 			if (room) {
-				room.removeSocket(client);
-				if (!room.checkSockets(client.data.user) && room.getParams().mode == "multiPlayer") {
-					if (room.isFull()) {
+				if (room.isFull()) {
+					room.removeSocket(client);
+					if (!room.checkSockets(client.data.user) && room.getParams().mode == "multiPlayer") {
 						room.quitGame(client);
 						this.endGame(room);
+						this.deleteRoom(room);
 					}
-					this.deleteRoom(room);
-					await this.userService.updateUserStatus(client.data.user, userStatus.undefined);
 				}
+				else {
+					room.removeSocket(client);
+				}
+				await this.userService.updateUserStatus(client.data.user, userStatus.undefined);
 			}
 		}
 	}
@@ -82,8 +85,8 @@ export class GameGateway
 			}
 			else {
 				//else add user to the room and send notification to opponent
-				openRoom.addUser(client.data.user);
 				openRoom.addSocket(client);
+				openRoom.addUser(client.data.user);
 				this.userGateway.gameReady(openRoom);
 				client.emit(serverEvents.updateStatus, "waiting for opponent");
 				//wait for opponent to be ready
@@ -228,6 +231,16 @@ export class GameGateway
 		return newRoom;
 	}
 
+	createPrivateRoom(params: gameParams, user: User, opponent: User) {
+		console.log("creating private room: " + this.roomId);
+		const newRoom = new Room(this.roomId.toString(), params);
+		++this.roomId;
+		newRoom.addUser(user);
+		newRoom.addUser(opponent);
+		this.rooms.push(newRoom);
+		return newRoom;
+	}
+
 	/**
 	 * Manage socket when user is already in a room
 	 * @param client socket of the user
@@ -240,8 +253,14 @@ export class GameGateway
 			client.emit(serverEvents.started, room.getUsers(), room.getParams());
 		}
 		else {
-			//else wait for opponent
-			client.emit(serverEvents.updateStatus, "waiting");
+			if (room.isFull()) {
+				//if room is full start game
+				this.closeRoom(room);
+			}
+			else {
+				//else wait for opponent
+				client.emit(serverEvents.updateStatus, "waiting");
+			}
 		}
 	}
 
