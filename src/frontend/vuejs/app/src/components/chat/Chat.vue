@@ -17,6 +17,16 @@
 				<AddUserForm></AddUserForm>
 			</Suspense>
 		</Modal>
+		<Modal v-if="store.isconfirmationLeavingModalOpen" :function="closeLeaveConfirmation">
+			<Suspense>
+				<ConfirmationLeaveChannel></ConfirmationLeaveChannel>
+			</Suspense>
+		</Modal>
+		<Modal v-if="store.isProfileModalOpen" :function="closeProfilModal">
+			<Suspense>
+				<ProfilModal></ProfilModal>
+			</Suspense>
+		</Modal>
 	</div>
 </template>
 
@@ -27,10 +37,11 @@ import Modal from './Modal.vue';
 import ChannelModal from './ChannelModal.vue';
 import EditChannelForm from './EditChannelForm.vue';
 import AddUserForm from './AddUserForm.vue';
+import ConfirmationLeaveChannel from './ConfirmationLeaveChannel.vue';
+import ProfilModal from './ProfilModal.vue';
 import { Suspense, inject } from 'vue';
 import { io, Socket } from 'socket.io-client';
 import { onBeforeRouteLeave } from 'vue-router';
-import { parseIsolatedEntityName } from 'typescript';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
@@ -67,6 +78,14 @@ const closeEditModal = () => {
 
 const closeAddUserModalForm = () => {
 	$data.closeAddUserModalForm()
+}
+
+const closeLeaveConfirmation = () => {
+	$data.closeConfirmationLeavingModal()
+}
+
+const closeProfilModal = () => {
+	$data.closeProfileModal()
 }
 
 </script>
