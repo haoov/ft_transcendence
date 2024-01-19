@@ -33,9 +33,9 @@ export class UserController {
 
 	@Put('update/avatar')
 	@UseInterceptors(FileInterceptor('avatar', multerConfig))
-	uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
+	uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request) : Promise<User> {
 		const user = req.user as User;
-		this.userService.uptadeAvatar(user.id);
+		return this.userService.uptadeAvatar(user.id);
 	}
 
 	@Get('avatar/:id')
