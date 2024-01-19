@@ -26,6 +26,8 @@ volumes:
     #   type: none
   #!comment end
 
+  pgadmin_data:
+
 #------------------------------------#
 #              Services              #
 #------------------------------------#
@@ -62,10 +64,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "--fail", "localhost:3000/api/health"]
-      interval: 1s
-      timeout: 20s
+      interval: 3s
+      timeout: 10s
       retries: 10
-      start_period: 3s
+      start_period: 4s
 
   postgresql:
     image: postgres
@@ -97,6 +99,22 @@ services:
       - 3000:80
     networks:
       - ft_transcendence
+    environment:
+      - SERVER_HOSTNAME=${LOCAL_ADDRESS}
     depends_on:
       nestjs:
         condition: service_healthy
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - 5050:80
+    networks:
+      - ft_transcendence
+    volumes:
+      - pgadmin_data:/pgadmin4
