@@ -11,15 +11,16 @@ import blocked from '../assets/images/status-blocked-32.png';
 
 const route = useRoute();
 const username = route.params.username;
+const me = ref<User>();
 const user = ref<User>();
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
 
 
 // FETCHING DATA
-async function fetchData() {
-	await axios
-		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/${username}`)
+async function fetchUser() {
+	axios
+		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user?username=${username}`)
 		.then( (data) => {
 			user.value = data.data;
 			// Fetch user stats
@@ -31,6 +32,14 @@ async function fetchData() {
 			axios.get(url2).then( data => {
 				userGames.value = data.data;})
 			});
+}
+
+async function fetchMe() {
+	axios
+		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
+		.then( (data) => {
+			me.value = data.data;
+		});
 }
 
 
@@ -45,9 +54,8 @@ function	getAvatarSrc() : string | undefined {
 
 function getStatusIcon() : string {
 	// Faire option forbidden
-	console.log("test" + user.value?.status);
 	if (user.value?.status == "undefined" || user.value?.status == "offline")
-		return blocked;
+		return offline;
 	else
 		return online;
 }
@@ -90,7 +98,8 @@ function getScoreColor(winFlag: boolean): string {
 }
 
 onMounted(async () => {
-	await fetchData();
+	await fetchUser();
+	await fetchMe();
 });
 
 
@@ -101,8 +110,8 @@ onMounted(async () => {
 <div class="l-wrapper">
 	<div class="l-grid">
 		<div class="l-grid__item l-grid__item--sticky">
-			<div class="c-card">
-				<h3 class="u-p--24">PROFILE</h3>
+			<div class="c-card" id="profile">
+				<!-- <h3 class="u-p--24">PROFILE</h3> -->
 				<div class="c-card__body">
 					<div class="u-display--flex u-justify--space-between">
 						<div class="u-text--left">
@@ -112,12 +121,19 @@ onMounted(async () => {
 							</div>
 							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ user?.username }}</div>
 							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
-
+							<div class="u-ml--24 u-mt--4">
+								<a v-if="user?.id!=me?.id" class="u-mr--8" href="https://www.google.com/" target="_blank">
+									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
+								</a>
+								<a v-if="user?.id!=me?.id" href="https://www.google.com/" target="_blank">
+									<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
+								</a>
+							</div>
 						</div>
 						<div class="u-text--right">
-								<div class="u-mt--16 u-text--small u-text--overpass">{{ username }}'s rank</div>
+								<div class="u-mt--16 u-text--small u-text--overpass">Rank</div>
 								<h2 class="u-text--oswald">{{ userStats?.rank }}</h2>
-								<div class="u-mt--24 u-text--small u-text--overpass">{{ username }}'s wins</div>
+								<div class="u-mt--24 u-text--small u-text--overpass">Wins</div>
 								<h2 class="u-text--oswald">{{ userStats?.wins }}</h2>
 						</div>
 					</div>
@@ -190,6 +206,15 @@ h1,h2,h3,h4,h5,h6 {
 	color: inherit;
 	letter-spacing: 4px;
 }
+a {
+	color: var(--c-teal);
+	text-decoration: none;
+	transition: all 120ms ease-out 0s;
+	display: inline-block;
+	border-radius: 0.4rem;
+	font-size: 1.2rem;
+	font-family: Overpass;
+}
 a:hover {
 	background: var(--c-teal-dark);
 	color: var(--c-teal);
@@ -251,6 +276,9 @@ button, select {
 	flex-direction: column;
 }
 
+#profile {
+	min-height: 228px;
+}
 
 #gameContent {
 		height: 175px;
