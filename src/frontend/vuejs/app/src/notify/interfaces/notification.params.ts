@@ -1,6 +1,8 @@
+export type NotificationType = "gameInvite" | "gameReady";
+
 export interface NotificationParams {
-	message: string;
-	type: string;
-	autoclose: boolean;
+	message?: string;
+	by?: string;
+	autoClose?: boolean;
 	timeout?: number;
 }
