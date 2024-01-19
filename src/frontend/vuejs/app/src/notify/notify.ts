@@ -1,9 +1,9 @@
 import { reactive } from "vue";
-import type { Notification, NotificationParams } from "./interfaces"
+import type { Notification, NotificationParams, NotificationType } from "./interfaces";
 
 const notifications: Notification[] = reactive<Notification[]>([]);
 
-let id = 1;
+let idCounter = 1;
 
 function removeNotification(id: string): void {
 	const index = notifications.findIndex((notification) => notification.id == id);
@@ -12,19 +12,34 @@ function removeNotification(id: string): void {
 	}
 }
 
-function newNotification(params: NotificationParams): void {
+function newNotification(type: NotificationType, params?: NotificationParams): void {
 	const notification: Notification = {
-		id: id.toString(),
-		message: params.message,
-		type: params.type,
+		id: idCounter.toString(),
+		message: "",
+		type: ""
 	};
+	switch (type) {
+		case "gameInvite":
+			notification.message = params?.message || "game invite";
+			notification.type = "gameInvite";
+			notification.by = params?.by;
+			break;
+		case "gameReady":
+			notification.message = params?.message || "ready to play!";
+			notification.type = "gameReady";
+			notification.by = params?.by;
+			notification.autoClose = params?.autoClose || true;
+			notification.timeout = params?.timeout || 10000;
+			break;
+		default: break;
+	}
 	notifications.splice(0, 0, notification);
-	if (params.autoclose) {
+	if (notification.autoClose) {
 		setTimeout(() => {
 			removeNotification(notification.id);
-		}, params.timeout);
+		}, notification.timeout);
 	}
-	++id;
+	++idCounter;
 }
 
 function getNotifications(): Notification[] {

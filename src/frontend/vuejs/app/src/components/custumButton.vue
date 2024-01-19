@@ -8,7 +8,7 @@
 	</button>
 </template>
 
-<style scoped>
+<style>
 	.custumButton {
 		width: 100px;
 		border-radius: 0.8rem;
@@ -21,7 +21,6 @@
 
 	.custumButton:not(:disabled) {
 		background-color: var(--c-pink);
-		font-size: medium;
 	}
 
 	.custumButton:active {

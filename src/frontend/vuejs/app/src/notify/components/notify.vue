@@ -4,7 +4,7 @@
 </script>
 
 <template>
-	<button v-on:click="notify.newNotification({message: 'test', type: 'test', autoclose: false})">Add notif</button>
+	<button v-on:click="notify.newNotification('gameReady', {by: 'rsabbah'})">Add notif</button>
 	<TransitionGroup
 		appear
 		tag="div"
@@ -13,8 +13,8 @@
 		<v_notification
 			v-for="(notification, index) in notify.getNotifications()"
 			:key="notification.id"
-			:notification="notification"
-		></v_notification>
+			:data="notification">
+		</v_notification>
 	</TransitionGroup>
 </template>
 
