@@ -11,30 +11,29 @@
 	const props = defineProps(["winner"]);
 	const emit = defineEmits(['click', 'stopWaiting']);
 
+	const selectedParams = ref({
+		game: "",
+		mode: "",
+		difficulty: "",
+		map: "classic"
+	});
+
 	const gameSocket: GameSocket = inject("gameSocket") as GameSocket;
-	const globalSocket: GlobalSocket = inject("globalSocket") as GlobalSocket;
 	const games: string[] = ["classic", "super"];
 	const difficulties: string[] = ["easy", "medium", "hard"];
 	const modes: string[] = ["singlePlayer", "multiPlayer"];
 	const maps: string[] = ["classic", "tennis", "space", "random"];
-	const selectedGame = ref("");
-	const selectedMode = ref("");
-	const selectedDifficulty = ref("");
-	const selectedMap = ref("classic");
 
-	const isDisabled = computed(() => {
-		return 	!selectedGame.value
-						|| !selectedMode.value
-						|| (	selectedMode.value == "singlePlayer"
-									&& (!selectedDifficulty.value || !selectedMap.value));
+	const isEnabled = computed(() => {
+		return (selectedParams.value.game && selectedParams.value.mode);
 	});
 
 	function selectParams() {
 		emit("click", {
-			game: selectedGame.value,
-			mode: selectedMode.value,
-			difficulty: selectedDifficulty.value,
-			map: selectedMap.value});
+			game: selectedParams.value.game,
+			mode: selectedParams.value.mode,
+			difficulty: selectedParams.value.difficulty,
+			map: selectedParams.value.map});
 	}
 
 	function reloadMenu() {
@@ -58,31 +57,31 @@
 			<selector
 				:label="'Game'"
 				:values="games"
-				@select="(value) => {selectedGame = value}"
+				@select="(value) => {selectedParams.game = value}"
 			></selector>
 			<selector
 				:label="'Mode'"
 				:values="modes"
-				@select="(value) => {selectedMode = value}"
+				@select="(value) => {selectedParams.mode = value}"
 			></selector>
 			<selector
-				v-if="selectedMode == 'singlePlayer'"
+				v-if="selectedParams.mode == 'singlePlayer'"
 				:label="'Difficulty'"
 				:values="difficulties"
-				@select="(value) => {selectedDifficulty = value}"
+				@select="(value) => {selectedParams.difficulty = value}"
 			></selector>
 			<selector
-				v-if="selectedMode == 'singlePlayer' && selectedGame == 'super'"
+				v-if="selectedParams.mode == 'singlePlayer' && selectedParams.game == 'super'"
 				:label="'Map'"
 				:values="maps"
-				@select="(value) => {selectedMap = value}"
+				@select="(value) => {selectedParams.map = value}"
 			></selector>
-			<custumButton id="play" :disabled="isDisabled" v-on:click="selectParams()">Play</custumButton>
+			<custumButton id="play" :disabled="!isEnabled" v-on:click="selectParams()">Play</custumButton>
 		</div>
 
 		<!--Menu waiting for opponent-->
 		<div
-			v-else-if="gameSocket.getUserState() != 'finished' && !globalSocket.getDisplayValue(ServerEvents.gameReady)"
+			v-else-if="gameSocket.getUserState() != 'finished'"
 			class="menu-box"
 			>
 			<loader :text="gameSocket.getUserState()"></loader>
@@ -94,13 +93,13 @@
 		</div>
 
 		<!--Menu game finished-->
-		<div v-else-if="!globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
+		<div class="menu-box">
 			<span>{{ winner }} won!</span>
 			<custumButton id="reset" v-on:click="reloadMenu()">New game</custumButton>
 		</div>
 
 		<!--Menu game ready-->
-		<div v-if="globalSocket.getDisplayValue(ServerEvents.gameReady)" class="menu-box">
+		<div class="menu-box">
 			<span>Game Ready</span>
 			<custumButton v-on:click="gameSocket.getSocket().emit(ClientEvents.gamePlay)">Play</custumButton>
 			<custumButton v-on:click="gameSocket.getSocket().emit(ClientEvents.gameForfeit)">Forfeit</custumButton>
