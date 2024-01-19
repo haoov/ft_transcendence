@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, Param, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
@@ -12,6 +12,16 @@ export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get()
+	getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
+		//console.log(username);
+		if (id)
+			return this.userService.getUserById(id);
+		else if (username)
+			return this.userService.getUserByUsername(username);
+		return null;
+	}
+
+	@Get("all")
 	getAllUsers(): Promise<User[]> {
 		return this.userService.getAllUsers();
 	}
@@ -19,12 +29,6 @@ export class UserController {
 	@Get("me")
 	getCurrentUser(@Req() req: Request): Express.User {
 		return this.userService.getCurrentUser(req);
-	}
-
-	@Get(":username")
-	getUserByUsername(@Param("username") username: string): Promise<User> {
-		//console.log(username);
-		return this.userService.getUserByUsername(username);
 	}
 
 	@Put('update/username')

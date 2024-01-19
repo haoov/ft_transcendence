@@ -3,7 +3,9 @@
 import axios from "axios";
 import type { UserStat, User, GameStat } from "@/utils";
 import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const players = ref<UserStat[]>([]);
 const imagesLoaded = ref<boolean>(false);
 const me = ref<User>();
@@ -130,6 +132,10 @@ function getScoreColor(winFlag: boolean): string {
 		return "var(--c-grey)"
 }
 
+function goToProfile(username: string) {
+      router.push(`/${username}`);
+}
+
 onMounted(async () => {
 	fetchData();
 });
@@ -241,9 +247,11 @@ onMounted(async () => {
 								<div class="c-list__grid">
 									<div :class="getRankClass(player.rank)">{{ player.rank }}</div>
 									<div class="c-media">
-										<img v-if="imagesLoaded" class="c-avatar c-media__img" :src="getAvatarSrc(player.id)"/>
+										<img v-if="imagesLoaded" class="c-avatar c-media__img" :src="getAvatarSrc(player.id)" @click="goToProfile(player.username)" title="Go to profile"/>
 										<div class="c-media__content">
-											<div class="c-media__title u-text--overpass">{{ player.username }}</div>
+											<div>
+												<a class="c-media__title u-text--overpass" @click="goToProfile(player.username)" title="Go to profile">{{ player.username }}</a>
+											</div>
 											<a v-if="player.id!=me?.id" class="u-mr--8" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 											</a>
@@ -621,6 +629,9 @@ button, select {
 }
 .c-media__title {
 	margin-bottom: 0.4rem;
+	font-size: 1.6rem;
+	color: #fff;
+	display: block;
 }
 @media screen and (max-width: 700px) {
 	.c-media__title {
