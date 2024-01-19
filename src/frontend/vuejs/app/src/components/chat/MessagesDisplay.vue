@@ -1,5 +1,5 @@
 <template>
-	<div class="Messages-div" ref="">
+	<div class="Messages-div" :key="componentKey" >
 		<ul
 			v-for="(message, index) in messages"
 			:id="index === messages.length - 1 ? 'last' : ''"
@@ -16,14 +16,12 @@
 <script setup lang="ts">
 import Message from './Message.vue';
 import { onUpdated, onMounted, computed, watch} from 'vue';
-import { inject } from 'vue';
+import { inject, ref } from 'vue';
 import { Socket } from 'socket.io-client';
+import type { User } from '@/utils';
 
 type Message = {
-	sender: {
-		name: string;
-		avatar: string;
-	};
+	sender: User;
 	message: {
 		text: string;
 		time: string;
@@ -40,19 +38,22 @@ function scrollToBottomSmooth() {
 	end?.scrollIntoView({ behavior: 'smooth' });
 };
 
-const data : any = inject('$data');
-const store = data.getStore();
+const $data : any = inject('$data');
+const store = $data.getStore();
 const socket: Socket = store.socket;
-
+const blockedUsers = await $data.getBlockedUsers();
+const componentKey = ref(0);
 const activeChannel = computed(() => store.activeChannel);
 const messages = computed(() => store.messages);
 
 watch(activeChannel, () => {
 	if (activeChannel) {
-		data.loadMessagesByChannel(activeChannel.value.id);
+		$data.loadMessagesByChannel(activeChannel.value.id);
+		componentKey.value++;
 		return;
 	}
-	return [];
+	store.messages = [];
+	return;
 });
 
 onMounted(() => {
@@ -67,7 +68,9 @@ socket.on("newMessage", (message : any) => {
 	if (activeChannel.value.id !== message.message.channelId) {
 		return;
 	}
-	store.messages.push(message);
+	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === message.sender.id)) {
+		store.messages.push(message);
+	}
 });
 
 </script>

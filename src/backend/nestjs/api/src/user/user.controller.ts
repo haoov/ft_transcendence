@@ -13,7 +13,6 @@ export class UserController {
 
 	@Get()
 	getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
-		//console.log(username);
 		if (id)
 			return this.userService.getUserById(id);
 		else if (username)
@@ -29,6 +28,12 @@ export class UserController {
 	@Get("me")
 	getCurrentUser(@Req() req: Request): Express.User {
 		return this.userService.getCurrentUser(req);
+	}
+	
+	@Get("block")
+	getBlockedUsers(@Req() req: Request): Promise<User[]> {
+		const user = req.user as User;
+		return this.userService.getBlockedUsers(user.id);
 	}
 
 	@Put('update/username')

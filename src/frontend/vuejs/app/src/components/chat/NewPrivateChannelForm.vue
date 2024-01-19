@@ -1,60 +1,60 @@
 <template>
-	<div class="form-group">
-		<label for="searchChannel">Search :</label>
-		<div class="input-container">
-			<svg class="search-icon-adduser" width="10px" height="10px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#999494">
-				<g id="SVGRepo_bgCarrier" stroke-width="0"/>
-				<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
-				<g id="SVGRepo_iconCarrier"> <path d="M14.9536 14.9458L21 21M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="#a3a3a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </g>
-			</svg>
-			<input 
-			v-model="search"
-			name="searchChannel"
-			id="searchChannel"
-			type="text"
-			autocomplete="off"
-			placeholder="search..."
+<div class="form-group">
+	<label for="searchChannel">Search :</label>
+	<div class="input-container">
+		<svg class="search-icon-adduser" width="10px" height="10px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#999494">
+			<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+			<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+			<g id="SVGRepo_iconCarrier"> <path d="M14.9536 14.9458L21 21M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="#a3a3a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </g>
+		</svg>
+		<input 
+		v-model="search"
+		name="searchChannel"
+		id="searchChannel"
+		type="text"
+		autocomplete="off"
+		placeholder="search..."
+		>
+		<svg v-if="search" class="cancel-icon-adduser-input" width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" @click="resetSearch">
+			<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+			<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+			<g id="SVGRepo_iconCarrier"> <path d="M6.99486 7.00636C6.60433 7.39689 6.60433 8.03005 6.99486 8.42058L10.58 12.0057L6.99486 15.5909C6.60433 15.9814 6.60433 16.6146 6.99486 17.0051C7.38538 17.3956 8.01855 17.3956 8.40907 17.0051L11.9942 13.4199L15.5794 17.0051C15.9699 17.3956 16.6031 17.3956 16.9936 17.0051C17.3841 16.6146 17.3841 15.9814 16.9936 15.5909L13.4084 12.0057L16.9936 8.42059C17.3841 8.03007 17.3841 7.3969 16.9936 7.00638C16.603 6.61585 15.9699 6.61585 15.5794 7.00638L11.9942 10.5915L8.40907 7.00636C8.01855 6.61584 7.38538 6.61584 6.99486 7.00636Z" fill="#adadad"/> </g>
+		</svg>
+	</div>
+	<div>
+		<ul>
+			<li
+				v-for="result in searchResults"
+				id = "searchResult"
+				@click="SelectResult(result)"
+				>
+				{{ result.username }}
+			</li>
+		</ul>
+	</div>
+	<div v-if="userSelected">
+		<label for="is-selected">User selected: </label>
+		<ul>
+			<div
+				name="is-selected"
+				:key="userSelected.id"
+				class="is-selected"
+				@click="removeUser(userSelected)"
 			>
-			<svg v-if="search" class="cancel-icon-adduser-input" width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" @click="resetSearch">
+				<p>{{ userSelected.username }}</p>
+			<svg width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" @click="removeUser(userSelected)">
 				<g id="SVGRepo_bgCarrier" stroke-width="0"/>
 				<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
 				<g id="SVGRepo_iconCarrier"> <path d="M6.99486 7.00636C6.60433 7.39689 6.60433 8.03005 6.99486 8.42058L10.58 12.0057L6.99486 15.5909C6.60433 15.9814 6.60433 16.6146 6.99486 17.0051C7.38538 17.3956 8.01855 17.3956 8.40907 17.0051L11.9942 13.4199L15.5794 17.0051C15.9699 17.3956 16.6031 17.3956 16.9936 17.0051C17.3841 16.6146 17.3841 15.9814 16.9936 15.5909L13.4084 12.0057L16.9936 8.42059C17.3841 8.03007 17.3841 7.3969 16.9936 7.00638C16.603 6.61585 15.9699 6.61585 15.5794 7.00638L11.9942 10.5915L8.40907 7.00636C8.01855 6.61584 7.38538 6.61584 6.99486 7.00636Z" fill="#adadad"/> </g>
 			</svg>
-		</div>
-		<div>
-			<ul>
-				<li
-					v-for="result in searchResults"
-					id = "searchResult"
-					@click="SelectedResult(result)"
-					>
-					{{ result.username }}
-				</li>
-			</ul>
-		</div>
-		<div>
-			<p v-if="listUsersToAdd.length > 0">Users to add :</p>
-			<ul>
-				<div
-					v-for="(user, index) in listUsersToAdd"
-					:key="index"
-					class="is-selected"
-					@click="removeUser(user)"
-				>
-					<p>{{ user.username }}</p>
-				<svg width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" @click="removeUser(user)">
-					<g id="SVGRepo_bgCarrier" stroke-width="0"/>
-					<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
-					<g id="SVGRepo_iconCarrier"> <path d="M6.99486 7.00636C6.60433 7.39689 6.60433 8.03005 6.99486 8.42058L10.58 12.0057L6.99486 15.5909C6.60433 15.9814 6.60433 16.6146 6.99486 17.0051C7.38538 17.3956 8.01855 17.3956 8.40907 17.0051L11.9942 13.4199L15.5794 17.0051C15.9699 17.3956 16.6031 17.3956 16.9936 17.0051C17.3841 16.6146 17.3841 15.9814 16.9936 15.5909L13.4084 12.0057L16.9936 8.42059C17.3841 8.03007 17.3841 7.3969 16.9936 7.00638C16.603 6.61585 15.9699 6.61585 15.5794 7.00638L11.9942 10.5915L8.40907 7.00636C8.01855 6.61584 7.38538 6.61584 6.99486 7.00636Z" fill="#adadad"/> </g>
-				</svg>
-				</div>
-			</ul>
-		</div>
+			</div>
+		</ul>
+	</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { inject, computed, ref, watch } from 'vue';
+import { ref, computed, inject } from 'vue';
 
 interface User {
 	id: number;
@@ -66,30 +66,26 @@ interface User {
 const $data : any = inject('$data');
 const listUsers = await $data.getUsers();
 const currentUser = await $data.getCurrentUser();
-const store = $data.getStore();
 const search = ref('');
-const listUsersToAdd = ref([] as User[]);
-const props = defineProps ({
-	userIds: {
-		type: Array,
-	},
-});
-
 const searchResults = computed(() => {
-	if (search.value.length === 0) {
+	if (search.value.length === 0 || userSelected.value) {
 		return [] as User [];
 	} else {
 		return listUsers.filter((users: User) => {
-			return users.username.toLowerCase().startsWith(search.value.toLowerCase()) && 
-					!listUsersToAdd.value.includes(users) && 
-						users.id !== currentUser.id;
+			return users.username.toLowerCase().includes(search.value.toLowerCase()) && 
+					users.id !== currentUser.id;
 		});
 	}
 });
+const userSelected = ref<User | null>(null);
+const props : any = defineProps({
+	userIds: Array
+});
 
-const SelectedResult = (result: User) => {
-	props.userIds?.push(result.id);
-	listUsersToAdd.value.push(result);
+const SelectResult = (result: User) => {
+	userSelected.value = result;
+	props.userIds.push(result.id);
+	search.value = '';
 }
 
 const resetSearch = () => {
@@ -97,34 +93,38 @@ const resetSearch = () => {
 }
 
 const removeUser = (user: User) => {
-	const index = listUsersToAdd.value.indexOf(user);
-	listUsersToAdd.value.splice(index, 1);
-	const index2 = props.userIds?.indexOf(user.id);
-	if (index2 !== undefined && index2 !== -1)
-		props.userIds?.splice(index2, 1);
+	const index = props.userIds.indexOf(user.id);
+	if (index > -1) {
+		props.userIds.splice(index, 1);
+	}
+	userSelected.value = null;
 }
 
 </script>
 
-<style scoped >
+<style scoped>
+.new-channel-form-container {
+  width: 100%;
+  height: 100%;
+}
 
-button:not(:disabled):active {
+.new-channel-form-container button:not(:disabled):active {
   scale: 0.95;
 }
 
-.form {
+.new-channel-form-container .form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.form-group {
+.new-channel-form-container .form-group {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.form-group label {
+.new-channel-form-container .form-group label {
   display: block;
   margin-bottom: 5px;
   color: #717171;
@@ -132,7 +132,7 @@ button:not(:disabled):active {
   font-size: 12px;
 }
 
-.form-group input {
+.new-channel-form-container .form-group input {
   width: 80%;
   padding: 3% 7%;
   border-radius: 8px;
@@ -142,16 +142,16 @@ button:not(:disabled):active {
   border: 1px solid #414141;
 }
 
-.form-group input::placeholder {
+.new-channel-form-container .form-group input::placeholder {
   opacity: 0.5;
 }
 
-.form-group input:focus {
+.new-channel-form-container .form-group input:focus {
   outline: none;
   border-color: #e81cff;
 }
 
-.form-join-btn {
+.new-channel-form-container .form-submit-btn {
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -170,7 +170,7 @@ button:not(:disabled):active {
   border-radius: 6px;
 }
 
-.form-join-btn:not(:disabled):hover {
+.new-channel-form-container .form-submit-btn:not(:disabled):hover {
   background-color: #fff;
   border-color: #fff;
 }
@@ -217,12 +217,20 @@ button:not(:disabled):active {
   border-color: #ff0000;
 }
 
+.label {
+  display: block;
+  margin-bottom: 5px;
+  color: #717171;
+  font-weight: 600;
+  font-size: 12px;
+}
+
 ul {
   list-style: none;
   padding: 0;
   padding-right: 10px;
   margin: 0;
-  width: 90%;
+  width: 100%;
   max-height: 120px;
   overflow-y: auto;
 }
@@ -287,10 +295,6 @@ ul::-webkit-scrollbar-track:active {
   color: #313131;
 }
 
-span {
-  color: #717171;
-}
-
 .input-container {
     position: relative;
 }
@@ -307,19 +311,15 @@ span {
   top: 12px;
 }
 
-.is-selected .cancel-icon {
-  cursor: pointer;
-}
-
-.cancel-icon-adduser-input {
+.cancel-icon {
   position: absolute;
-  right: 20px;
+  right: 7px;
   top: 10px;
   cursor: pointer;
 }
 
-p {
-	color: inherit;
+.input-container {
+  position: relative;
 }
 
 </style>

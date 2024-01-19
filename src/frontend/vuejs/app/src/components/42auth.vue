@@ -1,4 +1,6 @@
 <script setup lang="ts">
+
+	console.log(import.meta.env.VITE_HOSTNAME);
 	const uri: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/login`;
 </script>
 
