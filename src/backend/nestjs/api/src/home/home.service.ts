@@ -37,6 +37,7 @@ export class HomeService {
 				id: user.id,
 				username: user.username,
 				avatar: user.avatar,
+				status: user.status,
 				wins: user.games_won.length,
 				win_rate: rate,
 				games: game_count,

@@ -32,6 +32,7 @@
 			<div class ="u-justify--center u-display--flex">
 				<button id="saveButton" :disabled="disableSave" @click="updateProfile()">Save</button>
 			</div>
+			<div class="c-warning" v-if="(usernameSet.length > 15)">Username must be 15 characters or less.</div>
 		</div>		
 	</div>
 </template>
@@ -66,7 +67,7 @@ const avatarSrc = computed(() => {
 });
 const fileInput = ref<HTMLElement | null>(null);
 const disableSave = computed(() => {
-	return (!usernameSet.value || usernameSet.value === me.value.username) && (!avatarSet.value);
+	return (!usernameSet.value || usernameSet.value === me.value.username || usernameSet.value.length > 15) && (!avatarSet.value);
 });
 
 // FETCHING DATA
@@ -299,6 +300,13 @@ onMounted(async () => {
 	display: none;
 }
 
+.c-warning {
+	display: flex;
+	justify-content: center;
+	font-family: Overpass;
+	font-size: 1.1rem;
+	font-style: italic;
+}
 
 .u-display--flex {
 	display: flex;
