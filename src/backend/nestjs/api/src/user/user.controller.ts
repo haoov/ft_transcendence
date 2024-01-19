@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors, Query } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
@@ -11,19 +11,30 @@ import { FileInterceptor } from "@nestjs/platform-express";
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
-	@Get()
-	getAllUsers(): Promise<User[]> {
-		return this.userService.getAllUsers();
-	}
+    @Get()
+    getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
+        //console.log(username);
+        if (id)
+            return this.userService.getUserById(id);
+        else if (username)
+            return this.userService.getUserByUsername(username);
+        return null;
+    }
+
+    @Get("all")
+    getAllUsers(): Promise<User[]> {
+        return this.userService.getAllUsers();
+    }
 
 	@Get("me")
 	getCurrentUser(@Req() req: Request): Express.User {
 		return this.userService.getCurrentUser(req);
 	}
-
-	@Get(":id")
-	getUser(@Param("id") id: number): Promise<User> {
-		return this.userService.getUserById(id);
+	
+	@Get("block")
+	getBlockedUsers(@Req() req: Request): Promise<User[]> {
+		const user = req.user as User;
+		return this.userService.getBlockedUsers(user.id);
 	}
 
 	// @Post(':id/upload-avatar')

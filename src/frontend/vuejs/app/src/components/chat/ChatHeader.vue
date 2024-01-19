@@ -70,18 +70,20 @@ const channelName = computed(() => {
 	} else if (activeChannel.value?.mode === 'Private') {
 		const id1 = activeChannel.value.name.split('#')[1];
 		const id2 = activeChannel.value.name.split('#')[2];
-		if (id1 === currentUser.id) {
+		if (parseInt(id1)  === currentUser.id) {
 			return listUsers.find((user: any) => user.id === parseInt(id2)).username;
 		}
 		return listUsers.find((user: any) => user.id === parseInt(id1)).username;
 	}
 	return activeChannel.value.name;
 });
+
 const channelImage = computed(() => {
 	if (activeChannel.value?.mode === 'Private') {
 		const id1 = activeChannel.value.name.split('#')[1];
 		const id2 = activeChannel.value.name.split('#')[2];
-		if (id1 === currentUser.id) {
+		console.log('id1 ', id1,'id2 ', id2,'current ID ', currentUser.id);
+		if (parseInt(id1) === currentUser.id) {
 			return listUsers.find((user: any) => user.id === parseInt(id2)).avatar;
 		}
 		return listUsers.find((user: any) => user.id === parseInt(id1)).avatar;
@@ -153,5 +155,6 @@ p {
 .profile-img-div img {
   max-width: 100%;
   max-height: 100%;
+  object-fit: cover;
 }
 </style>

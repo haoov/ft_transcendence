@@ -42,7 +42,6 @@ import ProfilModal from './ProfilModal.vue';
 import { Suspense, inject } from 'vue';
 import { io, Socket } from 'socket.io-client';
 import { onBeforeRouteLeave } from 'vue-router';
-import { parseIsolatedEntityName } from 'typescript';
 
 const $data: any = inject('$data');
 const store = $data.getStore();

@@ -10,14 +10,11 @@ import {
 	WebSocketGateway,
 	WebSocketServer
 } from '@nestjs/websockets';
-import { ChannelEntity } from 'src/postgreSQL/entities';
+import { ChannelEntity, UserEntity } from 'src/postgreSQL/entities';
 
-function buildMsg(senderName, profilePic, message) {
+function buildMsg(sender, message) {
 	return {
-		sender:{
-			name: senderName,
-			avatar: profilePic,
-		},
+		sender: sender as UserEntity,
 		message: {
 			channelId : message.channelId,
 			text : message.text,
@@ -72,8 +69,7 @@ export class ChatGateway implements OnGatewayConnection {
 	async onNewMessage(@MessageBody() message: any) {
 		const sender = await this.userService.getUserById(message.senderId);
 		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
-			sender.username,
-			sender.avatar,
+			sender,
 			message
 		));
 		this.chatService.createMessage(message);
@@ -146,4 +142,27 @@ export class ChatGateway implements OnGatewayConnection {
 			socket.emit('channelUpdated', channelId);
 		}
 	}
+
+	@SubscribeMessage('blockUser')
+	async onBlockUser(@MessageBody() data: Object) {
+		const userId = data['userId'];
+		const userToBlockId = data['userToBlockId'];
+		try {
+			await this.userService.blockUser(userId, userToBlockId);
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	@SubscribeMessage('unblockUser')
+	async onUnblockUser(@MessageBody() data: Object) {
+		const userId = data['userId'];
+		const userToUnblockId = data['userToUnblockId'];
+		try {
+			await this.userService.unblockUser(userId, userToUnblockId);
+		} catch (err) {
+			throw err;
+		}
+	}
+
 }

@@ -1,15 +1,12 @@
 - !!! [DONE] Message Privee !!!
 	- NEED TO AVOID DOUBLON
 
-- Implementer les differents etats des channels
-	- [DONE] Join retirer les secret channel
+- Fixe l'envoie de message
 
-- Rajouter les admins dans la bases de donnee pour les channels
-- Faire en sorte de pouvoir rajouter quelqu'un a la liste des admins
+- Fixe la creation de channel 
 
-- Faire en sorte qu'on puisse KICK et BANNE d'un channel 
+-
 
-	- Faire un modal qui appelle une card profile qui permet d'inviter/kick/ban/dm 
 
 -----------------------------------------------------------
 

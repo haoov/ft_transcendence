@@ -27,13 +27,30 @@ const divClass = computed( () => {
 	}
 });
 
-const channelName = ref(props.channel?.name);
+const channelName = computed ( () => {
+	if (props.channel?.mode === 'Private') {
+		const id1 = props.channel.name.split('#')[1];
+		const id2 = props.channel.name.split('#')[2];
+		if (parseInt(id1) === currentUser.id) {
+			return listUsers.find((user: any) => user.id === parseInt(id2)).username;
+		}
+		return listUsers.find((user: any) => user.id === parseInt(id1)).username;
+	}
+	if (props.channel) {
+		if (props.channel.name.length > 10) {
+			return props.channel.name.slice(0, 15) + '...';
+		}
+		return props.channel.name;
+	}
+	return ''
+})
+ref(props.channel?.name);
 
 const imgSrc = computed(() => {
 	if (props.channel?.mode === 'Private') {
 		const id1 = props.channel.name.split('#')[1];
 		const id2 = props.channel.name.split('#')[2];
-		if (id1 === currentUser.id) {
+		if (parseInt(id1) === currentUser.id) {
 			return listUsers.find((user: any) => user.id === parseInt(id2)).avatar;
 		}
 		return listUsers.find((user: any) => user.id === parseInt(id1)).avatar;
@@ -73,5 +90,6 @@ p {
 img {
   max-width: 100%;
   max-height: 100%;
+  object-fit: cover;
 }
 </style>
