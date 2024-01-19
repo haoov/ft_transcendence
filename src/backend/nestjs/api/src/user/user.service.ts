@@ -82,7 +82,7 @@ export class UserService {
 		}
 	}
 
-	async uptadeAvatar(id: number) {
+	async uptadeAvatar(id: number): Promise<User> {
 		const user = await this.getUserById(id);
 
 		if (user.avatar.includes(':3000/api/user/avatar/')) {
@@ -100,6 +100,7 @@ export class UserService {
 			user.avatar = `http://${process.env.LOCAL_ADDRESS}:3000/api/user/avatar/${id}`;
 			this.usersRepository.save(user as UserEntity);
 		}
+		return user;
 	}
 
 	getAvatar(id: number, res: Response) {
