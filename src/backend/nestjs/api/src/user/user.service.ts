@@ -12,11 +12,15 @@ import * as path from 'path';
 export class UserService {
 	constructor(@InjectRepository(UserEntity) private usersRepository: Repository<UserEntity>) {}
 
-	async getUserById(id: number): Promise<User> {
+	getUserById(id: number): Promise<User> {
 		return this.usersRepository.findOneBy({ id: id }) as Promise<User>;
 	}
 
-	getUser(email: string): Promise<User> {
+	getUserByUsername(username: string): Promise<User> {
+		return this.usersRepository.findOneBy({ username: username }) as Promise<User>;
+	}
+
+	getUserByEmail(email: string): Promise<User> {
 		return this.usersRepository.findOneBy({ email: email }) as Promise<User>;
 	}
 	
