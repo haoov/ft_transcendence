@@ -1,23 +1,19 @@
 <script setup lang="ts">
-	import { ref } from 'vue';
+	import notify from '../notify';
 	import v_notification from './notification.vue';
-
-	const notifs = ref<string[]>([]);
-	let count = ref(0);
 </script>
 
 <template>
-	<button @click="notifs.splice(0, 0, 'Notification' + count.toString()); ++count">Add notification</button>
-	<button @click="notifs.splice(0,1)">Remove notification</button>
+	<button v-on:click="notify.newNotification({message: 'test', type: 'test', autoclose: false})">Add notif</button>
 	<TransitionGroup
 		appear
 		tag="div"
 		id="notifications"
 		name="notifications">
 		<v_notification
-			v-for="notif in notifs"
-			:key="notif"
-			:text="notif"
+			v-for="(notification, index) in notify.getNotifications()"
+			:key="notification.id"
+			:notification="notification"
 		></v_notification>
 	</TransitionGroup>
 </template>
@@ -42,7 +38,7 @@
 	.notifications-enter-from,
 	.notifications-leave-to {
 		opacity: 0;
-		transform: translateX(30px);
+		transform: translate(30px, 0);
 	}
 
 	.notifications-leave-active {
