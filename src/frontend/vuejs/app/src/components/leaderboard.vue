@@ -4,6 +4,10 @@ import axios from "axios";
 import type { UserStat, User, GameStat } from "@/utils";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import offline from '../assets/images/status-offline-32.png';
+import online from '../assets/images/status-online-32.png';
+import playing from '../assets/images/status-playing-32.png';
+import blocked from '../assets/images/status-blocked-32.png';
 
 const router = useRouter();
 const players = ref<UserStat[]>([]);
@@ -104,6 +108,15 @@ function	getMyAvatarSrc() : string | undefined {
 			return me.value?.avatar
 }
 
+function getStatusIcon(user: UserStat) : string {
+	// Faire option forbidden
+	if (user.status == "undefined" || user.status == "offline")
+		return offline;
+	else
+		return online;
+}
+
+
 function getPieProportions() : string {
 	let loses: number = 0;
 	if (myStats.value)
@@ -137,7 +150,7 @@ function goToProfile(username: string) {
 }
 
 onMounted(async () => {
-	fetchData();
+	await fetchData();
 });
 
 
@@ -247,15 +260,18 @@ onMounted(async () => {
 								<div class="c-list__grid">
 									<div :class="getRankClass(player.rank)">{{ player.rank }}</div>
 									<div class="c-media">
-										<img v-if="imagesLoaded" class="c-avatar c-media__img" :src="getAvatarSrc(player.id)" @click="goToProfile(player.username)" title="Go to profile"/>
+										<div v-if="imagesLoaded" class="c-avatar-container">
+											<img class="c-avatar c-media__img" :src="getAvatarSrc(player.id)" @click="goToProfile(player.username)" title="Go to profile"/>
+											<img class="c-avatar-icon" :src="getStatusIcon(player)"/>
+										</div>
 										<div class="c-media__content">
 											<div>
 												<a class="c-media__title u-text--overpass" @click="goToProfile(player.username)" title="Go to profile">{{ player.username }}</a>
 											</div>
-											<a v-if="player.id!=me?.id" class="u-mr--8" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">
+											<a v-if="player.id!=me?.id" class="u-mr--8" href="https://www.google.com" target="_blank">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 											</a>
-											<a v-if="player.id!=me?.id" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.referenseo.com%2Fblog%2F10-banques-images-gratuites-libre-droits%2F&psig=AOvVaw25Ea8wtAGoYEVdwfqoI7vp&ust=1704535954697000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCODrjbOBxoMDFQAAAAAdAAAAABAI" target="_blank">
+											<a v-if="player.id!=me?.id" href="https://www.google.com" target="_blank">
 												<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 											</a>
 										</div>
@@ -632,6 +648,7 @@ button, select {
 	font-size: 1.6rem;
 	color: #fff;
 	display: block;
+	cursor: pointer;
 }
 @media screen and (max-width: 700px) {
 	.c-media__title {
@@ -639,6 +656,10 @@ button, select {
 	}
 }
 
+.c-avatar-container {
+  position: relative;
+  display: inline-block;
+}
 .c-avatar {
 	display: inline-flex;
 	align-items: center;
@@ -651,17 +672,20 @@ button, select {
 	color: var(--dark);
 	object-fit: cover;
 }
-@media screen and (max-width: 700px) {
-	.c-avatar {
-		width: 3.2rem;
-		height: 3.2rem;
-	}
-}
 .c-avatar--lg {
 	width: 8.5rem;
 	height: 8.5rem;
 }
-
+.c-avatar-icon {
+    position: absolute;
+    bottom: 0.2rem;
+    right: 0.1rem;
+    width: 1.5rem;
+    height: 1.5rem;
+}
+.c-media__img {
+	cursor: pointer;
+}
 .c-button {
 	display: inline-block;
 	background: var(--dark);
