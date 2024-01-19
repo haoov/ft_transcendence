@@ -1,14 +1,33 @@
 PROJDIR		=	$(realpath $(CURDIR))
 SRC			=	$(CURDIR)/src
-USE			=	$(shell cat /etc/hostname)
+HOSTNAME	=	$(shell hostname)
+LOCAL_ADDR 	= 	$(shell ip route get 1 | awk '{print $$7}' | tr -d '\n')
+
+ifneq (,$(findstring 42paris,$(HOSTNAME)))
+    SUDO =	
+else
+    SUDO = /usr/bin/sudo
+endif
 
 all : build run
 
-ifneq (,$(findstring 42paris,$(USE)))
-    SUDO	=	
-else
-    # SUDO	=	/bin/sudo
-endif
+set_local_addr :
+	@if [ -z "$(LOCAL_ADDR)" ]; then \
+		echo "No ip address found"; \
+		exit 1; \
+	else \
+		echo "Setting server ip address..."; \
+		sed -i 's/\(LOCAL_ADDRESS\).*/\1=$(LOCAL_ADDR)/g' $(SRC)/.env; \
+		sed -i 's/\(VITE_HOSTNAME\).*/\1=$(LOCAL_ADDR)/g' $(SRC)/frontend/vuejs/app/.env; \
+		sed -i 's/.*\(3000:80\)/      - $(LOCAL_ADDR):3000:80/g' $(SRC)/docker-compose.yml; \
+	fi
+	@echo "Server ip address set to $(LOCAL_ADDR)"
+
+set_localhost :
+	@sed -i 's/\(LOCAL_ADDRESS\).*/\1=localhost/g' $(SRC)/.env
+	@sed -i 's/\(VITE_HOSTNAME\).*/\1=localhost/g' $(SRC)/frontend/vuejs/app/.env
+	@sed -i 's/.*\(3000:80\)/      - 3000:80/g' $(SRC)/docker-compose.yml
+	@echo "Server ip address set to localhost"
 
 build :
 	@cd $(SRC) && $(SUDO) docker compose build
@@ -21,12 +40,11 @@ stop :
 
 clean:
 	@cd $(SRC) && $(SUDO) docker compose down -v
-	# @$(SUDO) docker system prune -f
+	@docker system prune -f
 
-fclean : clean
-	@$(SUDO) rm -rf src/backend/postgresql/data/*
+re: clean all
 
-test :
-	@echo $(SUDO)
+# fclean : clean
+# 	@rm -rf src/backend/postgresql/data/*
 
-.PHONY : build run clean fclean
+.PHONY : set_localhost set_local_addr build run clean fclean re

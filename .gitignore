@@ -1,9 +1,4 @@
 src/.env
-
-#BACKEND
-src/backend/nestjs/api/node_modules
-src/backend/nestjs/api/dist
-src/backend/nestjs/api/dist
-
-#FRONTEND
-src/frontend/vuejs/app/node_modules
+node_modules
+dist
+TODO.md

@@ -15,7 +15,7 @@ export class AuthService {
 	) {}
 
 	async validateUser(dto: UserAuthDTO): Promise<User> {
-		const user: User = await this.userService.getUserByEmail(dto.email);
+		const user: User = await this.userService.getUser(dto.email);
 		if (!user)
 			return await this.userService.createUser(dto as User);
 		return user;

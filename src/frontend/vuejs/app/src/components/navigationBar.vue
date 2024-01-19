@@ -1,31 +1,43 @@
 <script setup lang="ts">
 	import mainTitle from './mainTitle.vue';
+	const pages = [
+		{
+			name: 'HOME',
+			link: '/',
+		},
+		{
+			name: 'GAME',
+			link: '/game',
+		},
+		{
+			name: 'CHAT',
+			link: '/chat',
+		},
+		{
+			name: 'SETTINGS',
+			link: '/settings'
+		}
+	];
 </script>
 
 <template>
-	<div class="navBar">
+	<nav class="navBar">
 		<div class="pages">
-			<div class="inline">
-				<mainTitle class="page" :text="'HOME'"></mainTitle>
-			</div>
-			<div class="inline">
-				<mainTitle class="page" :text="'GAME'"></mainTitle>
-			</div>
-			<div class="inline">
-				<mainTitle class="page" :text="'CHAT'"></mainTitle>
-			</div>
-			<div class="inline">
-				<mainTitle class="page" :text="'PROFILE'"></mainTitle>
-			</div>
+			<ul v-for="page in pages" class="inline">
+				<RouterLink :to="page.link">
+					<mainTitle class="page" :text='page.name'></mainTitle>
+				</RouterLink>
+			</ul>
 		</div>
-	</div>
+	</nav>
 </template>
 
 <style>
 	.navBar {
-		background-color: var(--c-blue-dark);
+		background: transparent;
 		display: flex;
 		justify-content: center;
+		margin: 20px;
 	}
 
 	.inline {

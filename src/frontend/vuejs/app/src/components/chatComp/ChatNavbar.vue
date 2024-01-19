@@ -1,0 +1,115 @@
+<template>
+	<div class="channel-navbar">
+		<nav>
+			<div>
+				<ul v-for="(channel, index) in channels">
+					<ChannelWidget
+					:channel="channel"
+					:key="channel.id"
+					@click="setActiveChannel(channel, currentUser.id)"
+					></ChannelWidget>
+				</ul>
+			</div>
+			<NewChannelWidget title="Add/Join Channel"></NewChannelWidget>
+		</nav>
+	</div>
+</template>
+
+<script setup lang="ts">
+import ChannelWidget from './ChannelWidget.vue';
+import NewChannelWidget from './NewChannelWidget.vue';
+import { Socket } from "socket.io-client";
+import { inject, onMounted, computed } from 'vue';
+
+const $data : any = inject('$data');
+const store = $data.getStore();
+const socket : Socket = store.socket;
+const currentUser = await $data.getCurrentUser();
+const channels = computed (() => store.channels);
+
+onMounted(() => {
+	$data.loadChannels(currentUser.id);
+});
+
+const setActiveChannel = (channel : any, currentUserId: number) => {
+	socket.emit('setActiveChannel', {
+		'channelId':channel.id,
+		'currentUserId':currentUserId
+		});
+	$data.setActiveChannel(channel);
+};
+
+socket.on('newChannelCreated', (newChannelCreated : any) => {
+	$data.addChannel(newChannelCreated);
+});
+
+socket.on('channelDeleted', (channelIdDeleted : number) => {
+	$data.deleteChannel(channelIdDeleted);
+	if (store.channels.length > 0) {
+		store.activeChannel = store.channels[store.channels.length - 1];
+	} else {
+		store.activeChannel = null;
+	}
+});
+
+socket.on('channelUpdated', (channelUpdated : any) => {
+	$data.updateChannel(channelUpdated);
+});
+
+</script>center
+
+<style scoped>
+
+.channel-navbar {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	background: transparent;
+	border-right: 2px solid #fe019973;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+nav {
+	display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    min-height: 50%;
+    height: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+nav ul {
+	margin-bottom: 10%;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background-color: #07cece;
+  box-shadow:0 0 6px #07cece;
+}
+
+::-webkit-scrollbar-track:hover,
+::-webkit-scrollbar-track:active {
+  background-color: transparent;
+}
+
+</style>
