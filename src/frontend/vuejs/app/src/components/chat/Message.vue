@@ -24,8 +24,9 @@ const props : any = defineProps({
 	id: Number
 });
 const $data : any = inject('$data');
-const username : string = props.data.sender.name;
+const username : string = props.data.sender.username;
 const profilePic : string = props.data.sender.avatar;
+const userId : number = props.data.sender.id;
 const message : string = props.data.message.text;
 const DateRawStamp : string = props.data.message.time;
 const timeFr = moment.tz(DateRawStamp, 'Europe/Paris');
@@ -33,7 +34,7 @@ const timestamp : string = timeFr.format('HH:mm:ss');
 const id : string = props.id.toString();
 
 const openProfilModal = () => {
-	$data.openProfileModal();
+	$data.openProfileModal(userId);
 }
 
 </script>
@@ -45,31 +46,18 @@ const openProfilModal = () => {
 }
 
 .profile-img-div {
-	width: 50px;
-	height: 50px;
+	width: 60px;
+	height: 60px;
 	border-radius: 50%;
 	overflow: hidden;
 	display: inline-flex;
 	cursor: pointer;
 }
-
-.dropdown {
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-grey-light);
-}
-
-.dropdown-content {
-  display: flex;
-  flex-direction: column;
-  padding: 5px;
-  width: 100px;
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-grey-light);
-}
-
 .profile-img-div img {
   max-width: 100%;
   max-height: 100%;
+  object-fit: cover;
+
 }
 
 .core-message-div {
@@ -95,23 +83,23 @@ const openProfilModal = () => {
 }
 
 h4 {
-  font-size: 1em;
+  font-size: 1.25em;
   color: #e9e8e8;
-  font-weight: 500;
   text-transform: none;
   margin-top: 0;
   margin-bottom: 0;
   font-family: Overpass;
+  font-weight: 600;
 }
 
 h5 {
-    font-size: .5em;
+    font-size: 0.5em;
     color: #c5c5c5;
     margin: 3px 0 0 5px;
 }
 
 p {
-	font-size: 0.75em;
+	font-size: 1em;
 	color:rgb(240, 240, 240);
 	height: auto;
 }
