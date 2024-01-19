@@ -15,7 +15,7 @@ export class AuthService {
 	) {}
 
 	async validateUser(dto: UserAuthDTO): Promise<User> {
-		const user: User = await this.userService.getUser(dto.email);
+		const user: User = await this.userService.getUserByEmail(dto.email);
 		if (!user)
 			return await this.userService.createUser(dto as User);
 		return user;
@@ -35,7 +35,7 @@ export class AuthService {
 	async get2faSecret(user: User) : Promise<any> {
 		const secret: string = authenticator.generateSecret();
 		const optAuthUrl = authenticator.keyuri(user.email, process.env.OTP_NAME, secret);
-		await this.userService.set2faSecret(user.email, secret);
+		await this.userService.set2faSecret(user.id, secret);
 		return {
 			secret,
 			optAuthUrl

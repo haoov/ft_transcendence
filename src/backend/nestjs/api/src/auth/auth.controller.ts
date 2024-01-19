@@ -30,14 +30,15 @@ export class AuthController {
 		const user: User = req.user as User;
 		if (user.twofa_enabled && !user.twofa_auth)
 			res.status(302).redirect("/twofa");
-		res.status(302).redirect("/");
+		else
+			res.status(302).redirect("/");
 	}
 
 	@Get("2fa")
 	@UseGuards(AuthentificatedGuard)
 	async get2FA(@Req() req: Request) {
 		const user: User = req.user as User;
-		const userDB = await this.userService.getUser(user.email);
+		const userDB = await this.userService.getUserById(user.id);
 		return { 
 			"twofa_status": userDB.twofa_enabled,
 			"twofa_logged": userDB.twofa_auth
@@ -48,7 +49,7 @@ export class AuthController {
 	@UseGuards(AuthentificatedGuard)
 	async swithOn2fa(@Req() req: Request, @Body() body: Body2faDTO) {
 		const user_tmp: User = req.user as User;
-		const user = await this.userService.getUser(user_tmp.email);
+		const user = await this.userService.getUserById(user_tmp.id);
 		if (!user.twofa_secret)
 			throw new UnauthorizedException('no secret generated');
 		const isCodeValid = this.authService.is2faValid(
@@ -57,7 +58,7 @@ export class AuthController {
 		);
 		if (!isCodeValid)
 			throw new UnauthorizedException('Wrong Auth Code');
-		await this.userService.set2faMode(user.email, true);
+		await this.userService.set2faMode(user.id, true);
 	}
 
 	@Get('2fa/generate')
@@ -76,7 +77,7 @@ export class AuthController {
 	@UseGuards(AuthentificatedGuard)
 	async authentificate(@Req() req: Request, @Body() body: Body2faDTO) {
 		const user_tmp: User = req.user as User;
-		const user = await this.userService.getUser(user_tmp.email);
+		const user = await this.userService.getUserById(user_tmp.id);
 		if (!user.twofa_enabled)
 			throw new UnauthorizedException('no 2fa needed');
 		if (!user.twofa_secret)
@@ -87,7 +88,7 @@ export class AuthController {
 		);
 		if (!isCodeValid)
 			throw new UnauthorizedException('Wrong Auth Code');
-		this.userService.set2faAuth(user.email, true);
+		this.userService.set2faAuth(user.id, true);
 		return { "message": "2fa logged"}
 	}
 
@@ -102,7 +103,7 @@ export class AuthController {
 	async reset(@Req() req: Request) {
 		const user: User = req.user as User;
 		user.twofa_auth = false;
-		await this.userService.set2faMode(user.email, false);
+		await this.userService.set2faMode(user.id, false);
 		return "2fa reset"
 	}
 

@@ -28,7 +28,7 @@ export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
 		const user: User = await this.authService.validateUser(userInfos);
 		if (!user)
 			throw new UnauthorizedException();
-		this.userService.set2faAuth(user.email, false);
+		this.userService.set2faAuth(user.id, false);
 		return user;
 	}
 }
