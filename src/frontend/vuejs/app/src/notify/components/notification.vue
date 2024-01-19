@@ -1,15 +1,16 @@
 <script setup lang="ts">
-	import v_button from './custumButton.vue';
+	import notify from '../notify';
+	import v_button from '../../components/custumButton.vue';
 
-	const props = defineProps(["text"]);
+	const props = defineProps(["notification"]);
 </script>
 
 <template>
 	<div id="notification">
-		<span id="text">{{ text }}</span>
+		<span id="text">{{ notification.message }}</span>
 		<div id="buttons-container">
-			<v_button class="v_button">Accept</v_button>
-			<v_button class="v_button">Decline</v_button>
+			<v_button class="v_button" v-on:click="notify.removeNotification(notification.id)">Accept</v_button>
+			<v_button class="v_button" v-on:click="notify.removeNotification(notification.id)">Decline</v_button>
 		</div>
 	</div>
 </template>
