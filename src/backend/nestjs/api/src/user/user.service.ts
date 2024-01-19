@@ -9,8 +9,12 @@ import { PG_UNIQUE_VIOLATION } from "@drdgvhbh/postgres-error-codes";
 export class UserService {
 	constructor(@InjectRepository(UserEntity) private usersRepository: Repository<UserEntity>) {}
 
-	getUser(email: string): Promise<User> {
+	getUserByEmail(email: string): Promise<User> {
 		return this.usersRepository.findOneBy({ email: email }) as Promise<User>;
+	}
+
+	getUserById(id: number): Promise<User> {
+		return this.usersRepository.findOneBy({ id: id }) as Promise<User>;
 	}
 
 	getAllUsers(): Promise<User[]> {
@@ -29,9 +33,9 @@ export class UserService {
 		return null;
 	}
 
-	async set2faSecret(email: string, secret: string): Promise<User> {
+	async set2faSecret(id: number, secret: string): Promise<User> {
 		try {
-			const user: User = await this.getUser(email);
+			const user: User = await this.getUserById(id);
 			user.twofa_secret = secret;
 			return this.usersRepository.save(user);
 		} catch (err) {
@@ -39,9 +43,9 @@ export class UserService {
 		}
 	}
 
-	async set2faMode(email: string, mode: boolean) {
+	async set2faMode(id: number, mode: boolean) {
 		try {
-			const user: User = await this.getUser(email);
+			const user: User = await this.getUserById(id);
 			user.twofa_enabled = mode;
 			user.twofa_auth = mode;
 			return this.usersRepository.save(user);
@@ -50,9 +54,9 @@ export class UserService {
 		}
 	}
 
-	async set2faAuth(email: string, status: boolean) {
+	async set2faAuth(id: number, status: boolean) {
 		try {
-			const user: User = await this.getUser(email);
+			const user: User = await this.getUserById(id);
 			user.twofa_auth = status;
 			return this.usersRepository.save(user);
 		} catch (err) {

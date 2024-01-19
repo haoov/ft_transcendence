@@ -14,7 +14,7 @@ export class Authentificated2faGuard implements CanActivate {
 		if (!user) {
 			return false;
 		}
-		const userDB = await this.userService.getUser(user.email);
+		const userDB = await this.userService.getUserById(user.id);
 		if (userDB.twofa_enabled == false) {
 			return true;
 		}
