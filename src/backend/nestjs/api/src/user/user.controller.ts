@@ -21,9 +21,10 @@ export class UserController {
 		return this.userService.getCurrentUser(req);
 	}
 
-	@Get(":id")
-	getUser(@Param("id") id: number): Promise<User> {
-		return this.userService.getUserById(id);
+	@Get(":username")
+	getUserByUsername(@Param("username") username: string): Promise<User> {
+		//console.log(username);
+		return this.userService.getUserByUsername(username);
 	}
 
 	@Put('update/username')

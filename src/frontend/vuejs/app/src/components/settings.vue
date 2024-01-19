@@ -101,7 +101,6 @@ function	updateUsername() {
 		 sendToast("success", "Username has been updated!");
 		})
 		.catch( (err) => {
-			console.log(err.response.status);
 			if (err.response.status == 409) {
 				sendToast("error", "Username is already in use!");
 			}
