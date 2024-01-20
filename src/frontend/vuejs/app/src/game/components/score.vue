@@ -22,7 +22,7 @@ import { ClientEvents } from '@/utils';
 			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
 			<span class="username">{{ p2.username }}</span>
 		</div>
-		<button class="leave" :disabled="gameSocket.getUserState() != 'playing'" v-on:click="leaveGame()">Leave game</button>
+		<button class="leave" :disabled="gameSocket.getuserStatus() != 'playing'" v-on:click="leaveGame()">Leave game</button>
 		<div class="score-div p1">
 			<span class="username">{{ p1.username }}</span>
 			<img v-if="p1.avatar" class="avatar" :src="p1.avatar">

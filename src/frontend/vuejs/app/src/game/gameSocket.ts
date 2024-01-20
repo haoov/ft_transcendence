@@ -6,7 +6,7 @@ import { ref, type Ref } from "vue";
 class GameSocket {
 	private readonly socket: Socket;
 	private isReady: boolean;
-	private readonly userState: Ref<string>;
+	private readonly userStatus: Ref<string>;
 	private moveEvents: boolean;
 	private readonly user: Ref<User>;
 
@@ -14,7 +14,7 @@ class GameSocket {
 		this.socket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/game`);
 		this.user = ref({} as User);
 		this.isReady = false;
-		this.userState = ref("");
+		this.userStatus = ref("");
 		this.moveEvents = false;
 	}
 
@@ -25,26 +25,22 @@ class GameSocket {
 		});
 		this.socket.on(ServerEvents.updateStatus, (status: string) => {
 			console.log("update status: " + status);
-			if (this.userState.value != "finished")
-				this.userState.value = status;
+			if (this.userStatus.value != "finished")
+				this.userStatus.value = status;
 		})
 		this.isReady = true;
 	}
 
-	setMoveEvents(value: boolean): void {
-		this.moveEvents = value;
+	play() {
+		this.socket.emit(ClientEvents.gamePlay);
 	}
 
-	moveEventsSet(): boolean {
-		return this.moveEvents;
+	forfeit() {
+		this.socket.emit(ClientEvents.gameForfeit);
 	}
 
-	stopWaiting(): void {
-		this.socket.emit(ClientEvents.stopWaiting);
-	}
-
-	setUserState(state: string): void {
-		this.userState.value = state;
+	setuserStatus(state: string): void {
+		this.userStatus.value = state;
 	}
 
 	getSocket(): Socket {
@@ -55,8 +51,8 @@ class GameSocket {
 		return this.isReady;
 	}
 
-	getUserState(): string {
-		return this.userState.value;
+	getuserStatus(): string {
+		return this.userStatus.value;
 	}
 
 	getUser(): User {
