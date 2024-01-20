@@ -1,130 +1,79 @@
 <script setup lang="ts">
 
 import axios from "axios";
-import { useRouter } from "vue-router";
+import type { UserStat, User, GameStat } from "@/utils";
+import { computed, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import offline from '../assets/images/status-offline-32.png';
 import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
-import { type UserStat, type User, type GameStat, ClientEvents, ServerEvents } from "@/utils";
-import { computed, inject, onMounted, ref } from "vue";
-import GlobalSocket from "@/GlobalSocket";
-import GameSocket from "@/game/gameSocket";
-import gameNotification from "@/game/components/gameNotification.vue";
 
-const router = useRouter();
-const players = ref<UserStat[]>([]);
-const imagesLoaded = ref<boolean>(false);
+const route = useRoute();
+const username = route.params.username;
 const me = ref<User>();
-const myStats = ref<UserStat>();
-const myGames = ref<GameStat[]>([]);
-const search = ref('');
-
-const playersDisplayed = computed(() => {
-		if (search.value.length === 0) {
-				return players.value;
-		} else {
-				return players.value.filter((user: UserStat) => {
-						return user.username.toLowerCase().startsWith(search.value.toLowerCase());
-				});
-		}
-});
+const user = ref<User>();
+const userStats = ref<UserStat>();
+const userGames = ref<GameStat[]>([]);
 
 
 // FETCHING DATA
-async function fetchData() {
-	await fetchLeaderboard();
-	await fetchMe();
-	loadAllImages();
-}
-
-async function fetchLeaderboard() {
-	await axios
-		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/leaderboard`)
-		.then(data => { players.value = data.data;});
-}
-
-async function fetchMe() {
-	await axios
-		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
+async function fetchUser() {
+	axios
+		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user?username=${username}`)
 		.then( (data) => {
-			me.value = data.data;
-			// Fetch my stats
+			user.value = data.data;
+			// Fetch user stats
 			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/stats/${data.data.id}`;
 				axios.get(url1).then( data => {
-				myStats.value = data.data;})
+				userStats.value = data.data;})
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
-				myGames.value = data.data;})
+				userGames.value = data.data;})
 			});
 }
 
-function loadAllImages() {
-			let loadPromises = players.value.map(player => {
-				return new Promise((resolve, reject) => {
-					let img = new Image();
-					img.src = player.avatar;
-					img.onload = resolve;
-					img.onerror = reject;
-				});
-			});
-
-			Promise.all(loadPromises)
-				.then(() => { imagesLoaded.value = true; })
-		}
+async function fetchMe() {
+	axios
+		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
+		.then( (data) => {
+			me.value = data.data;
+		});
+}
 
 
 // UTIL FUNCTIONS
-function	getRankClass(index: number) : string {
-	let className = "c-flag c-place u-bg--transparent u-text--oswald"
-	switch (index) {
-		case 1:
-			className += " u-text--dark u-bg--pink1";
-			break;
-		case 2:
-			className += " u-text--dark u-bg--pink2"
-			break;
-		case 3:
-			className += " u-text--dark u-bg--pink3"
-			break;
-	}
-	return className;
-}
-
-function	getAvatarSrc(id: number) : string {
-	const timestamp = Date.now();
-	const user = players.value.filter((user) => {
-		return user.id == id;
-	});
-	if (user[0].avatar.includes(':3000/api/user/avatar/'))
-		return `${user[0].avatar}?${timestamp}`;
-	else
-		return user[0].avatar
-}
-
-function	getMyAvatarSrc() : string | undefined {
+function	getAvatarSrc() : string | undefined {
 		const timestamp = Date.now();
-		if (me.value?.avatar.includes(':3000/api/user/avatar/'))
-			return `${me.value.avatar}?${timestamp}`;
+		if (user.value?.avatar.includes(':3000/api/user/avatar/'))
+			return `${user.value.avatar}?${timestamp}`;
 		else
-			return me.value?.avatar
+			return user.value?.avatar
 }
 
-function getStatusIcon(user: UserStat) : string {
+function getStatusIcon() : string {
 	// Faire option forbidden
-	if (user.status == "undefined" || user.status == "offline")
+	if (user.value?.status == "undefined" || user.value?.status == "offline")
 		return offline;
 	else
 		return online;
 }
 
+function getStatusTitle() : string {
+	// Faire option forbidden
+	console.log("test" + user.value?.status);
+	if (user.value?.status == "undefined" || user.value?.status == "offline")
+		return "offline";
+	else
+		return "online";
+}
 
 function getPieProportions() : string {
 	let loses: number = 0;
-	if (myStats.value)
-		loses = 100 - myStats.value.win_rate; 
-	return myStats.value?.win_rate.toString() + " " + loses.toString();
+	if (userStats.value)
+		loses = 100 - userStats.value.win_rate; 
+	return userStats.value?.win_rate.toString() + " " + loses.toString();
 }
 
 function getDateStr(dt: Date) : string {
@@ -137,7 +86,7 @@ function getHourStr(dt: Date) : string {
 	let date = new Date(dt);
 	let hours = date.getHours().toString().padStart(2, '0');
 	let minutes = date.getMinutes().toString().padStart(2, '0');
-	return hours + ':' + minutes;
+	return hours + ':' + minutes; 
 
 }
 
@@ -148,23 +97,9 @@ function getScoreColor(winFlag: boolean): string {
 		return "var(--c-grey)"
 }
 
-function goToProfile(username: string) {
-      router.push(`/${username}`);
-}
-const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
-const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
-
-function inviteToPlay(id: number) {
-	const gameParams = {
-		game: "classic",
-		mode: "multiPlayer",
-	};
-	globalSocket.getSocket().emit(ClientEvents.gameInvite, id);
-}
-
-
 onMounted(async () => {
-	await fetchData();
+	await fetchUser();
+	await fetchMe();
 });
 
 
@@ -175,25 +110,37 @@ onMounted(async () => {
 <div class="l-wrapper">
 	<div class="l-grid">
 		<div class="l-grid__item l-grid__item--sticky">
-			<div class="c-card">
+			<div class="c-card" id="profile">
+				<!-- <h3 class="u-p--24">PROFILE</h3> -->
 				<div class="c-card__body">
 					<div class="u-display--flex u-justify--space-between">
 						<div class="u-text--left">
-							<img v-if="imagesLoaded" class="c-avatar c-avatar--lg u-ml--24" :src="getMyAvatarSrc()"/>
-							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ me?.username }}</div>
-							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ me?.email}} </span>
+							<div class="c-avatar-container u-ml--24">
+								<img class="c-avatar c-avatar--lg" :src="getAvatarSrc()"/>
+								<img v-if="user" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
+							</div>
+							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ user?.username }}</div>
+							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
+							<div class="u-ml--24 u-mt--4">
+								<a v-if="user?.id!=me?.id" class="u-mr--8" href="https://www.google.com/" target="_blank">
+									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
+								</a>
+								<a v-if="user?.id!=me?.id" href="https://www.google.com/" target="_blank">
+									<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
+								</a>
+							</div>
 						</div>
 						<div class="u-text--right">
-								<div class="u-mt--16 u-text--small u-text--overpass">My Rank</div>
-								<h2 class="u-text--oswald">{{ myStats?.rank }}</h2>
-								<div class="u-mt--24 u-text--small u-text--overpass">My Wins</div>
-								<h2 class="u-text--oswald">{{ myStats?.wins }}</h2>
+								<div class="u-mt--16 u-text--small u-text--overpass">Rank</div>
+								<h2 class="u-text--oswald">{{ userStats?.rank }}</h2>
+								<div class="u-mt--24 u-text--small u-text--overpass">Wins</div>
+								<h2 class="u-text--oswald">{{ userStats?.wins }}</h2>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="c-card">
-				<h3 class="u-p--24">MY GAMES</h3>
+				<h3 class="u-p--24">GAMES</h3>
 				<div class="c-card__body u-pt--2">
 					<div class="">
 						<div class="svg-pie">
@@ -203,7 +150,7 @@ onMounted(async () => {
 												stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"
 												:style="{ animation: 'donut 1s', '--end-dash': getPieProportions()}"></circle>
 								<text y="50%" transform="translate(0, 2)">
-									<tspan x="50%" text-anchor="middle" class="donut-percent">{{ myStats?.win_rate}}%</tspan>	 
+									<tspan x="50%" text-anchor="middle" class="donut-percent">{{ userStats?.win_rate}}%</tspan>	 
 								</text>
 								<text y="60%" transform="translate(0, 2)">
 									<tspan x="50%" text-anchor="middle" class="donut-data">of wins</tspan>	 
@@ -220,8 +167,8 @@ onMounted(async () => {
 								<div class="u-text--overpass u-text--left">Mode</div>
 							</div>
 						</li>
-						<div v-if="myGames.length" id="gameContent" class="scroll">
-							<li v-for="(game, index) in myGames" :key="game.id" class="c-list__item-score">
+						<div v-if="userGames.length" id="gameContent" class="scroll">
+							<li v-for="(game, index) in userGames" :key="game.id" class="c-list__item-score">
 								<div class="c-list__game-history">
 									<div>
 										<div class="u-bg--transparent u-text--mini u-text--overpass">{{ getDateStr(game.date) }}</div>
@@ -243,69 +190,10 @@ onMounted(async () => {
 				</div>
 			</div>
 		</div>
-		<div class="l-grid__item">
-			<div class="c-card">
-				<div class="c-card__header">
-					<h3>Leaderboard</h3>
-					<div class= "searchForm">
-						<input 
-						v-model="search"
-						name="searchUser"
-						id="searchUser"
-						type="text"
-						autocomplete="off"
-						placeholder="search..."
-						>
-					</div>
-				</div>
-				<div class="c-card__body">
-					<ul class="c-list">
-						<li class="c-list__item">
-							<div class="c-list__grid">
-								<div class="u-text--left u-text--small u-text--overpass">Rank</div>
-								<div class="u-text--left u-text--small u-text--overpass">Username</div>
-								<div class="u-text--right u-text--small u-text--overpass">Win Rate</div>
-								<div class="u-text--right u-text--small u-text--overpass u-mr--8"># Wins</div>
-							</div>
-						</li>
-						<div v-if="playersDisplayed.length" id="leaderboardContent" class="scroll"> 
-							<!-- premier element -->
-							<li v-for="(player, index) in playersDisplayed" :key="player.id" class="c-list__item">
-								<div class="c-list__grid">
-									<div :class="getRankClass(player.rank)">{{ player.rank }}</div>
-									<div class="c-media">
-										<div v-if="imagesLoaded" class="c-avatar-container">
-											<img class="c-avatar c-media__img" :src="getAvatarSrc(player.id)" @click="goToProfile(player.username)" title="Go to profile"/>
-											<img class="c-avatar-icon" :src="getStatusIcon(player)"/>
-										</div>
-										<div class="c-media__content">
-											<div>
-												<a class="c-media__title u-text--overpass" @click="goToProfile(player.username)" title="Go to profile">{{ player.username }}</a>
-											</div>
-											<a v-if="player.id!=me?.id" class="u-mr--8" href="https://www.google.com" target="_blank">
-												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
-											</a>
-											<a v-if="player.id!=me?.id" href="https://www.google.com" target="_blank">
-												<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
-											</a>
-										</div>
-									</div>
-									<div class="u-text--right c-stats u-mt--8">
-										<p class="u-text--oswald">{{ player.win_rate }}%</p>
-									</div>
-									<div class="u-text--right c-stats u-mt--8 u-mr--8">
-										<strong class="u-text--oswald">{{ player.wins }}</strong>
-									</div>
-								</div>
-							</li>
-						</div>
-						<div v-else id="leaderboardContent" class="empty_field">No user</div>
-					</ul>
-          </div>
-        </div>
-      </div>
-    </div>
 	</div>
+</div>
+
+
 
 </template>
 
@@ -315,12 +203,9 @@ h1,h2,h3,h4,h5,h6 {
 	font-weight: 400;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	margin-top: 0.8rem;
-	margin-bottom: 0.8rem;
 	color: inherit;
 	letter-spacing: 4px;
 }
-
 a {
 	color: var(--c-teal);
 	text-decoration: none;
@@ -350,30 +235,22 @@ button, select {
 
 .l-wrapper {
 	width: 100%;
-	max-width: 960px;
+	max-width: 450px;
 	margin: auto;
 	padding: 1.6rem 1.6rem 3.2rem;
-}
-@media screen and (max-width: 750px) {
-	.l-wrapper {
-		max-width: 450px;
-	}
 }
 
 .l-grid {
 	display: grid;
-	grid-template-columns: 1.2fr 1.5fr;
+	grid-template-columns: 1fr;
 	grid-column-gap: 1.6rem;
 	grid-row-gap: 1.6rem;
 	position: relative;
 }
-@media screen and (max-width: 750px) {
-	.l-grid {
-		grid-template-columns: 1fr;
-	}
-}
 
 .l-grid__item {
+	grid-template-columns: 0.9fr 0.9fr 1.5fr 1fr;
+	grid-column-gap: 1.2rem;
 	height: 650px;
 	box-shadow: 0 1px 0 0 var(--c-black-light),0 -1px 0 0 var(--c-black-light);
 	border-radius: 0.8rem;
@@ -391,54 +268,26 @@ button, select {
 .c-card__body, .c-card__header {
 	padding: 2.4rem;
 }
-@media screen and (max-width: 750px) {
-	.c-card__body, .c-card__header {
-		padding: 1.2rem;
-	}
-}
 .c-card__header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	padding-bottom: 0;
-}
-@media screen and (max-width: 750px) {
-	.c-card__header {
-		flex-direction: column;
-	}
+	flex-direction: column;
 }
 
-@media screen and (max-width: 750px) {
-	.c-place {
-		transform: translateY(4px);
-	}
+#profile {
+	min-height: 228px;
 }
 
 #gameContent {
-		height: 132px;
-		overflow-y: auto;
-}
-@media screen and (min-width: 750px) and (max-width: 863px) {
-	#gameContent {
-		height: 157px;
-		overflow-y: auto;
-	}
-}
-@media screen and (max-width: 750px) {
-	#gameContent {
 		height: 175px;
 		overflow-y: auto;
-	}
 }
 
-
-#leaderboardContent {
-	height: 500px;
-	overflow-y: auto;
-}
 
 .svg-pie {
-		width: 100%;
+		width: 75%;
 		font-size: 16px;
 		margin: 0 auto;
 		animation: donutfade 1s;
@@ -458,17 +307,11 @@ button, select {
 		}
 }
 
-@media (max-width: 750px) {
-		.svg-pie {
-				width: 75%;
-		}
-}
-
 .donut-ring {
 		align-items: center;
 		stroke: #EBEBEB;
 }
-
+small-image
 .donut-segment {
 		transform-origin: center;
 		stroke: var(--c-pink);
@@ -529,7 +372,7 @@ button, select {
 .scroll::-webkit-scrollbar-track {
 	background-color: transparent;
 }
-
+small-image
 .scroll::-webkit-scrollbar-thumb:hover,
 .scroll::-webkit-scrollbar-thumb:active {
 	background-color: var(--c-pink);
@@ -560,23 +403,12 @@ button, select {
 	padding: 1.6rem 0;
 }
 .c-list__item .c-flag {
-	margin-top: 0.8rem;
-}
-@media screen and (max-width: 750px) {
-	.c-list__item .c-flag {
-		margin-top: 0.4rem;
-	}
+	margin-top: 0.4rem;
 }
 .c-list__grid {
 	display: grid;
-	grid-template-columns: 4.8rem 3fr 1fr 1fr;
-	grid-column-gap: 2.4rem;
-}
-@media screen and (max-width: 750px) {
-	.c-list__grid {
-		grid-template-columns: 3.2rem 3fr 1fr 1fr;
-		grid-column-gap: 0.8rem;
-	}
+	grid-template-columns: 3.2rem 3fr 1fr 1fr;
+	grid-column-gap: 0.8rem;
 }
 
 .searchForm input {
@@ -606,18 +438,13 @@ button, select {
 
 .c-list__game-history {
 	display: grid;
-	grid-template-columns: 1fr 1fr 1.8fr 1.3fr;
-	grid-column-gap: 2.5rem;
+	grid-template-columns: 0.9fr 0.9fr 1.5fr 1fr;
+	grid-column-gap: 1.2rem;
 	align-items: end;
 	margin-left: 1rem;
 	margin-right: 1rem;
 }
-@media screen and (min-width: 750px) and (max-width: 863px) {
-	.c-list__game-history {
-		grid-template-columns: 0.9fr 0.9fr 1.5fr 1fr;
-		grid-column-gap: 1.2rem;
-	}
-}
+
 
 .c-game-history__score {
 	font-size: 1.4rem;
@@ -638,7 +465,7 @@ button, select {
 }
 
 .win {
-	font-weight: bold;
+	font-weight: bold;    box-shadow: 0 0 3px,0 0 5px var(--c-black-light),0 0 7px var(--c-black-light),0 0 10px var(--c-black-light);
 	color: var(--c-pink);
 }
 
@@ -656,10 +483,6 @@ button, select {
 }
 .c-media__title {
 	margin-bottom: 0.4rem;
-	font-size: 1.6rem;
-	color: #fff;
-	display: block;
-	cursor: pointer;
 }
 @media screen and (max-width: 700px) {
 	.c-media__title {
@@ -671,6 +494,8 @@ button, select {
   position: relative;
   display: inline-block;
 }
+
+
 .c-avatar {
 	display: inline-flex;
 	align-items: center;
@@ -687,16 +512,15 @@ button, select {
 	width: 8.5rem;
 	height: 8.5rem;
 }
+
 .c-avatar-icon {
-    position: absolute;
-    bottom: 0.2rem;
-    right: 0.1rem;
-    width: 1.5rem;
-    height: 1.5rem;
+	position: absolute;
+	bottom: 0.5rem;
+	right: 0.5rem;
+	width: 2rem;
+	height: 2rem;
 }
-.c-media__img {
-	cursor: pointer;
-}
+
 .c-button {
 	display: inline-block;
 	background: var(--dark);
@@ -742,7 +566,13 @@ button, select {
 	height: 3.2rem;
 	background: var(--lightest);
 	color: var(--dark);
-	border-radius: 0.4rem;
+	border-radius: 0.4rem;	font-weight: 400;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	margin-top: 0.8rem;
+	margin-bottom: 0.8rem;
+	color: inherit;
+	letter-spacing: 4px;
 }
 @media screen and (max-width: 700px) {
 	.c-flag {

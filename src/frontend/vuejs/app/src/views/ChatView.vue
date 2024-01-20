@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import Chat from '@/components/chatComp/Chat.vue';
+	import Chat from '@/components/chat/Chat.vue';
 	import navigationBar from '@/components/navigationBar.vue';
 	import gameNotification from '@/game/components/gameNotification.vue';
 	import router from '@/router';

@@ -74,7 +74,7 @@ const $data : any = inject('$data');
 const store = $data.getStore();
 const socket = store.socket;
 const currentUser = await $data.getCurrentUser();
-const channelList = await $data.getJoinableChannels(currentUser.id);
+const channelList = await $data.getJoinableChannels();
 const channelToJoin = ref<Channel>();
 const password = ref('');
 const passwordError = ref(false);
@@ -130,6 +130,7 @@ const submitForm = () => {
 socket.on('channelJoined', (ret : boolean) => {
 	if (ret) {
 		$data.closeModalForm();
+		$data.setActiveChannel(channelToJoin.value);
 		passwordError.value = false;
 	} else {
 		passwordError.value = true;

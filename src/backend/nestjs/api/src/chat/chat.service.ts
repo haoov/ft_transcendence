@@ -71,12 +71,25 @@ export class ChatService {
 
 	//Permet de recuperer les channels qui ne sont ni prives ni secret et qui ne sont pas deja dans la liste des channels de l'utilisateur
 	async getJoinableChannels(userId: number): Promise<Channel []> {
-		const channels = await this.channelRepository
+		let channels: Channel [] = [];
+		const alreadyJoinedChannels = await this.channelRepository
 		.createQueryBuilder("channel")
-		.leftJoin("channel.users", "user")
-		.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
-		.andWhere("user.id != :userId", { userId })
+		.innerJoin("channel.users", "user", "user.id = :userId", { userId })
 		.getMany();
+		if (alreadyJoinedChannels.length === 0) {
+			channels = await this.channelRepository
+			.createQueryBuilder("channel")
+			.leftJoin("channel.users", "user")
+			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
+			.andWhere("user.id != :userId", { userId })
+			.getMany();
+		} else {
+			channels = await this.channelRepository
+			.createQueryBuilder("channel")
+			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
+			.andWhere("channel.id NOT IN (:...alreadyJoinedChannelIds)", { alreadyJoinedChannelIds: alreadyJoinedChannels.map(channel => channel.id) })
+			.getMany();
+		}
 		return channels;
 	}
 
