@@ -30,8 +30,12 @@ interface User {
 };
 
 async function fetchUsers() : Promise<User []> {
-	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user`).then((res) => { return res.data });
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/all`).then((res) => { return res.data });
 };
+
+async function fetchUserById(id: number) : Promise<User> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user?id=${id}`).then((res) => { return res.data });
+}
 
 async function fetchCurrentUser() : Promise<any> {
 	return  axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((res) => { return res.data });
@@ -41,26 +45,33 @@ async function fetchChannels() : Promise<Channel[]> {
 	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels`).then((res) => { return res.data });
 };
 
-async function fetchJoinableChannels(id: number) : Promise<Channel[]> {
-	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/joinable/${id}`).then((res) => { return res.data });
+async function fetchJoinableChannels() : Promise<Channel[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/joinable`).then((res) => { return res.data });
 }
 
-async function fetchCurrentUserChannels(id: number) : Promise<Channel []> {
-	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/${id}`).then((res) => { return res.data });
+async function fetchCurrentUserChannels() : Promise<Channel []> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/`).then((res) => { return res.data });
 }
 
-async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
-	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/messages/${id}`).then((res) => { return res.data });
+async function fetchMessagesByChannelId(channelId: number) : Promise<Message[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/messages/${channelId}`).then((res) => { return res.data });
 };
+
+async function fetchBlockedUsers() : Promise<User[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block`).then((res) => { return res.data });
+}
 
 const store = reactive({
 	channels: [] as Channel[],
 	messages: [] as Message [],
 	users: [] as User [],
+	userIdClicked: null as number | null,
 	currentUser: null as User | null,
 	isModalOpen: false,
 	isEditModalOpen: false,
 	isAddUserModalOpen: false,
+	isconfirmationLeavingModalOpen: false,
+	isProfileModalOpen: false,
 	activeChannel: null as Channel | null,
 	socket: null as Socket | null,
 });
@@ -69,6 +80,14 @@ export default {
 
 	getUsers() : Promise<User []> {
 		return fetchUsers();
+	},
+
+	getUserById(id: number) : Promise<User> {
+		return fetchUserById(id);
+	},
+
+	getBlockedUsers() : Promise<User[]> {
+		return fetchBlockedUsers();
 	},
 
 	getCurrentUser() : Object {
@@ -80,7 +99,7 @@ export default {
 	},
 
 	getJoinableChannels(id: number) : Object {
-		return fetchJoinableChannels(id);
+		return fetchJoinableChannels();
 	},
 
 	getStore() : Object {
@@ -91,8 +110,8 @@ export default {
 		store.socket = socket;
 	},
 
-	loadChannels(idUser: number) {
-		fetchCurrentUserChannels(idUser).then((channels) => {
+	loadChannels() {
+		fetchCurrentUserChannels().then((channels) => {
 			store.channels = channels.slice().reverse();
 		});
 	},
@@ -155,4 +174,20 @@ export default {
 		store.isAddUserModalOpen = false;
 	},
 
+	openConfirmationLeavingModal() {
+		store.isconfirmationLeavingModalOpen = true;
+	},
+
+	closeConfirmationLeavingModal() {
+		store.isconfirmationLeavingModalOpen = false;
+	},
+
+	openProfileModal(id : number) {
+		store.userIdClicked = id;
+		store.isProfileModalOpen = true;
+	},
+
+	closeProfileModal() {
+		store.isProfileModalOpen = false;
+	},
 };

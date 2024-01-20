@@ -41,6 +41,7 @@ const setActiveChannel = (channel : any, currentUserId: number) => {
 
 socket.on('newChannelCreated', (newChannelCreated : any) => {
 	$data.addChannel(newChannelCreated);
+	$data.setActiveChannel(newChannelCreated);
 });
 
 socket.on('channelDeleted', (channelIdDeleted : number) => {

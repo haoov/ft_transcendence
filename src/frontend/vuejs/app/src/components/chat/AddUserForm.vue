@@ -199,8 +199,6 @@ const submitForm = () => {
   border: 1px solid #414141;
   padding: 12px 16px;
   font-size: inherit;
-  gap: 8px;
-  margin-top: 8px;
   cursor: pointer;
   border-radius: 6px;
 }
