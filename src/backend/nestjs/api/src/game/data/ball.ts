@@ -13,25 +13,33 @@ class Ball {
 	radius: number;
 	effect: string;
 	lastHit: Player;
+	started: boolean;
 
 	constructor() {
 		this.position = {x: 0, y: 0, z: 0};
 		this.speed = params.BALL_SPEED;
-		this.vecSpeed = {x: this.speed, y: 0, z: 0};
+		this.vecSpeed = {x: 0, y: 0, z: 0};
 		this.effect = "none";
 		this.radius = params.BALL_RADIUS;
 		this.scale = {x: 1, y: 1, z: 1};
+		this.started = false;
 	}
 
 	start() {
-		const direction: number = (Math.random() > 0.5 ? 1 : -1);
-		this.vecSpeed.x = params.BALL_SPEED * direction;
+		this.started = true;
+		setTimeout(() => {
+			const direction: number = (Math.random() > 0.5 ? 1 : -1);
+			this.vecSpeed.x = params.BALL_SPEED * direction;
+		}, 1000);
 	}
 
 	moove(players: Player[], field: Field, effect?: Effect) {
 		this.position.x += this.vecSpeed.x;
 		this.position.y += this.vecSpeed.y;
 
+		if (this.started == false) {
+			this.start();
+		}
 		players.forEach((player) => {
 			if (player.hitBall(this)) {
 				this.paddleBounce(player.paddle);
@@ -111,10 +119,7 @@ class Ball {
 		this.position = {x: 0, y: 0, z: 0};
 		this.speed = params.BALL_SPEED;
 		this.vecSpeed = {x: 0, y: 0, z: 0};
-		setTimeout(() => {
-			const direction: number = (Math.random() > 0.5 ? 1 : -1);
-			this.vecSpeed.x = params.BALL_SPEED * direction;
-		}, 1000);
+		this.start();
 	}
 };
 

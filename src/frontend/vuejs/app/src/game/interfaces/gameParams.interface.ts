@@ -1,11 +1,11 @@
-export type GameMode = 'classic' | 'super';
-export type GameType = 'singleplayer' | 'multiplayer';
+export type GameMode = 'classic' | 'super' | undefined;
+export type GameType = 'singleplayer' | 'multiplayer' | undefined;
 export type GameDifficulty = 'easy' | 'medium' | 'hard';
 export type GameMap = 'classic' | 'tennis' | 'space' | 'random';
 
 export interface GameParams {
-	mode: string;
-	type: string;
-	difficulty: string;
-	map: string;
+	mode: GameMode;
+	type: GameType;
+	difficulty: GameDifficulty;
+	map: GameMap;
 }

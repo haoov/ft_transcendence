@@ -81,7 +81,7 @@ export class HomeService {
 				return {
 					id: game.id,
 					date: game.date,
-					type: game.game,
+					mode: game.mode,
 					winFlag : true,
 					opponent : game.loser,
 					userScore : game.winner_score,
@@ -92,7 +92,7 @@ export class HomeService {
 				return {
 					id: game.id,
 					date: game.date,
-					type: game.game,
+					mode: game.mode,
 					winFlag : false,
 					opponent : game.winner,
 					userScore : game.loser_score,

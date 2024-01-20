@@ -5,23 +5,23 @@
 	import { ClientEvents } from "@/utils";
 	import type GameSocket from "../gameSocket";
 	import custumButton from "@/components/custumButton.vue";
-	import type { GameParams } from "@/game/interfaces";
+	import type { GameDifficulty, GameMap, GameMode, GameParams, GameType } from "@/game/interfaces";
 
 	const props = defineProps(["winner"]);
 	const emit = defineEmits(['click', 'stopWaiting']);
 	const gameSocket: GameSocket = inject("gameSocket") as GameSocket;
 
 	const selectedParams: Ref<GameParams> = ref({
-		mode: "",
-		type: "",
+		mode: undefined,
+		type: undefined,
 		difficulty: "easy",
 		map: "classic"
 	});
 
-	const games: string[] = ["classic", "super"];
-	const difficulties: string[] = ["easy", "medium", "hard"];
-	const modes: string[] = ["singlePlayer", "multiPlayer"];
-	const maps: string[] = ["classic", "tennis", "space", "random"];
+	const modes: GameMode[] = ["classic", "super"];
+	const difficulties: GameDifficulty[] = ["easy", "medium", "hard"];
+	const types: GameType[] = ["singleplayer", "multiplayer"];
+	const maps: GameMap[] = ["classic", "tennis", "space", "random"];
 
 	const isEnabled = computed(() => {
 		return (selectedParams.value.type && selectedParams.value.mode);
@@ -32,10 +32,10 @@
 			case "selectMenu":
 				return (gameSocket.getuserStatus() == "");
 			case "difficulty":
-				return (selectedParams.value.mode == "singlePlayer");
+				return (selectedParams.value.type == "singleplayer");
 			case "maps":
-				return (selectedParams.value.type == "super"
-								&& selectedParams.value.mode == "singlePlayer");
+				return (selectedParams.value.mode == "super"
+								&& selectedParams.value.type == "singleplayer");
 			case "waitingMenu":
 				return (gameSocket.getuserStatus() == "waiting");
 			case "finishedMenu":
@@ -48,10 +48,10 @@
 	}
 
 	function newGame() {
-		selectedParams.value.type = "";
+		selectedParams.value.type = undefined
 		selectedParams.value.map = "classic";
-		selectedParams.value.difficulty = "";
-		selectedParams.value.mode = "";
+		selectedParams.value.difficulty = "easy";
+		selectedParams.value.mode = undefined
 		gameSocket.setuserStatus("");
 	}
 
@@ -67,14 +67,14 @@
 	<div class="menu">
 		<div v-if="display('selectMenu')" class="menu-box">
 			<selector
-				:label="'Game'"
-				:values="games"
-				@select="(value) => {selectedParams.type = value}"
-			></selector>
-			<selector
-				:label="'Mode'"
+				label="Mode"
 				:values="modes"
 				@select="(value) => {selectedParams.mode = value}"
+			></selector>
+			<selector
+				label="Type"
+				:values="types"
+				@select="(value) => {selectedParams.type = value}"
 			></selector>
 			<selector
 				v-if="display('difficulty')"

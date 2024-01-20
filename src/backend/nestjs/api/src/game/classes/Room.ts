@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { Pong } from "../data/Pong";
-import { gameParams } from "../interfaces/gameParams";
+import { GameParams } from "../interfaces/gameParams";
 import { User } from "src/user/user.interface";
 import { Game } from "../interfaces/game.interface";
 import { ConsoleLogger } from "@nestjs/common";
@@ -14,10 +14,10 @@ export class Room {
 	private closed: boolean;
 	private users: User[];
 	private sockets: Socket[];
-	private params: gameParams;
+	private params: GameParams;
 	private game: Pong;
 
-	constructor(name: string, params: gameParams, setPrivate?: boolean) {
+	constructor(name: string, params: GameParams, setPrivate?: boolean) {
 		this.users = [];
 		this.name = name;
 		this.public = (setPrivate ? false : true);
@@ -74,7 +74,7 @@ export class Room {
 	}
 
 	getType(): string {
-		return this.params.game;
+		return this.params.mode;
 	}
 
 	getName(): string {
@@ -123,7 +123,7 @@ export class Room {
 			return this.game.getPlayers()[1].score;
 	}
 
-	getParams(): gameParams {
+	getParams(): GameParams {
 		return this.params;
 	}
 
@@ -180,7 +180,7 @@ export class Room {
 		const winner: User = this.getWinner();
 		const loser: User = this.getLoser();
 		const stats: Game = {
-			game: this.params.game,
+			mode: this.params.mode,
 			winner: winner,
 			loser: loser,
 			winner_score: this.getScore(winner),

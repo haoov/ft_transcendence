@@ -28,7 +28,7 @@ class Effect {
 					|| this.position.y <= field.borders.bottom + this.size)
 			this.speed *= -1;
 		if (this.on == false) {
-			if (Math.random() > 0.99) {
+			if (Math.random() > 0.999) {
 				this.type = this.types[Math.floor(Math.random() * this.types.length)];
 				this.on = true;
 			}
