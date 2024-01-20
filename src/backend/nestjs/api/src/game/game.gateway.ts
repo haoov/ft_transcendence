@@ -5,7 +5,7 @@ import { User } from 'src/user/user.interface';
 import { Room } from './classes/Room';
 import { UserService } from 'src/user/user.service';
 import { userStatus } from 'src/user/enum/userStatus.enum';
-import { gameParams } from './interfaces/gameParams';
+import { GameParams } from './interfaces/gameParams';
 import { GameService } from './game.service';
 import { UserGateway } from 'src/user/user.gateway';
 import { Inject, forwardRef } from '@nestjs/common';
@@ -47,6 +47,10 @@ export class GameGateway
 		});
 	}
 
+	/**
+	 * Handle disconnection of a user
+	 * @param client socket of the user
+	 */
 	async handleDisconnect(client: Socket) {
 		if (client.data.user) {
 			console.log("game disconnection: " + client.data.user.username);
@@ -54,7 +58,7 @@ export class GameGateway
 			if (room) {
 				if (room.isFull()) {
 					room.removeSocket(client);
-					if (!room.checkSockets(client.data.user) && room.getParams().mode == "multiPlayer") {
+					if (!room.checkSockets(client.data.user) && room.getParams().type == "multiplayer") {
 						room.quitGame(client);
 						this.endGame(room);
 						this.deleteRoom(room);
@@ -74,7 +78,8 @@ export class GameGateway
 	 * @param params selected game parameters
 	 */
 	@SubscribeMessage(clientEvents.gameParams)
-	async manageRooms(client: Socket, params: gameParams): Promise<void> {
+	async manageRooms(client: Socket, params: GameParams): Promise<void> {
+		console.log(params);
 		//check if there is an open room with the same game
 		const openRoom: Room = this.checkOpenRoom(client.data.user, params);
 		if (openRoom) {
@@ -103,7 +108,7 @@ export class GameGateway
 		else {
 			//else create a new room
 			const newRoom = this.createRoom(params, client);
-			if (params.mode == "singlePlayer") {
+			if (params.type == "singleplayer") {
 				//if single player start game
 				this.closeRoom(newRoom);
 			}
@@ -195,9 +200,9 @@ export class GameGateway
 	 * @param params game parameters
 	 * @returns 
 	 */
-	checkOpenRoom(user: User, params: gameParams): Room {
+	checkOpenRoom(user: User, params: GameParams): Room {
 		const availableRoom: Room = this.rooms.find((room) => {
-			return (room.isAvailable() && room.getParams().game == params.game);
+			return (room.isAvailable() && room.getParams().mode == params.mode);
 		});
 		return availableRoom;
 	}
@@ -209,7 +214,7 @@ export class GameGateway
 	endGame(room: Room) {
 		room.stopGame();
 		this.server.to(room.getName()).emit(serverEvents.finished, room.getWinner().username);
-		if (room.getParams().mode == "multiPlayer") {
+		if (room.getParams().type == "multiplayer") {
 			//if multiplayer update users stats
 			this.gameService.createGame(room.getStats());
 		}
@@ -221,7 +226,7 @@ export class GameGateway
 	 * @param client socket of the user
 	 * @returns the new room
 	 */
-	createRoom(params: gameParams, client: Socket) {
+	createRoom(params: GameParams, client: Socket) {
 		console.log("creating room: " + this.roomId);
 		const newRoom = new Room(this.roomId.toString(), params);
 		++this.roomId;
@@ -231,7 +236,7 @@ export class GameGateway
 		return newRoom;
 	}
 
-	createPrivateRoom(params: gameParams, user: User, opponent: User) {
+	createPrivateRoom(params: GameParams, user: User, opponent: User) {
 		console.log("creating private room: " + this.roomId);
 		const newRoom = new Room(this.roomId.toString(), params);
 		++this.roomId;
@@ -273,7 +278,6 @@ export class GameGateway
 		room.getUsers().forEach(async (user) => {
 			await this.userService.updateUserStatus(user, userStatus.playing);
 		});
-		this.userGateway.disableNotifications(room.getUsers());
 		this.server.to(room.getName()).emit(serverEvents.started, room.getUsers(), room.getParams());
 		room.startGame();
 	}
@@ -291,6 +295,5 @@ export class GameGateway
 		});
 		this.rooms.splice(this.rooms.indexOf(room), 1);
 		room.close();
-		this.userGateway.disableNotifications(room.getUsers());
 	}
 }

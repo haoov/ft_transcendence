@@ -1,4 +1,4 @@
-import { gameParams } from "../interfaces/gameParams";
+import { GameMode, GameParams, GameType } from "../interfaces/gameParams";
 import { Ball } from "./ball";
 import { Effect } from "./effect";
 import { Field } from "./field";
@@ -12,13 +12,13 @@ class Pong {
 	private effect: Effect;
 	private started: boolean;
 	private finished: boolean;
-	private game: string;
-	private mode: string;
+	private mode: GameMode;
+	private type: GameType;
 	private difficulty: string;
 
-	constructor(params: gameParams) {
-		this.game = params.game;
+	constructor(params: GameParams) {
 		this.mode = params.mode;
+		this.type = params.type;
 		this.difficulty = params.difficulty;
 		this.players = [];
 		this.field = new Field();
@@ -70,15 +70,14 @@ class Pong {
 	}
 
 	async compute() {
-
 		if (this.started) {
-			if (this.game == "super") {
+			if (this.mode == "super") {
 				this.ball.moove(this.players, this.field, this.effect);
 				this.effect.moove(this.field);
 			}
 			else
 				this.ball.moove(this.players, this.field);
-			if (this.mode == "singlePlayer") {
+			if (this.type == "singleplayer") {
 				this.players[1].paddle.autoMove(this.ball, this.field, this.difficulty);
 				this.players[1].spellBook.autoUseSpells(this.ball, this.players[1].paddle);
 			}

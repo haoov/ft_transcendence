@@ -8,6 +8,7 @@
 	import spells from '@/game/components/spells.vue';
 	import GameSocket from '@/game/gameSocket';
 	import { onBeforeRouteLeave } from 'vue-router';
+import type { GameParams } from '../interfaces';
 
 	const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
 
@@ -20,7 +21,7 @@
 	const winner = ref("");
 	const initParams = (await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/game/params`)).data;
 
-	function assignMode(gameParams: {game: string, mode: string, difficulty: string, map: string}) {
+	function assignMode(gameParams: GameParams) {
 		difficulty.value = gameParams.difficulty;
 		gameSocket.getSocket().emit(ClientEvents.gameParams, gameParams);
 	}

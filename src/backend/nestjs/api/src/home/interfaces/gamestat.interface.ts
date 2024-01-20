@@ -3,7 +3,7 @@ import { User } from "src/user/user.interface";
 export interface GameStat {
 	id: number
 	date: Date;
-	type: string;
+	mode: string;
 	winFlag: boolean;
 	opponent: User;
 	userScore: number;

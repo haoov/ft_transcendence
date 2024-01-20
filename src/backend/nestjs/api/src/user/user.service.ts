@@ -57,6 +57,7 @@ export class UserService {
 		const updatedUser: User = await this.getUserById(user.id);
 		if (updatedUser) {
 				updatedUser.status = newStatus;
+				user = updatedUser;
 				this.usersRepository.save(updatedUser as UserEntity);
 		}
 	}
