@@ -1,9 +1,14 @@
 <script setup lang="ts">
+	import { inject } from 'vue';
+	import type GameSocket from '../gameSocket';
+	import { ClientEvents } from '@/utils';
+
 	defineProps(["p1Spells", "p2Spells"]);
 	const emit = defineEmits(["useSpell"]);
+	const gameSocket: GameSocket = inject("gameSocket") as GameSocket;
 
 	function useSpell(spell: string) {
-		emit("useSpell", spell);
+		gameSocket.getSocket().emit(ClientEvents.useSpell, spell);
 	}
 </script>
 
