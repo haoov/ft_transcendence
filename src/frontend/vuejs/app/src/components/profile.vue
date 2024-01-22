@@ -222,7 +222,7 @@ onMounted(async () => {
 							</div>
 						</li>
 						<div v-if="userGames.length" id="gameContent" class="scroll">
-							admin						<li v-for="(game, index) in userGames" :key="game.id" class="c-list__item-score">
+							<li v-for="(game, index) in userGames" :key="game.id" class="c-list__item-score">
 								<div class="c-list__game-history">
 									<div>
 										<div class="u-bg--transparent u-text--mini u-text--overpass">{{ getDateStr(game.date) }}</div>
@@ -232,7 +232,7 @@ onMounted(async () => {
 										<span class="c-game-history__score" :style="{ '--score-color': getScoreColor(game.winFlag)}"> {{ game.userScore }} - {{ game.opponentScore }} </span>
 									</div>
 									<div class="c-game-history__opponent">{{ game.opponent.username }}</div>
-									<div class="u-text-left u-text--extra-small u-text--overpass">{{ game.type }}</div>
+									<div class="u-text-left u-text--extra-small u-text--overpass">{{ game.mode }}</div>
 								</div>
 							</li>
 						</div>
@@ -335,7 +335,7 @@ button, select {
 }
 
 #gameContent {
-		height: 175px;
+		height: 165px;
 		overflow-y: auto;
 }
 
@@ -365,7 +365,7 @@ button, select {
 		align-items: center;
 		stroke: #EBEBEB;
 }
-small-image
+
 .donut-segment {
 		transform-origin: center;
 		stroke: var(--c-pink);
@@ -411,7 +411,7 @@ small-image
 		fill: white;
 		animation: donutfadelong 1s;
 		font-family: Overpass;
-}data
+}
 
 
 .scroll::-webkit-scrollbar {
@@ -426,7 +426,6 @@ small-image
 .scroll::-webkit-scrollbar-track {
 	background-color: transparent;
 }
-small-image
 .scroll::-webkit-scrollbar-thumb:hover,
 .scroll::-webkit-scrollbar-thumb:active {
 	background-color: var(--c-pink);
