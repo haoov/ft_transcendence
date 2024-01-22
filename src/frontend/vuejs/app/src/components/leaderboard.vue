@@ -11,7 +11,7 @@ import { computed, inject, onMounted, ref } from "vue";
 import GlobalSocket from "@/GlobalSocket";
 import GameSocket from "@/game/gameSocket";
 import gameNotification from "@/game/components/gameNotification.vue";
-import notify from "@/notify/components/notify.vue";
+import notify from "@/notify/notify";
 
 const router = useRouter();
 const players = ref<UserStat[]>([]);
@@ -163,14 +163,11 @@ onMounted(async () => {
 	await fetchData();
 });
 
-/*----------------------------------------------------------------------------*/
-/*                                   RAPH                                     */
-/*----------------------------------------------------------------------------*/
-
 function inviteToPlay(player: UserStat) {
 	if (player.status == "playing")
-		notify;
-	globalSocket.getSocket().emit(ClientEvents.gameInvite, player.id);
+		notify.newNotification("error", {message: "Already playing", by: player.username});
+	else
+		globalSocket.getSocket().emit(ClientEvents.gameInvite, player.id);
 }
 
 </script>
