@@ -40,7 +40,7 @@ function scrollToBottomSmooth() {
 };
 
 const $data : any = inject('$data');
-const currentUser : any = $data.getCurrentUser();
+const currentUser : any = await $data.getCurrentUser();
 const store = $data.getStore();
 const socket: Socket = store.socket;
 const componentKey = ref(0);

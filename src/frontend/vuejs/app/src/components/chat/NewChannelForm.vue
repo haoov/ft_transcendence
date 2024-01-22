@@ -74,12 +74,13 @@
 <script setup lang="ts">
 import SeachBar from './SearchBar.vue';
 import NewPrivateChannelForm from './NewPrivateChannelForm.vue';
-import { ref, computed, inject } from 'vue';
+import { ref, computed, inject, watch, onMounted } from 'vue';
 
 const selectedOption = ref('Public');
 const options = ['Public', 'Private', 'Protected', 'Secret'];
 const $data : any = inject('$data');
 const store = $data.getStore();
+const currentPrivateChannels = store.channels.filter((channel: any) => channel.mode === 'Private');
 const socket = store.socket;
 const currentUser = await $data.getCurrentUser();
 const channelName = ref('');
@@ -89,11 +90,10 @@ const passwordError = ref(false);
 const userIds = ref<number[]>([]);
 
 const isSubmitDisabled = computed(() => {
-	// if (selectedOption.value === 'Private') {
-	// 	return userIds.value.length < 1;
-	// }
-	// return !channelName.value || nameError.value || passwordError.value;
-	return false;
+	if (selectedOption.value === 'Private') {
+		return userIds.value.length < 1;
+	} else 
+	return !channelName.value || nameError.value || passwordError.value;
 });
 const submitForm = () => {
 	userIds.value.push(currentUser.id);
@@ -102,8 +102,16 @@ const submitForm = () => {
 		if (userIds.value.length < 2) {
 			return;
 		}
+		const name = '#' + userIds.value.sort((a,b) => a -b).join('#');
+		if (currentPrivateChannels.some((channel: any) => channel.name === name)) {
+			console.log('channel already exists');
+			const newActiveChannel = currentPrivateChannels.find((channel: any) => channel.name === name);
+			$data.setActiveChannel(newActiveChannel);
+			$data.closeModalForm();
+			return;
+		}
 		newChannel = {
-			name: '#' + userIds.value.join('#'),
+			name: name,
 			mode: selectedOption.value,
 			creatorId: currentUser.id,
 			password: password.value,
@@ -135,6 +143,16 @@ const submitForm = () => {
 const resetchannelName = () => {
 	channelName.value = '';
 };
+
+onMounted(async () => {
+	await $data.loadChannels();
+});
+
+watch(password, () => {
+	if (password.value.length > 0) {
+		passwordError.value = false;
+	}
+});
 
 </script>
 
@@ -256,7 +274,7 @@ const resetchannelName = () => {
 
 .cancel-icon {
   position: absolute;
-  right: 7px;
+  right: 25px;
   top: 10px;
   cursor: pointer;
 }
