@@ -64,9 +64,9 @@ export class UserService {
 		if (updatedUser) {
 				updatedUser.status = newStatus;
 				user = updatedUser;
-				this.usersRepository.save(updatedUser as UserEntity);
+				await this.usersRepository.save(updatedUser as UserEntity);
 		}
-		return user;
+		return updatedUser;
 	}
 
 	async updateUsername(req: Request): Promise<User> {

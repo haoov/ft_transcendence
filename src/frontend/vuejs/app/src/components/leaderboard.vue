@@ -34,21 +34,21 @@ const playersDisplayed = computed(() => {
 		}
 });
 
-globalSocket.getSocket().on(ServerEvents.dataChanged, async () => {
+globalSocket.getSocket().on(ServerEvents.dataChanged, async (user: User) => {
 	await fetchLeaderboard();
 });
 
 // FETCHING DATA
 async function fetchData() {
-	await fetchLeaderboard();
 	await fetchMe();
+	await fetchLeaderboard();
 	loadAllImages();
 }
 
 async function fetchLeaderboard() {
 	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/leaderboard`)
-		.then(data => { players.value = data.data;});
+		.then(data => { players.value = data.data; });
 }
 
 async function fetchMe() {
@@ -122,6 +122,8 @@ function getStatusIcon(user: UserStat) : string {
 	// Faire option forbidden
 	if (user.status == "undefined" || user.status == "offline")
 		return offline;
+	else if (user.status == "playing" || user.status == "waiting")
+		return playing;
 	else
 		return online;
 }
