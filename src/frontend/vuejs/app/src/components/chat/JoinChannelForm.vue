@@ -294,7 +294,7 @@ ul::-webkit-scrollbar-track:active {
   display: flex;
   justify-content: space-between;
   list-style: none;
-  width: 91%;
+  width: 90%;
   cursor: pointer;
   padding: 5px;
   border-radius: 5px;

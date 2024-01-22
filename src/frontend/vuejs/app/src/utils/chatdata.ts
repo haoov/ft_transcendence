@@ -61,6 +61,14 @@ async function fetchBlockedUsers() : Promise<User[]> {
 	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block`).then((res) => { return res.data });
 }
 
+async function fetchBlockersList() : Promise<number []> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/blockedBy`).then((res) => { return res.data });
+}
+
+async function blockUser(id: number) {
+	axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${id}`)
+}
+
 const store = reactive({
 	channels: [] as Channel[],
 	messages: [] as Message [],
@@ -88,6 +96,14 @@ export default {
 
 	getBlockedUsers() : Promise<User[]> {
 		return fetchBlockedUsers();
+	},
+
+	getBlockersList() : Promise<number []> {
+		return fetchBlockersList();
+	},
+
+	blockUser(id: number) {
+		return blockUser(id);
 	},
 
 	getCurrentUser() : Object {

@@ -77,6 +77,9 @@ interface User {
 const $data : any = inject('$data');
 const listUsers = await $data.getUsers();
 const currentUser = await $data.getCurrentUser();
+const blockersIds = await $data.getBlockersList();
+const blockedUsers = await $data.getBlockedUsers();
+const blockedIds = blockedUsers.map((user: User) => user.id);
 const store = $data.getStore();
 const search = ref('');
 const listUsersToAdd = ref([] as User[]);
@@ -87,8 +90,10 @@ const searchResults = computed(() => {
 	} else {
 		return listUsers.filter((users: User) => {
 			return users.username.toLowerCase().includes(search.value.toLowerCase()) && 
-					!listUsersToAdd.value.includes(users) && 
-						users.id !== currentUser.id;
+					!listUsersToAdd.value.includes(users)
+					&& users.id !== currentUser.id
+					&& !blockersIds.includes(users.id)
+					&& !blockedIds.includes(users.id);
 		});
 	}
 });
@@ -287,7 +292,7 @@ ul::-webkit-scrollbar-track:active {
   display: flex;
   justify-content: space-between;
   list-style: none;
-  width: 100%;
+  width: 90%;
   cursor: pointer;
   padding: 5px;
   border-radius: 5px;
