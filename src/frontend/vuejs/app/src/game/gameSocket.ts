@@ -7,7 +7,6 @@ class GameSocket {
 	private readonly socket: Socket;
 	private isReady: boolean;
 	private readonly userStatus: Ref<string>;
-	private moveEvents: boolean;
 	private readonly user: Ref<User>;
 
 	constructor() {
@@ -15,7 +14,6 @@ class GameSocket {
 		this.user = ref({} as User);
 		this.isReady = false;
 		this.userStatus = ref("");
-		this.moveEvents = false;
 	}
 
 	async initSocket() {

@@ -27,11 +27,6 @@ const routes = [
 		path: "/game",
 		name: "game",
 		component: GameView,
-		beforeEnter: () => {
-			const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
-			if (!gameSocket.socketIsReady())
-				gameSocket.initSocket();
-		}
 	},
 	{
 		path: "/chat",

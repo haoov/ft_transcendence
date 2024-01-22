@@ -9,7 +9,7 @@ import offline from '../assets/images/status-offline-32.png';
 import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
-import type GlobalSocket from "@/GlobalSocket";
+import type SocketManager from "@/SocketManager";
 
 const route = useRoute();
 let username = route.params.username;
@@ -17,9 +17,9 @@ const me = ref<User>();
 const user = ref<User>();
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
-const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
+const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
-globalSocket.getSocket().on(ServerEvents.dataChanged, async (newUser: User) => {
+socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser: User) => {
 	if (user.value?.id == newUser.id) {
 		if (newUser.username != username) {
 			username = newUser.username;

@@ -92,7 +92,7 @@ export class GameGateway
 				openRoom.addSocket(client);
 				openRoom.addUser(client.data.user);
 				this.userGateway.gameReady(openRoom);
-				client.emit(serverEvents.updateStatus, "waiting for opponent");
+				client.emit(serverEvents.gameReady);
 				//wait for opponent to be ready
 				setTimeout(() => {
 					if (openRoom.isOpen()) {
@@ -112,8 +112,7 @@ export class GameGateway
 			}
 			else {
 				//else wait for opponent
-				await this.userService.updateUserStatus(client.data.user, userStatus.waiting);
-				client.emit(serverEvents.updateStatus, "waiting");
+				client.data.user = await this.userService.updateUserStatus(client.data.user, userStatus.waiting);
 				this.userGateway.dataChanged(client.data.user);
 			}
 		}
@@ -131,7 +130,7 @@ export class GameGateway
 			}
 		}
 	}
-	
+
 	@SubscribeMessage(clientEvents.move)
 	move(client: Socket, direction: string) {
 		const room: Room = this.findRoom(client);
@@ -235,8 +234,12 @@ export class GameGateway
 		return newRoom;
 	}
 
-	createPrivateRoom(params: GameParams, user: User, opponent: User) {
+	createPrivateRoom(user: User, opponent: User) {
 		console.log("creating private room: " + this.roomId);
+		const params: GameParams = {
+			mode: "super",
+			type: "multiplayer",
+		};
 		const newRoom = new Room(this.roomId.toString(), {gameParams: params, setPrivate: true});
 		++this.roomId;
 		newRoom.addUser(user);
@@ -258,6 +261,7 @@ export class GameGateway
 		}
 		else {
 			if (room.isFull()) {
+				console.log("room is full: " + room.getName());
 				//if room is full start game
 				this.closeRoom(room);
 			}
@@ -275,7 +279,7 @@ export class GameGateway
 	closeRoom(room: Room) {
 		console.log("closing room: " + room.getName());
 		room.getUsers().forEach(async (user) => {
-			await this.userService.updateUserStatus(user, userStatus.playing);
+			user = await this.userService.updateUserStatus(user, userStatus.playing);
 			this.userGateway.dataChanged(user);
 		});
 		this.server.to(room.getName()).emit(serverEvents.started, room.getUsers(), room.getParams());
@@ -288,10 +292,9 @@ export class GameGateway
 	 */
 	deleteRoom(room: Room) {
 		console.log("deleting room: " + room.getName());
-		this.server.to(room.getName()).emit(serverEvents.updateStatus, "");
 		room.getSockets().forEach(async (socket) => {
 			room.removeSocket(socket);
-			await this.userService.updateUserStatus(socket.data.user, userStatus.online);
+			socket.data.user = await this.userService.updateUserStatus(socket.data.user, userStatus.online);
 			this.userGateway.dataChanged(socket.data.user);
 		});
 		this.rooms.splice(this.rooms.indexOf(room), 1);

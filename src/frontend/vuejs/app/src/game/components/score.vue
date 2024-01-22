@@ -1,11 +1,17 @@
 <script setup lang="ts">
 	import { inject } from 'vue';
-	import GameSocket from '../gameSocket';
+	import type SocketManager from '@/SocketManager';
 	import CustumButton from '@/components/custumButton.vue';
 
-	defineProps(["p1", "p2"]);
+	defineProps(["p1", "p2", "state"]);
+	const emit = defineEmits(["leaveGame"]);
 
-	const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
+	const socketManager: SocketManager = inject('socketManager') as SocketManager;
+
+	function leaveGame() {
+		socketManager.forfeit();
+		emit("leaveGame");
+	}
 </script>
 
 <template>
@@ -18,9 +24,9 @@
 			<span class="username">{{ p2.username }}</span>
 		</div>
 		<CustumButton
-			v-if="gameSocket.getuserStatus() == 'playing'"
+			v-if="state == 'playing'"
 			class="leave"
-			v-on:click="gameSocket.forfeit()">
+			v-on:click="leaveGame()">
 			Leave game
 		</CustumButton>
 		<div class="score-div p1">
