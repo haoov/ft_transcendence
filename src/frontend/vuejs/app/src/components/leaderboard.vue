@@ -11,6 +11,7 @@ import { computed, inject, onMounted, ref } from "vue";
 import GlobalSocket from "@/GlobalSocket";
 import GameSocket from "@/game/gameSocket";
 import gameNotification from "@/game/components/gameNotification.vue";
+import notify from "@/notify/components/notify.vue";
 
 const router = useRouter();
 const players = ref<UserStat[]>([]);
@@ -160,20 +161,19 @@ function goToProfile(username: string) {
       router.push(`/${username}`);
 }
 
-function inviteToPlay(id: number) {
-	const gameParams = {
-		game: "classic",
-		mode: "multiPlayer",
-	};
-	globalSocket.getSocket().emit(ClientEvents.gameInvite, id);
-}
-
-
 onMounted(async () => {
 	await fetchData();
 });
 
+/*----------------------------------------------------------------------------*/
+/*                                   RAPH                                     */
+/*----------------------------------------------------------------------------*/
 
+function inviteToPlay(player: UserStat) {
+	if (player.status == "playing")
+		notify;
+	globalSocket.getSocket().emit(ClientEvents.gameInvite, player.id);
+}
 
 </script>
 
@@ -288,7 +288,7 @@ onMounted(async () => {
 											<div>
 												<a class="c-media__title u-text--overpass" @click="goToProfile(player.username)" title="Go to profile">{{ player.username }}</a>
 											</div>
-											<a v-if="player.id!=me?.id" class="u-mr--8" href="https://www.google.com" target="_blank">
+											<a v-if="player.id!=me?.id" class="u-mr--8" :click="inviteToPlay(player)" target="_blank">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 											</a>
 											<a v-if="player.id!=me?.id" href="https://www.google.com" target="_blank">
