@@ -63,7 +63,8 @@ async function fetchMe() {
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
-				myGames.value = data.data;})
+				myGames.value = data.data;
+				console.log(data.data)})
 			});
 }
 
@@ -237,7 +238,7 @@ function inviteToPlay(player: UserStat) {
 										<span class="c-game-history__score" :style="{ '--score-color': getScoreColor(game.winFlag)}"> {{ game.userScore }} - {{ game.opponentScore }} </span>
 									</div>
 									<div class="c-game-history__opponent">{{ game.opponent.username }}</div>
-									<div class="u-text-left u-text--extra-small u-text--overpass">{{ game.type }}</div>
+									<div class="u-text-left u-text--extra-small u-text--overpass">{{ game.mode }}</div>
 								</div>
 							</li>
 						</div>
