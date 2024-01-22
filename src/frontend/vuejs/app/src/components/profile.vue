@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { type UserStat, type User, type GameStat, ServerEvents } from "@/utils";
-import { computed, inject, onMounted, ref } from "vue";
+import { inject, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import router from '@/router';
 import offline from '../assets/images/status-offline-32.png';
@@ -15,6 +15,7 @@ const route = useRoute();
 let username = route.params.username;
 const me = ref<User>();
 const user = ref<User>();
+const isBlocked = ref<boolean>(false);
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
 const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
@@ -39,7 +40,7 @@ async function fetchUser() {
 			user.value = data.data;
 			// Fetch user stats
 			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/stats/${data.data.id}`;
-				axios.get(url1).then( data => {
+			axios.get(url1).then( data => {
 				userStats.value = data.data;})
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
@@ -53,6 +54,32 @@ async function fetchMe() {
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
 		.then( (data) => {
 			me.value = data.data;
+			// Fetch blocked users
+			const url: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block`;
+			axios.get(url).then( (data) => {
+				const blockedUsers: User[] = data.data;
+				blockedUsers.forEach( (blockedUser) => {
+					if (blockedUser.id == user.value?.id)
+						isBlocked.value = true;
+				});
+			});
+		});
+}
+
+// BLOCK & UNBLOCK FUNCTIONS
+function blockUser() {
+	axios
+		.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
+		.then( () => {
+			isBlocked.value = true;
+		});
+}
+
+function unblockUser() {
+	axios
+		.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
+		.then( () => {
+			isBlocked.value = false;
 		});
 }
 
@@ -68,16 +95,24 @@ function	getAvatarSrc() : string | undefined {
 
 function getStatusIcon() : string {
 	// Faire option forbidden
-	if (user.value?.status == "undefined" || user.value?.status == "offline")
+	if (isBlocked.value)
+		return blocked;
+	else if (user.value?.status == "undefined" || user.value?.status == "offline")
 		return offline;
+	else if (user.value?.status == "playing")
+		return playing;
 	else
 		return online;
 }
 
 function getStatusTitle() : string {
 	// Faire option forbidden
-	if (user.value?.status == "undefined" || user.value?.status == "offline")
+	if (isBlocked.value)
+		return "blocked";
+	else if (user.value?.status == "undefined" || user.value?.status == "offline")
 		return "offline";
+	else if (user.value?.status == "playing")
+		return "playing";
 	else
 		return "online";
 }
@@ -135,11 +170,17 @@ onMounted(async () => {
 							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ user?.username }}</div>
 							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
 							<div class="u-ml--24 u-mt--4">
-								<a v-if="user?.id!=me?.id" class="u-mr--8" href="https://www.google.com/" target="_blank">
+								<a v-if="user?.id!=me?.id && !isBlocked" class="u-mr--8" target="_blank">
 									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 								</a>
-								<a v-if="user?.id!=me?.id" href="https://www.google.com/" target="_blank">
+								<a v-if="user?.id!=me?.id && !isBlocked" class="u-mr--8" target="_blank">
 									<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
+								</a>
+								<a v-if="user?.id!=me?.id && !isBlocked" @click="blockUser()" target="_blank">
+									<img src="../assets/images/status-blocked-32.png" width='20em' height="20em" alt="block-icon" title="Block">
+								</a>
+								<a v-if="user?.id!=me?.id && isBlocked" @click="unblockUser()" target="_blank">
+									<img src="../assets/images/unblock-50.png" width='20em' height="20em" alt="unblock-icon" title="Unblock">
 								</a>
 							</div>
 						</div>
@@ -181,7 +222,7 @@ onMounted(async () => {
 							</div>
 						</li>
 						<div v-if="userGames.length" id="gameContent" class="scroll">
-							<li v-for="(game, index) in userGames" :key="game.id" class="c-list__item-score">
+							admin						<li v-for="(game, index) in userGames" :key="game.id" class="c-list__item-score">
 								<div class="c-list__game-history">
 									<div>
 										<div class="u-bg--transparent u-text--mini u-text--overpass">{{ getDateStr(game.date) }}</div>
@@ -370,7 +411,7 @@ small-image
 		fill: white;
 		animation: donutfadelong 1s;
 		font-family: Overpass;
-}
+}data
 
 
 .scroll::-webkit-scrollbar {

@@ -122,7 +122,7 @@ function getStatusIcon(user: UserStat) : string {
 	// Faire option forbidden
 	if (user.status == "undefined" || user.status == "offline")
 		return offline;
-	else if (user.status == "playing" || user.status == "waiting")
+	else if (user.status == "playing")
 		return playing;
 	else
 		return online;
