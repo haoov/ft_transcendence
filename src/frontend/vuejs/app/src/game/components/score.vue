@@ -6,6 +6,15 @@
 	defineProps(["p1", "p2"]);
 
 	const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
+
+	function avatarSrc(avatar: string): string {
+		const timestamp = Date.now();
+		if (avatar.includes(':3000/api/user/avatar/'))
+			return `${avatar}?${timestamp}`;
+		else
+			return avatar;
+	}
+
 </script>
 
 <template>
@@ -13,7 +22,7 @@
 <div class="score-container">
 		<div class="score-div p2">
 			<span class="score p2">{{ p2.score }}</span>
-			<img v-if="p2.avatar" class="avatar" :src="p2.avatar">
+			<img v-if="p2.avatar" class="avatar" :src="avatarSrc(p2.avatar)">
 			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
 			<span class="username">{{ p2.username }}</span>
 		</div>
@@ -25,7 +34,7 @@
 		</CustumButton>
 		<div class="score-div p1">
 			<span class="username">{{ p1.username }}</span>
-			<img v-if="p1.avatar" class="avatar" :src="p1.avatar">
+			<img v-if="p1.avatar" class="avatar" :src="avatarSrc(p1.avatar)">
 			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
 			<span class="score p1">{{ p1.score }}</span>
 		</div>
@@ -76,6 +85,7 @@
 		width: 50px;
 		height: 50px;
 		border-radius: 50%;
+		object-fit: cover;
 	}
 
 	.username {
