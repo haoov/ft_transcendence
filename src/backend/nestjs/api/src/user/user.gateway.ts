@@ -7,7 +7,6 @@ import { userStatus } from './enum/userStatus.enum';
 import { Room } from 'src/game/classes/Room';
 import { GameGateway } from 'src/game/game.gateway';
 import { Inject, forwardRef } from '@nestjs/common';
-import { subscribe } from 'diagnostics_channel';
 
 // Outil de gestion des web socket events
 @WebSocketGateway({ namespace: 'users' })
@@ -28,7 +27,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			else
 				this.usersSockets.set(user.id, [client]);
 			await this.userService.updateUserStatus(user, userStatus.online);
-			this.statusChanged(user);
+			this.dataChanged(user);
 			console.log("user connection: " + user.username);
 		});
 	}
@@ -43,7 +42,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				if (socketIds.length == 0) {
 					this.usersSockets.delete(client.data.user.id);
 					this.userService.updateUserStatus(client.data.user, userStatus.offline);
-					this.statusChanged(client.data.user);
+					this.dataChanged(client.data.user);
 				}
 				console.log("user disconnection: " + client.data.user.username);
 			}
@@ -72,11 +71,11 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	statusChanged(user: User) {
+	dataChanged(user: User) {
 		this.usersSockets.forEach((sockets: Socket[], id: number) => {
 			if (sockets != this.usersSockets.get(user.id))
 				sockets.forEach(socket => {
-					socket.emit(serverEvents.statusChanged, user);
+					socket.emit(serverEvents.dataChanged, user);
 				});
 		});
 	}
