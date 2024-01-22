@@ -14,7 +14,7 @@
 					</form>
 				</div>
 			</div>
-				<div class="formTitle">Username</div>
+			<div class="formTitle">Username</div>
 			<div class="formField">
 				<input 
 				v-model="usernameSet"
@@ -24,11 +24,26 @@
 				autocomplete="off"
 				>
 			</div>
-				<div class="formTitle">Email</div>
+			<div class="formTitle">Email</div>
 			<div class="formField">
 				<div class="forbidden">{{ me.email }}</div>
 			</div>
-		
+
+			<div class="formTitle">2FA</div>
+			<div class="radio-inputs" id="2fa">
+				<label class="radio"
+				v-for="option in options"
+				>
+				<input
+				autocomplete="off"
+				type="radio"
+				v-model="selectedOption"
+				:value="option"
+				name="2fa"
+				>
+				<span class="name">{{ option }}</span>
+				</label>
+			</div>
 			<div class ="u-justify--center u-display--flex">
 				<button id="saveButton" :disabled="disableSave" @click="updateProfile()">Save</button>
 			</div>
@@ -69,6 +84,8 @@ const fileInput = ref<HTMLElement | null>(null);
 const disableSave = computed(() => {
 	return (!usernameSet.value || usernameSet.value === me.value.username || usernameSet.value.length > 15) && (!avatarSet.value);
 });
+const options = ['Disable', 'Enable'];
+const selectedOption = ref("Disable");
 
 // FETCHING DATA
 async function fetchMe() {
@@ -103,6 +120,7 @@ function	updateUsername() {
 		})
 		.catch( (err) => {
 			if (err.response.status == 409) {
+				usernameSet.value = me.value.username;
 				sendToast("error", "Username is already in use!");
 			}
 		});
@@ -179,7 +197,7 @@ onMounted(async () => {
 	margin-left: 6rem;
 	font-family: Overpass;
 	font-size: 1.4rem;
-	margin-top: 2rem;
+	margin-top: 1rem;
 }
 
 .formField {
@@ -227,6 +245,45 @@ onMounted(async () => {
 	outline: none;
 	border-color: #e81cff;
 }
+
+.radio-inputs {
+	display: flex;
+    flex-wrap: wrap;
+    border-radius: 0.5rem;
+    box-sizing: border-box;
+		background-color: linear-gradient(#212121, #212121) padding-box;
+    box-shadow: 0 0 0 1px #0000000f;
+    padding: 0.25rem;
+    font-size: small;
+    width: 14rem;
+    margin-left: 6rem;
+}
+
+.radio-inputs .radio {
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+.radio-inputs .radio input {
+  display: none;
+}
+
+.radio-inputs .radio .name {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: none;
+  padding: .5rem 0;
+  color: #717171;
+  transition: all .15s ease-in-out;
+}
+
+.radio-inputs .radio input:checked + .name {
+  background-color: #fff;
+}
+
 
 #saveButton {
 		font-size: small;
