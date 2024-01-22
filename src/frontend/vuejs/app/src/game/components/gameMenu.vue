@@ -2,14 +2,13 @@
 	import { ref, computed, inject, type Ref } from "vue";
 	import loader from "@/components/loader.vue"
 	import selector from "@/components/selector.vue"
-	import { ClientEvents } from "@/utils";
-	import type GameSocket from "../gameSocket";
 	import CustumButton from "@/components/custumButton.vue";
+	import type SocketManager from "@/SocketManager";
 	import type { GameDifficulty, GameMap, GameMode, GameParams, GameType } from "@/game/interfaces";
 
-	const props = defineProps(["winner"]);
-	const emit = defineEmits(['click', 'stopWaiting']);
-	const gameSocket: GameSocket = inject("gameSocket") as GameSocket;
+	const props = defineProps<{state: string, winner: string}>();
+	const emit = defineEmits(['click', 'stopWaiting', 'newGame']);
+	const socketManager: SocketManager = inject("socketManager") as SocketManager;
 
 	const selectedParams: Ref<GameParams> = ref({
 		mode: undefined,
@@ -30,18 +29,18 @@
 	function display(what: string): boolean {
 		switch (what) {
 			case "selectMenu":
-				return (gameSocket.getuserStatus() == "");
+				return (props.state == "noGame");
 			case "difficulty":
 				return (selectedParams.value.type == "singleplayer");
 			case "maps":
 				return (selectedParams.value.mode == "super"
 								&& selectedParams.value.type == "singleplayer");
 			case "waitingMenu":
-				return (gameSocket.getuserStatus() == "waiting");
+				return (props.state == "waiting");
 			case "finishedMenu":
-				return (gameSocket.getuserStatus() == "finished");
+				return (props.state == "finished");
 			case "readyMenu":
-				return (gameSocket.getuserStatus() == "ready");
+				return (props.state == "ready");
 			default:
 				return false;
 		}
@@ -51,12 +50,12 @@
 		selectedParams.value.type = undefined
 		selectedParams.value.map = "classic";
 		selectedParams.value.difficulty = "easy";
-		selectedParams.value.mode = undefined
-		gameSocket.setuserStatus("");
+		selectedParams.value.mode = undefined;
+		emit("newGame");
 	}
 
 	function stopWaiting() {
-		gameSocket.getSocket().emit(ClientEvents.stopWaiting);
+		socketManager.stopWaiting();
 		newGame();
 	}
 
@@ -100,7 +99,7 @@
 
 		<!--Menu waiting for opponent-->
 		<div v-if="display('waitingMenu')" class="menu-box">
-			<loader :text="gameSocket.getuserStatus()"></loader>
+			<loader :text="socketManager.getUser().status"></loader>
 			<CustumButton id="stopWaiting" v-on:click="stopWaiting">
 				Stop waiting
 			</CustumButton>
@@ -117,10 +116,10 @@
 		<!--Menu game ready-->
 		<div v-if="display('readyMenu')" class="menu-box">
 			<span>Game Ready</span>
-			<CustumButton v-on:click="gameSocket.play()">
+			<CustumButton v-on:click="socketManager.play()">
 				Play
 			</CustumButton>
-			<CustumButton v-on:click="gameSocket.forfeit()">
+			<CustumButton v-on:click="socketManager.forfeit()">
 				Forfeit
 			</CustumButton>
 		</div>

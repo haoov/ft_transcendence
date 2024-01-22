@@ -11,6 +11,7 @@ export enum clientEvents {
 	gameForfeit = "gameForfeit",
 	gameInvite = "gameInvite",
 	gameInviteResponse = "gameInviteResponse",
+	gameResponse = "gameResponse",
 };
 
 export enum serverEvents {

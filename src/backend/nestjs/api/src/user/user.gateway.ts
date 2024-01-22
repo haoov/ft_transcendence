@@ -52,7 +52,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage(clientEvents.gameInvite)
 	async gameInvite(client: Socket, opponentID: number) {
 		const opponent: User = await this.userService.getUserById(opponentID);
-		console.log("game invite from " + client.data.user.username + " to " + opponent.username);
 		const sockets: Socket[] = this.usersSockets.get(opponentID);
 		if (sockets) {
 			sockets.forEach(socket => {
@@ -67,7 +66,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			sockets.forEach(socket => {
 				socket.emit(serverEvents.gameReady);
 			});
-			console.log("notification gameReady sent to user: " + room.getUsers()[0].id);
 		}
 	}
 
