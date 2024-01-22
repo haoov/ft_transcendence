@@ -24,4 +24,5 @@ export enum ServerEvents {
 	disableNotifications = "disableNotifications",
 	updateStatus = "updateStatus",
 	gameInvite = "gameInvite",
+	dataChanged = "dataChanged",
 };

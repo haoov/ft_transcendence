@@ -14,8 +14,9 @@ router.beforeEach((to) => {
 		const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
 		axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth`).then(
 			() => {
-				if (!globalSocket.socketIsReady())
+				if (!globalSocket.socketIsReady()) {
 					globalSocket.initSocket();
+				}
 			},
 			() => {
 				router.push("/login");

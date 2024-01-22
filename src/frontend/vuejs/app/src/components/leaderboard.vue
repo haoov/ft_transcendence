@@ -20,6 +20,9 @@ const myStats = ref<UserStat>();
 const myGames = ref<GameStat[]>([]);
 const search = ref('');
 
+const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
+const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
+
 const playersDisplayed = computed(() => {
 		if (search.value.length === 0) {
 				return players.value;
@@ -30,6 +33,9 @@ const playersDisplayed = computed(() => {
 		}
 });
 
+globalSocket.getSocket().on(ServerEvents.dataChanged, async () => {
+    await fetchLeaderboard();
+});
 
 // FETCHING DATA
 async function fetchData() {
@@ -151,8 +157,6 @@ function getScoreColor(winFlag: boolean): string {
 function goToProfile(username: string) {
       router.push(`/${username}`);
 }
-const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
-const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
 
 function inviteToPlay(id: number) {
 	const gameParams = {
