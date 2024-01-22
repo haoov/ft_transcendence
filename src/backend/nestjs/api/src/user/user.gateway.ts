@@ -7,6 +7,7 @@ import { userStatus } from './enum/userStatus.enum';
 import { Room } from 'src/game/classes/Room';
 import { GameGateway } from 'src/game/game.gateway';
 import { Inject, forwardRef } from '@nestjs/common';
+import { subscribe } from 'diagnostics_channel';
 
 // Outil de gestion des web socket events
 @WebSocketGateway({ namespace: 'users' })
@@ -44,7 +45,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					this.userService.updateUserStatus(client.data.user, userStatus.offline);
 					this.statusChanged(client.data.user);
 				}
-				// console.log("user disconnection: " + client.data.user.username);
+				console.log("user disconnection: " + client.data.user.username);
 			}
 		}
 	}
@@ -67,7 +68,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			sockets.forEach(socket => {
 				socket.emit(serverEvents.gameReady);
 			});
-			// ("notification gameReady sent to user: " + room.getUsers()[0].id);
+			console.log("notification gameReady sent to user: " + room.getUsers()[0].id);
 		}
 	}
 

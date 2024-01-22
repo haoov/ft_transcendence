@@ -4,7 +4,7 @@
 	import selector from "@/components/selector.vue"
 	import { ClientEvents } from "@/utils";
 	import type GameSocket from "../gameSocket";
-	import custumButton from "@/components/custumButton.vue";
+	import CustumButton from "@/components/custumButton.vue";
 	import type { GameDifficulty, GameMap, GameMode, GameParams, GameType } from "@/game/interfaces";
 
 	const props = defineProps(["winner"]);
@@ -90,39 +90,39 @@
 				preSelected="classic"
 				@select="(value) => {selectedParams.map = value}"
 			></selector>
-			<custumButton
+			<CustumButton
 				id="play"
 				:disabled="!isEnabled"
 				v-on:click="emit('click', selectedParams)">
 				Play
-			</custumButton>
+			</CustumButton>
 		</div>
 
 		<!--Menu waiting for opponent-->
 		<div v-if="display('waitingMenu')" class="menu-box">
 			<loader :text="gameSocket.getuserStatus()"></loader>
-			<custumButton id="stopWaiting" v-on:click="stopWaiting">
+			<CustumButton id="stopWaiting" v-on:click="stopWaiting">
 				Stop waiting
-			</custumButton>
+			</CustumButton>
 		</div>
 
 		<!--Menu game finished-->
 		<div v-if="display('finishedMenu')" class="menu-box">
 			<span>{{ winner }} won!</span>
-			<custumButton id="reset" v-on:click="newGame()">
+			<CustumButton id="reset" v-on:click="newGame()">
 				New game
-			</custumButton>
+			</CustumButton>
 		</div>
 
 		<!--Menu game ready-->
 		<div v-if="display('readyMenu')" class="menu-box">
 			<span>Game Ready</span>
-			<custumButton v-on:click="gameSocket.play()">
+			<CustumButton v-on:click="gameSocket.play()">
 				Play
-			</custumButton>
-			<custumButton v-on:click="gameSocket.forfeit()">
+			</CustumButton>
+			<CustumButton v-on:click="gameSocket.forfeit()">
 				Forfeit
-			</custumButton>
+			</CustumButton>
 		</div>
 	</div>
 
@@ -150,18 +150,20 @@
 		justify-content: center;
 		align-items: center;
 		border-radius: 0.8rem;
-		box-shadow: 0 0 0 1px var(--c-black-light);
+		box-shadow: 0 0 10px 1px var(--c-black-light);
 		padding: 15px;
 		background-color: var(--c-surface);
+		animation: open 0.3s ease-in-out forwards;
+		overflow: hidden;
 	}
 
-	.custumButton {
-		width: 100px;
-		border-radius: 0.8rem;
-		border: none;
-		padding: .5rem;
-		cursor: pointer;
-		font-size: medium;
+	@keyframes open {
+		0% {
+			transform: scaleY(0);
+		}
+		100% {
+			transform: scaleY(1);
+		}
 	}
 
 	#play {

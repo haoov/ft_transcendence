@@ -39,6 +39,10 @@ class GameSocket {
 		this.socket.emit(ClientEvents.gameForfeit);
 	}
 
+	useSpell(spell: string) {
+		this.socket.emit(ClientEvents.useSpell, spell);
+	}
+
 	setuserStatus(state: string): void {
 		this.userStatus.value = state;
 	}
