@@ -1,6 +1,6 @@
 <template>
 	<div class="message-div" :id="id">
-		<div class="profile-img-div" @click="openProfilModal">
+		<div class="profile-img-div" @click="userId === currentUser.id ? null : openProfilModal">
 			<img :src="profilePic" alt="Profile Picture" >
 		</div>
 		<div class="core-message-div">
@@ -21,6 +21,7 @@ import { inject } from 'vue';
 
 const props : any = defineProps({
 	data: Object,
+	currentUser: Object,
 	id: Number
 });
 const $data : any = inject('$data');
@@ -32,6 +33,7 @@ const DateRawStamp : string = props.data.message.time;
 const timeFr = moment.tz(DateRawStamp, 'Europe/Paris');
 const timestamp : string = timeFr.format('HH:mm:ss');
 const id : string = props.id.toString();
+const currentUser = props.currentUser;
 
 const openProfilModal = () => {
 	$data.openProfileModal(userId);
@@ -57,7 +59,6 @@ const openProfilModal = () => {
   max-width: 100%;
   max-height: 100%;
   object-fit: cover;
-
 }
 
 .core-message-div {

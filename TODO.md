@@ -5,9 +5,6 @@
 
 - Fixe la creation de channel 
 
--
-
-
 -----------------------------------------------------------
 
 - Implementer la creation des channels
