@@ -96,7 +96,6 @@ export class GameGateway
 				client.emit(serverEvents.updateStatus, "waiting for opponent");
 				//wait for opponent to be ready
 				setTimeout(() => {
-					console.log("AFTER TIMEOUT: " + openRoom.isClosed());
 					if (openRoom.isOpen()) {
 						openRoom.quitGame(openRoom.getSockets()[0]);
 						this.endGame(openRoom);
@@ -228,7 +227,7 @@ export class GameGateway
 	 */
 	createRoom(params: GameParams, client: Socket) {
 		console.log("creating room: " + this.roomId);
-		const newRoom = new Room(this.roomId.toString(), params);
+		const newRoom = new Room(this.roomId.toString(), {gameParams: params});
 		++this.roomId;
 		newRoom.addUser(client.data.user);
 		newRoom.addSocket(client);
@@ -238,7 +237,7 @@ export class GameGateway
 
 	createPrivateRoom(params: GameParams, user: User, opponent: User) {
 		console.log("creating private room: " + this.roomId);
-		const newRoom = new Room(this.roomId.toString(), params);
+		const newRoom = new Room(this.roomId.toString(), {gameParams: params, setPrivate: true});
 		++this.roomId;
 		newRoom.addUser(user);
 		newRoom.addUser(opponent);

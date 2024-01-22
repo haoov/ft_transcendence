@@ -48,15 +48,6 @@
 		width: 70px;
 		margin: 5px;
 		font-size: small;
-		transition: transform 0.1s ease-in-out;
-	}
-
-	.v_button:hover {
-		transform: scale(1.05);
-	}
-
-	.v_button:active {
-		transform: scale(0.95);
 	}
 
 	#timeout-bar {

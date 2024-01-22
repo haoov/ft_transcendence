@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { inject } from 'vue';
-import GameSocket from '../gameSocket';
-import { ClientEvents } from '@/utils';
+	import { inject } from 'vue';
+	import GameSocket from '../gameSocket';
+	import CustumButton from '@/components/custumButton.vue';
 
 	defineProps(["p1", "p2"]);
 
 	const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
-
-	function leaveGame() {
-		gameSocket.getSocket().emit(ClientEvents.gameForfeit);
-		window.location.reload();
-	}
 </script>
 
 <template>
@@ -22,7 +17,12 @@ import { ClientEvents } from '@/utils';
 			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
 			<span class="username">{{ p2.username }}</span>
 		</div>
-		<button class="leave" :disabled="gameSocket.getuserStatus() != 'playing'" v-on:click="leaveGame()">Leave game</button>
+		<CustumButton
+			v-if="gameSocket.getuserStatus() == 'playing'"
+			class="leave"
+			v-on:click="gameSocket.forfeit()">
+			Leave game
+		</CustumButton>
 		<div class="score-div p1">
 			<span class="username">{{ p1.username }}</span>
 			<img v-if="p1.avatar" class="avatar" :src="p1.avatar">
@@ -46,6 +46,7 @@ import { ClientEvents } from '@/utils';
 		justify-content: space-between;
 		align-items: center;
 		animation: slide 0.3s ease-in;
+		overflow: hidden;
 	}
 
 	@keyframes slide {
@@ -91,20 +92,5 @@ import { ClientEvents } from '@/utils';
 
 	.score.p2 {
 		padding-right: 25px;
-	}
-
-	.leave {
-		width: 100px;
-		border-radius: 0.5rem;
-		border: none;
-		padding: .5rem;
-		cursor: pointer;
-		font-size: medium;
-		background-color: var(--c-grey);
-	}
-
-	.leave:not(:disabled) {
-		background-color: var(--c-pink);
-		font-size: medium;
 	}
 </style>

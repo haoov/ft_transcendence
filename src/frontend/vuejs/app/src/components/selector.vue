@@ -52,9 +52,9 @@
 	.name {
 		width: 100px;
 		cursor: pointer;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		border: none;
-		padding: 0.5rem 0.5rem;
+		padding: 0.5rem;
 		background-color: var(--c-grey);
 		transition: all .10s ease-in-out;
 	}

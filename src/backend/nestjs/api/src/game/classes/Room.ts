@@ -1,11 +1,18 @@
-import { Server, Socket } from "socket.io";
+import { Socket } from "socket.io";
 import { Pong } from "../data/Pong";
 import { GameParams } from "../interfaces/gameParams";
 import { User } from "src/user/user.interface";
 import { Game } from "../interfaces/game.interface";
-import { ConsoleLogger } from "@nestjs/common";
 
-const computer = {id: 0, username: "computer", status: "undefined", avatar: "", email: "", games_won: [], games_lost: []};
+const computer: User = {
+	id: 0,
+	username: "computer",
+	status: "undefined",
+	avatar: "",
+	email: "",
+	games_won: [],
+	games_lost: []
+};
 
 export class Room {
 	private name: string;
@@ -17,15 +24,15 @@ export class Room {
 	private params: GameParams;
 	private game: Pong;
 
-	constructor(name: string, params: GameParams, setPrivate?: boolean) {
+	constructor(name: string, params: {gameParams: GameParams, setPrivate?: boolean}) {
 		this.users = [];
 		this.name = name;
-		this.public = (setPrivate ? false : true);
+		this.public = (params.setPrivate ? false : true);
 		this.full = false;
 		this.closed = false;
 		this.sockets = [];
-		this.params = params;
-		this.game = new Pong(params);
+		this.params = params.gameParams;
+		this.game = new Pong(params.gameParams);
 	}
 
 	startGame(): void {

@@ -3,7 +3,7 @@
 </script>
 
 <template>
-	<button class="custumButton" :disabled="disabled">
+	<button class="custumButton" :disabled="disabled ? disabled : false">
 		<slot></slot>
 	</button>
 </template>
@@ -14,16 +14,25 @@
 		border-radius: 0.8rem;
 		border: none;
 		padding: .5rem;
-		cursor: pointer;
 		font-size: medium;
-		transition: transform 0.5s ease-in-out;
+		transition: transform 0.1s ease-in-out;
+	}
+
+	.custumButton:disabled {
+		background-color: var(--c-grey);
+		cursor: not-allowed;
 	}
 
 	.custumButton:not(:disabled) {
 		background-color: var(--c-pink);
+		cursor: pointer;
 	}
 
-	.custumButton:active {
-		animation: bounce 0.5s ease-in-out;
+	.custumButton:not(:disabled):hover {
+		transform: scale(1.05);
+	}
+
+	.custumButton:not(:disabled):active {
+		transform: scale(0.95);
 	}
 </style>
