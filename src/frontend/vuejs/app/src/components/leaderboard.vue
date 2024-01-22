@@ -34,21 +34,21 @@ const playersDisplayed = computed(() => {
 		}
 });
 
-globalSocket.getSocket().on(ServerEvents.dataChanged, async () => {
+globalSocket.getSocket().on(ServerEvents.dataChanged, async (user: User) => {
 	await fetchLeaderboard();
 });
 
 // FETCHING DATA
 async function fetchData() {
-	await fetchLeaderboard();
 	await fetchMe();
+	await fetchLeaderboard();
 	loadAllImages();
 }
 
 async function fetchLeaderboard() {
 	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/leaderboard`)
-		.then(data => { players.value = data.data;});
+		.then(data => { players.value = data.data; });
 }
 
 async function fetchMe() {
@@ -170,9 +170,9 @@ onMounted(async () => {
 /*----------------------------------------------------------------------------*/
 
 function inviteToPlay(player: UserStat) {
-	if (player.status == "playing")
-		notify;
-	globalSocket.getSocket().emit(ClientEvents.gameInvite, player.id);
+	// if (player.status == "playing")
+	// 	notify;
+	// globalSocket.getSocket().emit(ClientEvents.gameInvite, player.id);
 }
 
 </script>
