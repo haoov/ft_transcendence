@@ -155,12 +155,6 @@ export class GameGateway
 				room.quitGame(client);
 				this.endGame(room);
 			}
-			else {
-				room.getUsers().forEach(async (user) => {
-					await this.userService.updateUserStatus(user, userStatus.online);
-					this.userGateway.dataChanged(user);
-				});
-			}
 			this.deleteRoom(room);
 		}
 	}
@@ -219,10 +213,6 @@ export class GameGateway
 	endGame(room: Room) {
 		room.stopGame();
 		this.server.to(room.getName()).emit(serverEvents.finished, room.getWinner().username);
-		room.getUsers().forEach(async (user) => {
-			await this.userService.updateUserStatus(user, userStatus.online);
-			this.userGateway.dataChanged(user);
-		});
 		if (room.getParams().type == "multiplayer") {
 			//if multiplayer update users stats
 			this.gameService.createGame(room.getStats());
@@ -301,7 +291,8 @@ export class GameGateway
 		this.server.to(room.getName()).emit(serverEvents.updateStatus, "");
 		room.getSockets().forEach(async (socket) => {
 			room.removeSocket(socket);
-			await this.userService.updateUserStatus(socket.data.user, userStatus.undefined);
+			await this.userService.updateUserStatus(socket.data.user, userStatus.online);
+			this.userGateway.dataChanged(socket.data.user);
 		});
 		this.rooms.splice(this.rooms.indexOf(room), 1);
 		room.close();

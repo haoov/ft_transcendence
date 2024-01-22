@@ -76,7 +76,6 @@ function getStatusIcon() : string {
 
 function getStatusTitle() : string {
 	// Faire option forbidden
-	console.log("test" + user.value?.status);
 	if (user.value?.status == "undefined" || user.value?.status == "offline")
 		return "offline";
 	else
