@@ -1,21 +1,35 @@
 <script setup lang="ts">
 
 import axios from "axios";
-import type { UserStat, User, GameStat } from "@/utils";
-import { computed, onMounted, ref } from "vue";
+import { type UserStat, type User, type GameStat, ServerEvents } from "@/utils";
+import { computed, inject, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import router from '@/router';
 import offline from '../assets/images/status-offline-32.png';
 import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
+import type GlobalSocket from "@/GlobalSocket";
 
 const route = useRoute();
-const username = route.params.username;
+let username = route.params.username;
 const me = ref<User>();
 const user = ref<User>();
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
+const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
 
+globalSocket.getSocket().on(ServerEvents.dataChanged, async (newUser: User) => {
+	if (user.value?.id == newUser.id) {
+		if (newUser.username != username) {
+			username = newUser.username;
+			await fetchUser();  
+			router.push(`/${newUser.username}`);
+		}
+		else
+			await fetchUser();
+	}
+});
 
 // FETCHING DATA
 async function fetchUser() {
@@ -411,30 +425,6 @@ small-image
 	grid-column-gap: 0.8rem;
 }
 
-.searchForm input {
-	width: 80%;
-	padding: 4% 7%;
-	border-radius: 8px;
-	color: #fff;
-	font-family: inherit;
-	background-color: var(--c-black-light);
-	border: 1px solid var(--c-black-light);
-	font-family: Overpass;
-}
-
-.searchForm {
-		justify-content: right;
-		display: flex;
-}
-
-.searchForm input::placeholder {
-	opacity: 0.5;
-}
-
-.searchForm input:focus {
-	outline: none;
-	border-color: #e81cff;
-}
 
 .c-list__game-history {
 	display: grid;
@@ -558,28 +548,6 @@ small-image
 	background: var(--darkest);
 }
 
-.c-flag {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 3.2rem;
-	height: 3.2rem;
-	background: var(--lightest);
-	color: var(--dark);
-	border-radius: 0.4rem;	font-weight: 400;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	margin-top: 0.8rem;
-	margin-bottom: 0.8rem;
-	color: inherit;
-	letter-spacing: 4px;
-}
-@media screen and (max-width: 700px) {
-	.c-flag {
-		width: 2.4rem;
-		height: 2.4rem;
-	}
-}
 
 .c-button--light {
 	background: var(--lightest);

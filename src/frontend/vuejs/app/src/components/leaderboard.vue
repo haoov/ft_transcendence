@@ -34,7 +34,7 @@ const playersDisplayed = computed(() => {
 });
 
 globalSocket.getSocket().on(ServerEvents.dataChanged, async () => {
-    await fetchLeaderboard();
+	await fetchLeaderboard();
 });
 
 // FETCHING DATA
