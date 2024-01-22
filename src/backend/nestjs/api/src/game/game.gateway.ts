@@ -67,7 +67,6 @@ export class GameGateway
 				else {
 					room.removeSocket(client);
 				}
-				await this.userService.updateUserStatus(client.data.user, userStatus.undefined);
 			}
 		}
 	}
@@ -115,6 +114,7 @@ export class GameGateway
 				//else wait for opponent
 				await this.userService.updateUserStatus(client.data.user, userStatus.waiting);
 				client.emit(serverEvents.updateStatus, "waiting");
+				this.userGateway.dataChanged(client.data.user);
 			}
 		}
 	}
@@ -154,6 +154,12 @@ export class GameGateway
 			if (room.isClosed()) {
 				room.quitGame(client);
 				this.endGame(room);
+			}
+			else {
+				room.getUsers().forEach(async (user) => {
+					await this.userService.updateUserStatus(user, userStatus.online);
+					this.userGateway.dataChanged(user);
+				});
 			}
 			this.deleteRoom(room);
 		}
@@ -213,6 +219,10 @@ export class GameGateway
 	endGame(room: Room) {
 		room.stopGame();
 		this.server.to(room.getName()).emit(serverEvents.finished, room.getWinner().username);
+		room.getUsers().forEach(async (user) => {
+			await this.userService.updateUserStatus(user, userStatus.online);
+			this.userGateway.dataChanged(user);
+		});
 		if (room.getParams().type == "multiplayer") {
 			//if multiplayer update users stats
 			this.gameService.createGame(room.getStats());
@@ -276,6 +286,7 @@ export class GameGateway
 		console.log("closing room: " + room.getName());
 		room.getUsers().forEach(async (user) => {
 			await this.userService.updateUserStatus(user, userStatus.playing);
+			this.userGateway.dataChanged(user);
 		});
 		this.server.to(room.getName()).emit(serverEvents.started, room.getUsers(), room.getParams());
 		room.startGame();
