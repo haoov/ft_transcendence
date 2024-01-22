@@ -26,13 +26,13 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				socketIds.push(client);
 			else
 				this.usersSockets.set(user.id, [client]);
-			await this.userService.updateUserStatus(user, userStatus.online);
-			this.dataChanged(user);
+			const updatedUser = await this.userService.updateUserStatus(user, userStatus.online);
+			this.dataChanged(updatedUser);
 			console.log("user connection: " + user.username);
 		});
 	}
 
-	handleDisconnect(client: Socket) {
+	async handleDisconnect(client: Socket) {
 		if (client.data.user) {
 			const socketIds: Socket[] = this.usersSockets.get(client.data.user.id);
 			if (socketIds) {
@@ -41,7 +41,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					socketIds.splice(index, 1);
 				if (socketIds.length == 0) {
 					this.usersSockets.delete(client.data.user.id);
-					this.userService.updateUserStatus(client.data.user, userStatus.offline);
+					await this.userService.updateUserStatus(client.data.user, userStatus.offline);
 					this.dataChanged(client.data.user);
 				}
 				console.log("user disconnection: " + client.data.user.username);
