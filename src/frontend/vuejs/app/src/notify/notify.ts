@@ -31,6 +31,12 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 			notification.autoClose = params?.autoClose || true;
 			notification.timeout = params?.timeout || 10000;
 			break;
+		case "error":
+			notification.message = params?.message || "error";
+			notification.type = "error";
+			notification.autoClose = params?.autoClose || true;
+			notification.timeout = params?.timeout || 3000;
+			break;
 		default: break;
 	}
 	notifications.splice(0, 0, notification);

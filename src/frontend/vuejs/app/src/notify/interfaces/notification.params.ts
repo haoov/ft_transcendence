@@ -1,4 +1,4 @@
-export type NotificationType = "gameInvite" | "gameReady";
+export type NotificationType = "gameInvite" | "gameReady" | "error";
 
 export interface NotificationParams {
 	message?: string;
