@@ -1,4 +1,4 @@
-import { gameParams } from "../interfaces/gameParams";
+import { GameMode, GameParams, GameType } from "../interfaces/gameParams";
 import { Ball } from "./ball";
 import { Effect } from "./effect";
 import { Field } from "./field";
@@ -12,13 +12,13 @@ class Pong {
 	private effect: Effect;
 	private started: boolean;
 	private finished: boolean;
-	private game: string;
-	private mode: string;
+	private mode: GameMode;
+	private type: GameType;
 	private difficulty: string;
 
-	constructor(params: gameParams) {
-		this.game = params.game;
+	constructor(params: GameParams) {
 		this.mode = params.mode;
+		this.type = params.type;
 		this.difficulty = params.difficulty;
 		this.players = [];
 		this.field = new Field();
@@ -70,16 +70,17 @@ class Pong {
 	}
 
 	async compute() {
-
 		if (this.started) {
-			if (this.game == "super") {
+			if (this.mode == "super") {
 				this.ball.moove(this.players, this.field, this.effect);
 				this.effect.moove(this.field);
 			}
 			else
 				this.ball.moove(this.players, this.field);
-			if (this.mode == "singlePlayer")
+			if (this.type == "singleplayer") {
 				this.players[1].paddle.autoMove(this.ball, this.field, this.difficulty);
+				this.players[1].spellBook.autoUseSpells(this.ball, this.players[1].paddle);
+			}
 			for (let i = 0; i < this.players.length; ++i) {
 				if (this.players[i].score == rules.WIN_SCORE)
 					this.finished = true;
@@ -110,14 +111,14 @@ class Pong {
 			p1PaddlePosition: this.players[0].paddle.position,
 			p1PaddleScale: this.players[0].paddle.scale,
 			p1Effect: this.players[0].paddle.effect,
-			p1Spells: this.players[0].spellBook.getSpells(),
+			p1Spells: this.players[0].spellBook.getSpellsEnabled(),
 			p2PaddlePosition: this.players[1].paddle.position,
 			p2PaddleScale: this.players[1].paddle.scale,
 			p2Effect: this.players[1].paddle.effect,
-			p2Spells: this.players[1].spellBook.getSpells(),
+			p2Spells: this.players[1].spellBook.getSpellsEnabled(),
 			effectPosition: this.effect.position,
 			effectRotationSpeed: this.effect.rotationSpeed,
-			effectOn: this.effect.on,
+			effectOn: this.effect.isOn(),
 			p1Score: this.players[0].score,
 			p2Score: this.players[1].score,
 			finished: this.finished,

@@ -1,5 +1,20 @@
 <script setup lang="ts">
+	import { inject } from 'vue';
+	import GameSocket from '../gameSocket';
+	import CustumButton from '@/components/custumButton.vue';
+
 	defineProps(["p1", "p2"]);
+
+	const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
+
+	function avatarSrc(avatar: string): string {
+		const timestamp = Date.now();
+		if (avatar.includes(':3000/api/user/avatar/'))
+			return `${avatar}?${timestamp}`;
+		else
+			return avatar;
+	}
+
 </script>
 
 <template>
@@ -7,13 +22,19 @@
 <div class="score-container">
 		<div class="score-div p2">
 			<span class="score p2">{{ p2.score }}</span>
-			<img v-if="p2.avatar" class="avatar" :src="p2.avatar">
+			<img v-if="p2.avatar" class="avatar" :src="avatarSrc(p2.avatar)">
 			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
 			<span class="username">{{ p2.username }}</span>
 		</div>
+		<CustumButton
+			v-if="gameSocket.getuserStatus() == 'playing'"
+			class="leave"
+			v-on:click="gameSocket.forfeit()">
+			Leave game
+		</CustumButton>
 		<div class="score-div p1">
 			<span class="username">{{ p1.username }}</span>
-			<img v-if="p1.avatar" class="avatar" :src="p1.avatar">
+			<img v-if="p1.avatar" class="avatar" :src="avatarSrc(p1.avatar)">
 			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
 			<span class="score p1">{{ p1.score }}</span>
 		</div>
@@ -23,16 +44,27 @@
 
 <style scoped>
 	.score-container {
+		align-self: flex-start;
 		display: flex;
 		width: 720px;
 		border-radius: 5rem;
-		background: padding-box,
-								linear-gradient(145deg, transparent 15%, var(--c-grey),transparent);
-		background-size: 200% 100%;
+		background: linear-gradient(to left,var(--c-white),10%, transparent);
 		padding: 0px 10px 0px 10px;
 		margin-top: 20px;
+		margin-bottom: 5px;
 		justify-content: space-between;
 		align-items: center;
+		animation: slide 0.3s ease-in;
+		overflow: hidden;
+	}
+
+	@keyframes slide {
+		0% {
+			width: 0%;
+		}
+		100% {
+			width: 720px;
+		}
 	}
 
 	.score-div {
@@ -53,6 +85,7 @@
 		width: 50px;
 		height: 50px;
 		border-radius: 50%;
+		object-fit: cover;
 	}
 
 	.username {

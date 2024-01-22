@@ -1,13 +1,17 @@
 <script setup lang="ts">
 
 import axios from "axios";
-import type { UserStat, User, GameStat } from "@/utils";
-import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import offline from '../assets/images/status-offline-32.png';
 import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
+import { type UserStat, type User, type GameStat, ClientEvents, ServerEvents } from "@/utils";
+import { computed, inject, onMounted, ref } from "vue";
+import GlobalSocket from "@/GlobalSocket";
+import GameSocket from "@/game/gameSocket";
+import gameNotification from "@/game/components/gameNotification.vue";
+import notify from "@/notify/components/notify.vue";
 
 const router = useRouter();
 const players = ref<UserStat[]>([]);
@@ -16,6 +20,9 @@ const me = ref<User>();
 const myStats = ref<UserStat>();
 const myGames = ref<GameStat[]>([]);
 const search = ref('');
+
+const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
+const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
 
 const playersDisplayed = computed(() => {
 		if (search.value.length === 0) {
@@ -27,18 +34,21 @@ const playersDisplayed = computed(() => {
 		}
 });
 
+globalSocket.getSocket().on(ServerEvents.dataChanged, async (user: User) => {
+	await fetchLeaderboard();
+});
 
 // FETCHING DATA
 async function fetchData() {
-	await fetchLeaderboard();
 	await fetchMe();
+	await fetchLeaderboard();
 	loadAllImages();
 }
 
 async function fetchLeaderboard() {
 	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/leaderboard`)
-		.then(data => { players.value = data.data;});
+		.then(data => { players.value = data.data; });
 }
 
 async function fetchMe() {
@@ -53,7 +63,8 @@ async function fetchMe() {
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
-				myGames.value = data.data;})
+				myGames.value = data.data;
+				console.log(data.data)})
 			});
 }
 
@@ -112,6 +123,8 @@ function getStatusIcon(user: UserStat) : string {
 	// Faire option forbidden
 	if (user.status == "undefined" || user.status == "offline")
 		return offline;
+	else if (user.status == "playing")
+		return playing;
 	else
 		return online;
 }
@@ -153,7 +166,15 @@ onMounted(async () => {
 	await fetchData();
 });
 
+/*----------------------------------------------------------------------------*/
+/*                                   RAPH                                     */
+/*----------------------------------------------------------------------------*/
 
+function inviteToPlay(player: UserStat) {
+	// if (player.status == "playing")
+	// 	notify;
+	// globalSocket.getSocket().emit(ClientEvents.gameInvite, player.id);
+}
 
 </script>
 
@@ -217,7 +238,7 @@ onMounted(async () => {
 										<span class="c-game-history__score" :style="{ '--score-color': getScoreColor(game.winFlag)}"> {{ game.userScore }} - {{ game.opponentScore }} </span>
 									</div>
 									<div class="c-game-history__opponent">{{ game.opponent.username }}</div>
-									<div class="u-text-left u-text--extra-small u-text--overpass">{{ game.type }}</div>
+									<div class="u-text-left u-text--extra-small u-text--overpass">{{ game.mode }}</div>
 								</div>
 							</li>
 						</div>
@@ -268,7 +289,7 @@ onMounted(async () => {
 											<div>
 												<a class="c-media__title u-text--overpass" @click="goToProfile(player.username)" title="Go to profile">{{ player.username }}</a>
 											</div>
-											<a v-if="player.id!=me?.id" class="u-mr--8" href="https://www.google.com" target="_blank">
+											<a v-if="player.id!=me?.id" class="u-mr--8" :click="inviteToPlay(player)" target="_blank">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 											</a>
 											<a v-if="player.id!=me?.id" href="https://www.google.com" target="_blank">
@@ -286,15 +307,12 @@ onMounted(async () => {
 							</li>
 						</div>
 						<div v-else id="leaderboardContent" class="empty_field">No user</div>
-
 					</ul>
-				</div>
-			</div>
-		</div>
+          </div>
+        </div>
+      </div>
+    </div>
 	</div>
-</div>
-
-
 
 </template>
 
