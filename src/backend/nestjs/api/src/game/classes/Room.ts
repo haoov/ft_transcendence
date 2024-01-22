@@ -1,31 +1,42 @@
-import { Server, Socket } from "socket.io";
+import { Socket } from "socket.io";
 import { Pong } from "../data/Pong";
-import { gameParams } from "../interfaces/gameParams";
+import { GameParams } from "../interfaces/gameParams";
 import { User } from "src/user/user.interface";
 import { Game } from "../interfaces/game.interface";
 
-const computer = {id: 0, username: "computer", status: "undefined", avatar: "", email: "", games_won: [], games_lost: []};
+const computer: User = {
+	id: 0,
+	username: "computer",
+	status: "undefined",
+	avatar: "",
+	email: "",
+	games_won: [],
+	games_lost: []
+};
 
 export class Room {
 	private name: string;
 	private public: boolean;
 	private full: boolean;
+	private closed: boolean;
 	private users: User[];
 	private sockets: Socket[];
-	private params: gameParams;
+	private params: GameParams;
 	private game: Pong;
 
-	constructor(name: string, params: gameParams) {
+	constructor(name: string, params: {gameParams: GameParams, setPrivate?: boolean}) {
 		this.users = [];
 		this.name = name;
-		this.public = true;
+		this.public = (params.setPrivate ? false : true);
 		this.full = false;
+		this.closed = false;
 		this.sockets = [];
-		this.params = params;
-		this.game = new Pong(params);
+		this.params = params.gameParams;
+		this.game = new Pong(params.gameParams);
 	}
 
 	startGame(): void {
+		this.closed = true;
 		this.game.start();
 	}
 
@@ -38,26 +49,39 @@ export class Room {
 	}
 
 	addSocket(socket: Socket): void {
+		console.log("adding socket " + socket.id + " to room: " + this.name);
 		socket.data.room = this.name;
 		this.sockets.push(socket);
 		socket.join(this.name);
 	}
 
 	removeSocket(socket: Socket): void {
-		this.sockets.splice(this.sockets.indexOf(socket), 1);
-		socket.leave(this.name);
+		if (this.sockets.find((s) => {return (s.id == socket.id);})) {
+			console.log("removing socket " + socket.id + " from room: " + this.name);
+			this.sockets.splice(this.sockets.indexOf(socket), 1);
+			socket.leave(this.name);
+		}
 	}
 
 	addUser(user: User): void {
 		if (!this.isFull()) {
 			this.users.push(user);
-			if (this.users.length > 1)
-				this.full = true;
+		this.checkFull();
 		}
 	}
 
+	checkFull(): void {
+		let count = 0;
+		this.users.forEach((user) => {
+			if (this.sockets.find((socket) => {return (socket.data.user.id == user.id);}))
+				++count;
+		});
+		if (count == 2)
+			this.full = true;
+	}
+
 	getType(): string {
-		return this.params.game;
+		return this.params.mode;
 	}
 
 	getName(): string {
@@ -70,6 +94,10 @@ export class Room {
 
 	isFull(): boolean {
 		return this.full;
+	}
+
+	isClosed(): boolean {
+		return this.closed;
 	}
 
 	getSockets(): Socket[] {
@@ -102,7 +130,7 @@ export class Room {
 			return this.game.getPlayers()[1].score;
 	}
 
-	getParams(): gameParams {
+	getParams(): GameParams {
 		return this.params;
 	}
 
@@ -128,8 +156,24 @@ export class Room {
 			this.game.getPlayers()[0].topScore();
 	}
 
+	close(): void {
+		this.closed = true;
+	}
+
 	isOpen(): boolean {
-		return (this.public && !this.full);
+		return (!this.closed);
+	}
+
+	isAvailable(): boolean {
+		return (this.public && !this.full && !this.closed);
+	}
+
+	hasUser(user: User): boolean {
+		const userIn: User = this.users.find((u) => {return (u.id == user.id);});
+		if (userIn)
+			return true;
+		else
+			return false;
 	}
 
 	checkSockets(user: User): boolean {
@@ -143,7 +187,7 @@ export class Room {
 		const winner: User = this.getWinner();
 		const loser: User = this.getLoser();
 		const stats: Game = {
-			game: this.params.game,
+			mode: this.params.mode,
 			winner: winner,
 			loser: loser,
 			winner_score: this.getScore(winner),

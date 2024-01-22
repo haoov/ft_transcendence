@@ -1,10 +1,10 @@
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
 import { Socket } from 'socket.io'
 import { User } from 'src/user/user.interface';
-import { clientEvents, serverEvents } from '../game/enum';
+import { clientEvents, serverEvents } from '../game/enum/events.enum';
 import { UserService } from './user.service';
 import { userStatus } from './enum/userStatus.enum';
-import { Room } from 'src/game/classes';
+import { Room } from 'src/game/classes/Room';
 import { GameGateway } from 'src/game/game.gateway';
 import { Inject, forwardRef } from '@nestjs/common';
 
@@ -27,7 +27,8 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			else
 				this.usersSockets.set(user.id, [client]);
 			await this.userService.updateUserStatus(user, userStatus.online);
-			// console.log("user connection: " + user.username);
+			this.dataChanged(user);
+			console.log("user connection: " + user.username);
 		});
 	}
 
@@ -41,9 +42,22 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				if (socketIds.length == 0) {
 					this.usersSockets.delete(client.data.user.id);
 					this.userService.updateUserStatus(client.data.user, userStatus.offline);
+					this.dataChanged(client.data.user);
 				}
-				// console.log("user disconnection: " + client.data.user.username);
+				console.log("user disconnection: " + client.data.user.username);
 			}
+		}
+	}
+
+	@SubscribeMessage(clientEvents.gameInvite)
+	async gameInvite(client: Socket, opponentID: number) {
+		const opponent: User = await this.userService.getUserById(opponentID);
+		console.log("game invite from " + client.data.user.username + " to " + opponent.username);
+		const sockets: Socket[] = this.usersSockets.get(opponentID);
+		if (sockets) {
+			sockets.forEach(socket => {
+				socket.emit(serverEvents.gameInvite, client.data.user);
+			});
 		}
 	}
 
@@ -53,19 +67,17 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			sockets.forEach(socket => {
 				socket.emit(serverEvents.gameReady);
 			});
-			// ("notification gameReady sent to user: " + room.getUsers()[0].id);
+			console.log("notification gameReady sent to user: " + room.getUsers()[0].id);
 		}
 	}
 
-	disableNotifications(users: User[]) {
-		users.forEach((user) => {
-			const sockets: Socket[] = this.usersSockets.get(user.id);
-			if (sockets) {
+	dataChanged(user: User) {
+		this.usersSockets.forEach((sockets: Socket[], id: number) => {
+			if (sockets != this.usersSockets.get(user.id))
 				sockets.forEach(socket => {
-					socket.emit(serverEvents.disableNotifications);
+					socket.emit(serverEvents.dataChanged, user);
 				});
-			}
-		})
+		});
 	}
 
 }

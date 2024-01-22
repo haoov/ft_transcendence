@@ -297,8 +297,6 @@ button, select {
 		margin-bottom: 1.5rem;
 }
 
-grid-template-columns: 0.9fr 0.9fr 1.5fr 1fr;
-	grid-column-gap: 1.2rem;
 @keyframes donutfade {
 	/* this applies to the whole svg item wrapper */
 		0% {

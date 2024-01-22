@@ -1,6 +1,6 @@
 import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
-import GameView from "@/views/GameView.vue";
+import GameView from "@/game/GameView.vue";
 import ChatView from "@/views/ChatView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import type GameSocket from "@/game/gameSocket";

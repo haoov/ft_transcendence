@@ -1,14 +1,10 @@
 <script setup lang="ts">
-
-	import { ref } from "vue";
-
-	defineProps(["label", "values"]);
+	defineProps(["label", "values", "preSelected"]);
 	const emit = defineEmits(['select']);
 
 	function selectValue(value: string) {
 		emit("select", value);
 	}
-
 </script>
 
 <template>
@@ -21,8 +17,9 @@
 					type="radio"
 					:value="value"
 					:name="label"
-					v-on:click="selectValue(value)"
-				><span class="name">{{ value }}</span>
+					:checked="value == preSelected"
+					v-on:click="selectValue(value)">
+					<span class="name">{{ value }}</span>
 			</label>
 		</div>
 	</div>
@@ -55,9 +52,9 @@
 	.name {
 		width: 100px;
 		cursor: pointer;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		border: none;
-		padding: 0.5rem 0.5rem;
+		padding: 0.5rem;
 		background-color: var(--c-grey);
 		transition: all .10s ease-in-out;
 	}
