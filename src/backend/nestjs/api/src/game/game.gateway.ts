@@ -17,7 +17,7 @@ export class GameGateway
 	rooms: Room[];
 	roomId: number;
 
-	constructor(	private readonly userService: UserService,
+	constructor(private readonly userService: UserService,
 								@Inject(forwardRef(() => UserGateway)) private readonly userGateway: UserGateway,
 								private readonly gameService: GameService) {
 		this.rooms = [];

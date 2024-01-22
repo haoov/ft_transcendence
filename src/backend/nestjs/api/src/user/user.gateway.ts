@@ -73,7 +73,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	dataChanged(user: User) {
 		this.usersSockets.forEach((sockets: Socket[], id: number) => {
-			if (sockets != this.usersSockets.get(user.id))
 				sockets.forEach(socket => {
 					socket.emit(serverEvents.dataChanged, user);
 				});

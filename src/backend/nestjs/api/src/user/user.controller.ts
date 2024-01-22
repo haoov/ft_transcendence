@@ -5,11 +5,13 @@ import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard"
 import { Request, Response } from "express";
 import { multerConfig } from "src/user/config/multer.config";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { UserGateway } from "./user.gateway";
 
 @Controller("user")
 @UseGuards(new AuthentificatedGuard())
 export class UserController {
-	constructor(private readonly userService: UserService) {}
+	constructor(private readonly userService: UserService,
+				private readonly userGateway: UserGateway) {}
 
 	@Get()
 	getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
@@ -37,15 +39,19 @@ export class UserController {
 	}
 
 	@Put('update/username')
-	updateUsername(@Req() req: Request): Promise<User> {
-		return this.userService.updateUsername(req);
+	async updateUsername(@Req() req: Request): Promise<User> {
+		const user = await this.userService.updateUsername(req);
+		this.userGateway.dataChanged(user);
+		return user;
 	}
 
 	@Put('update/avatar')
 	@UseInterceptors(FileInterceptor('avatar', multerConfig))
-	uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request) : Promise<User> {
-		const user = req.user as User;
-		return this.userService.uptadeAvatar(user.id);
+	async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request) : Promise<User> {
+		let user = req.user as User;
+		user = await this.userService.uptadeAvatar(user.id);
+		this.userGateway.dataChanged(user);
+		return user;
 	}
 
 	@Get('avatar/:id')
