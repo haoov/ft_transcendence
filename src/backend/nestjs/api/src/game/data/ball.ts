@@ -13,35 +13,43 @@ class Ball {
 	radius: number;
 	effect: string;
 	lastHit: Player;
+	started: boolean;
 
 	constructor() {
 		this.position = {x: 0, y: 0, z: 0};
 		this.speed = params.BALL_SPEED;
-		this.vecSpeed = {x: this.speed, y: 0, z: 0};
+		this.vecSpeed = {x: 0, y: 0, z: 0};
 		this.effect = "none";
 		this.radius = params.BALL_RADIUS;
 		this.scale = {x: 1, y: 1, z: 1};
+		this.started = false;
 	}
 
 	start() {
-		const direction: number = (Math.random() > 0.5 ? 1 : -1);
-		this.vecSpeed.x = params.BALL_SPEED * direction;
+		this.started = true;
+		setTimeout(() => {
+			const direction: number = (Math.random() > 0.5 ? 1 : -1);
+			this.vecSpeed.x = params.BALL_SPEED * direction;
+		}, 1000);
 	}
 
 	moove(players: Player[], field: Field, effect?: Effect) {
 		this.position.x += this.vecSpeed.x;
 		this.position.y += this.vecSpeed.y;
 
-		for (let i = 0; i < players.length; ++i) {
-			if (players[i].hitBall(this)) {
-				this.paddleBounce(players[i].paddle);
-				this.lastHit = players[i];
-			}
+		if (this.started == false) {
+			this.start();
 		}
-		if (effect && effect.on && effect.hitBall(this) && this.lastHit) {
+		players.forEach((player) => {
+			if (player.hitBall(this)) {
+				this.paddleBounce(player.paddle);
+				this.lastHit = player;
+			}
+		});
+		if (effect && effect.isOn() && effect.hitBall(this) && this.lastHit) {
 			if (!this.lastHit.spellBook.spellEnabled(effect.type)) {
 				this.lastHit.spellBook.enableSpell(effect.type);
-				effect.on = false;
+				effect.setOff();
 			}
 		}
 		if (this.position.y + this.scale.y * params.BALL_RADIUS >= field.borders.top || this.position.y - this.scale.y * params.BALL_RADIUS <= field.borders.bottom)
@@ -111,10 +119,7 @@ class Ball {
 		this.position = {x: 0, y: 0, z: 0};
 		this.speed = params.BALL_SPEED;
 		this.vecSpeed = {x: 0, y: 0, z: 0};
-		setTimeout(() => {
-			const direction: number = (Math.random() > 0.5 ? 1 : -1);
-			this.vecSpeed.x = params.BALL_SPEED * direction;
-		}, 1000);
+		this.start();
 	}
 };
 

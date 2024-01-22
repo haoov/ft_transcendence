@@ -14,11 +14,6 @@
     <div class="profile-body">
 		<navigationBar></navigationBar>
     	<Suspense><Profile></Profile></Suspense>
-			<gameNotification
-				:display="globalSocket.getDisplayValue(ServerEvents.gameReady)"
-				text="Ready to play!"
-				v-on:close="router.push('/game');"
-			></gameNotification>
     </div>
 </template>
 

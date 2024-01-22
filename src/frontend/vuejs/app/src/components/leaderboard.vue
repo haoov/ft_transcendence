@@ -1,13 +1,16 @@
 <script setup lang="ts">
 
 import axios from "axios";
-import type { UserStat, User, GameStat } from "@/utils";
-import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import offline from '../assets/images/status-offline-32.png';
 import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
+import { type UserStat, type User, type GameStat, ClientEvents, ServerEvents } from "@/utils";
+import { computed, inject, onMounted, ref } from "vue";
+import GlobalSocket from "@/GlobalSocket";
+import GameSocket from "@/game/gameSocket";
+import gameNotification from "@/game/components/gameNotification.vue";
 
 const router = useRouter();
 const players = ref<UserStat[]>([]);
@@ -148,6 +151,17 @@ function getScoreColor(winFlag: boolean): string {
 function goToProfile(username: string) {
       router.push(`/${username}`);
 }
+const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
+const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
+
+function inviteToPlay(id: number) {
+	const gameParams = {
+		game: "classic",
+		mode: "multiPlayer",
+	};
+	globalSocket.getSocket().emit(ClientEvents.gameInvite, id);
+}
+
 
 onMounted(async () => {
 	await fetchData();
@@ -286,15 +300,12 @@ onMounted(async () => {
 							</li>
 						</div>
 						<div v-else id="leaderboardContent" class="empty_field">No user</div>
-
 					</ul>
-				</div>
-			</div>
-		</div>
+          </div>
+        </div>
+      </div>
+    </div>
 	</div>
-</div>
-
-
 
 </template>
 
