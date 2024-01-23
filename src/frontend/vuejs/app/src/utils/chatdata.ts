@@ -70,6 +70,7 @@ async function blockUser(id: number) {
 }
 
 const store = reactive({
+	isSocketReady: false,
 	channels: [] as Channel[],
 	messages: [] as Message [],
 	users: [] as User [],
@@ -81,11 +82,19 @@ const store = reactive({
 	isconfirmationLeavingModalOpen: false,
 	isProfileModalOpen: false,
 	activeChannel: null as Channel | null,
-	socket: null as Socket | null,
+	socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`, {autoConnect: false} as any),
 });
 
 export default {
+	isSocketReady() : boolean {
+		return store.isSocketReady;
+	},
 
+	initSocket() {
+		store.socket.connect();
+		store.isSocketReady = true;
+	},
+	
 	getUsers() : Promise<User []> {
 		return fetchUsers();
 	},
@@ -106,7 +115,7 @@ export default {
 		return blockUser(id);
 	},
 
-	getCurrentUser() : Object {
+	getCurrentUser() : Promise<User> {
 		return fetchCurrentUser();
 	},
 
@@ -122,9 +131,6 @@ export default {
 		return store;
 	},
 
-	setSocket(socket: Socket) {
-		store.socket = socket;
-	},
 
 	loadChannels() {
 		fetchCurrentUserChannels().then((channels) => {

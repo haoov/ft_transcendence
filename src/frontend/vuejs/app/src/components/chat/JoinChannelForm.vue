@@ -331,7 +331,7 @@ span {
 }
 
 .cancel-icon {
-    right: 5px;
+    right: 25px;
 	cursor: pointer;
 }
 </style>
