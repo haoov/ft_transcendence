@@ -24,7 +24,7 @@ export class UserService {
 	}
 
 	async getCurrentUser(req: Request): Promise<User> {
-		const reqUser :User = req.user as User;
+		const reqUser: User = req.user as User;
 		try {
 			const user: User = await this.usersRepository.findOneBy({ id: reqUser.id });
 			return user;
