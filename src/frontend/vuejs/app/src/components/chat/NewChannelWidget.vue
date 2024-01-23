@@ -23,6 +23,7 @@ const openNewChannelForm = () => {
 .circle-container {
   width: 50px;
   height: 50px;
+  min-height: 50px;
   border-radius: 50%;
   overflow: hidden;
   background-color: #a1a0a0;
@@ -30,6 +31,8 @@ const openNewChannelForm = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  margin-bottom: 5%;
+  border: 0.5px solid #fff;
 }
 
 p {

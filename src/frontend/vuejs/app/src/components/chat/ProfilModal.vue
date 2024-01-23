@@ -53,6 +53,7 @@ const blockUser = () => {
 }
 const sendDirectMessage = () => {
 	console.log('send direct message')
+	$data.sendDirectMessage(store.userIdClicked);
 	$data.closeProfileModal();
 }
 

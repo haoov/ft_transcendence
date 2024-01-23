@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue';
+import { ref, computed, inject, watch } from 'vue';
 
 interface Channel {
   creatorId: string;
@@ -79,7 +79,6 @@ const channelToJoin = ref<Channel>();
 const password = ref('');
 const passwordError = ref(false);
 const errorMessagePassword = ref('');
-
 const search = ref('');
 
 const searchResults = computed(() => {
@@ -124,17 +123,21 @@ const submitForm = () => {
 		password: password.value,
 		userId: currentUser.id,
 	});
-
 };
 
 socket.on('channelJoined', (ret : boolean) => {
 	if (ret) {
 		$data.closeModalForm();
-		$data.setActiveChannel(channelToJoin.value);
 		passwordError.value = false;
 	} else {
 		passwordError.value = true;
 		errorMessagePassword.value = 'Wrong password';
+	}
+});
+
+watch(() => password.value, () => {
+	if (password.value.length > 0) {
+		passwordError.value = false;
 	}
 });
 

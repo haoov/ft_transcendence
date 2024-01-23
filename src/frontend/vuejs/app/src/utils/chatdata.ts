@@ -170,6 +170,31 @@ export default {
 		store.messages.push(message);
 	},
 
+	async sendDirectMessage(userId : number) {
+		const user = await this.getUserById(userId);
+		const currentUser = await this.getCurrentUser();
+		const userIds : Array<number> = Array(userId, currentUser.id);
+		const currentPrivateChannels = store.channels.filter((channel: any) => channel.mode === 'Private');
+		const name = '#' + userIds.sort((a,b) => a -b).join('#');
+		if (currentPrivateChannels.some((channel: any) => channel.name === name)) {
+			const newActiveChannel = currentPrivateChannels.find((channel: any) => channel.name === name);
+			if (newActiveChannel) {
+				this.setActiveChannel(newActiveChannel);
+			}
+			this.closeModalForm();
+		} else {
+			const newChannel = {
+				name: name,
+				mode: 'Private',
+				creatorId: currentUser.id,
+				password: "",
+				users: userIds,
+			};
+			store.socket.emit('createNewChannel', newChannel);
+		}
+		this.closeModalForm();
+	},
+
 	loadUsers() {
 		fetchUsers().then((users) => {
 			store.users = users;
