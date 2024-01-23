@@ -95,6 +95,7 @@ export class ChatGateway implements OnGatewayConnection {
 		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
 			this.usersSocketList.get(channel.userId)?.emit('channelJoined', true);
 			this.usersSocketList.get(channel.userId)?.emit('newChannelCreated', channelToJoin);
+			this.usersSocketList.get(channel.userId)?.join(channel.channelId.toString());
 		}
 	}
 
