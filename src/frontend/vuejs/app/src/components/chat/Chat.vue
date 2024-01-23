@@ -17,6 +17,16 @@
 				<AddUserForm></AddUserForm>
 			</Suspense>
 		</Modal>
+		<Modal v-if="store.isconfirmationLeavingModalOpen" :function="closeLeaveConfirmation">
+			<Suspense>
+				<ConfirmationLeaveChannel></ConfirmationLeaveChannel>
+			</Suspense>
+		</Modal>
+		<Modal v-if="store.isProfileModalOpen" :function="closeProfilModal">
+			<Suspense>
+				<ProfilModal></ProfilModal>
+			</Suspense>
+		</Modal>
 	</div>
 </template>
 
@@ -27,22 +37,17 @@ import Modal from './Modal.vue';
 import ChannelModal from './ChannelModal.vue';
 import EditChannelForm from './EditChannelForm.vue';
 import AddUserForm from './AddUserForm.vue';
+import ConfirmationLeaveChannel from './ConfirmationLeaveChannel.vue';
+import ProfilModal from './ProfilModal.vue';
 import { Suspense, inject } from 'vue';
 import { io, Socket } from 'socket.io-client';
 import { onBeforeRouteLeave } from 'vue-router';
-import { parseIsolatedEntityName } from 'typescript';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
-$data.setSocket(io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`));
 const socket : Socket = store.socket; 
 
-socket.on('NewConnection', async () => {
-	const user = await $data.getCurrentUser();
-	socket.emit('userConnected', user);
-});
-
-socket.on('lastActiveChannel', async (id : string) => {
+store.socket.on('lastActiveChannel', async (id : string) => {
 	const user = await $data.getCurrentUser();
 	$data.loadChannels(user.id);
 	const channel = store.channels.find((channel : any) => channel.id === parseInt(id));
@@ -67,6 +72,14 @@ const closeEditModal = () => {
 
 const closeAddUserModalForm = () => {
 	$data.closeAddUserModalForm()
+}
+
+const closeLeaveConfirmation = () => {
+	$data.closeConfirmationLeavingModal()
+}
+
+const closeProfilModal = () => {
+	$data.closeProfileModal()
 }
 
 </script>

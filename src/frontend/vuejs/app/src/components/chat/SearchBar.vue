@@ -1,55 +1,53 @@
 <template>
-	<div class="form-group">
-		<label for="searchChannel">Search :</label>
-		<div class="input-container">
-			<svg class="search-icon-adduser" width="10px" height="10px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#999494">
-				<g id="SVGRepo_bgCarrier" stroke-width="0"/>
-				<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
-				<g id="SVGRepo_iconCarrier"> <path d="M14.9536 14.9458L21 21M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="#a3a3a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </g>
-			</svg>
-			<input 
-			v-model="search"
-			name="searchChannel"
-			id="searchChannel"
-			type="text"
-			autocomplete="off"
-			placeholder="search..."
+	<label for="searchChannel">Search :</label>
+	<div class="input-container">
+		<svg class="search-icon-adduser" width="10px" height="10px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#999494">
+			<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+			<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+			<g id="SVGRepo_iconCarrier"> <path d="M14.9536 14.9458L21 21M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="#a3a3a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </g>
+		</svg>
+		<input 
+		v-model="search"
+		name="searchChannel"
+		id="searchChannel"
+		type="text"
+		autocomplete="off"
+		placeholder="search..."
+		>
+		<svg v-if="search" class="cancel-icon-adduser-input" width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" @click="resetSearch">
+			<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+			<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+			<g id="SVGRepo_iconCarrier"> <path d="M6.99486 7.00636C6.60433 7.39689 6.60433 8.03005 6.99486 8.42058L10.58 12.0057L6.99486 15.5909C6.60433 15.9814 6.60433 16.6146 6.99486 17.0051C7.38538 17.3956 8.01855 17.3956 8.40907 17.0051L11.9942 13.4199L15.5794 17.0051C15.9699 17.3956 16.6031 17.3956 16.9936 17.0051C17.3841 16.6146 17.3841 15.9814 16.9936 15.5909L13.4084 12.0057L16.9936 8.42059C17.3841 8.03007 17.3841 7.3969 16.9936 7.00638C16.603 6.61585 15.9699 6.61585 15.5794 7.00638L11.9942 10.5915L8.40907 7.00636C8.01855 6.61584 7.38538 6.61584 6.99486 7.00636Z" fill="#adadad"/> </g>
+		</svg>
+	</div>
+	<div>
+		<ul>
+			<li
+				v-for="result in searchResults"
+				id = "searchResult"
+				@click="SelectedResult(result)"
+				>
+				{{ result.username }}
+			</li>
+		</ul>
+	</div>
+	<div>
+		<label v-if="listUsersToAdd.length > 0">Users to add :</label>
+		<ul>
+			<div
+				v-for="(user, index) in listUsersToAdd"
+				:key="index"
+				class="is-selected"
+				@click="removeUser(user)"
 			>
-			<svg v-if="search" class="cancel-icon-adduser-input" width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" @click="resetSearch">
+				<p>{{ user.username }}</p>
+			<svg width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" @click="removeUser(user)">
 				<g id="SVGRepo_bgCarrier" stroke-width="0"/>
 				<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
 				<g id="SVGRepo_iconCarrier"> <path d="M6.99486 7.00636C6.60433 7.39689 6.60433 8.03005 6.99486 8.42058L10.58 12.0057L6.99486 15.5909C6.60433 15.9814 6.60433 16.6146 6.99486 17.0051C7.38538 17.3956 8.01855 17.3956 8.40907 17.0051L11.9942 13.4199L15.5794 17.0051C15.9699 17.3956 16.6031 17.3956 16.9936 17.0051C17.3841 16.6146 17.3841 15.9814 16.9936 15.5909L13.4084 12.0057L16.9936 8.42059C17.3841 8.03007 17.3841 7.3969 16.9936 7.00638C16.603 6.61585 15.9699 6.61585 15.5794 7.00638L11.9942 10.5915L8.40907 7.00636C8.01855 6.61584 7.38538 6.61584 6.99486 7.00636Z" fill="#adadad"/> </g>
 			</svg>
-		</div>
-		<div>
-			<ul>
-				<li
-					v-for="result in searchResults"
-					id = "searchResult"
-					@click="SelectedResult(result)"
-					>
-					{{ result.username }}
-				</li>
-			</ul>
-		</div>
-		<div>
-			<p v-if="listUsersToAdd.length > 0">Users to add :</p>
-			<ul>
-				<div
-					v-for="(user, index) in listUsersToAdd"
-					:key="index"
-					class="is-selected"
-					@click="removeUser(user)"
-				>
-					<p>{{ user.username }}</p>
-				<svg width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" @click="removeUser(user)">
-					<g id="SVGRepo_bgCarrier" stroke-width="0"/>
-					<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
-					<g id="SVGRepo_iconCarrier"> <path d="M6.99486 7.00636C6.60433 7.39689 6.60433 8.03005 6.99486 8.42058L10.58 12.0057L6.99486 15.5909C6.60433 15.9814 6.60433 16.6146 6.99486 17.0051C7.38538 17.3956 8.01855 17.3956 8.40907 17.0051L11.9942 13.4199L15.5794 17.0051C15.9699 17.3956 16.6031 17.3956 16.9936 17.0051C17.3841 16.6146 17.3841 15.9814 16.9936 15.5909L13.4084 12.0057L16.9936 8.42059C17.3841 8.03007 17.3841 7.3969 16.9936 7.00638C16.603 6.61585 15.9699 6.61585 15.5794 7.00638L11.9942 10.5915L8.40907 7.00636C8.01855 6.61584 7.38538 6.61584 6.99486 7.00636Z" fill="#adadad"/> </g>
-				</svg>
-				</div>
-			</ul>
-		</div>
+			</div>
+		</ul>
 	</div>
 </template>
 
@@ -66,6 +64,9 @@ interface User {
 const $data : any = inject('$data');
 const listUsers = await $data.getUsers();
 const currentUser = await $data.getCurrentUser();
+const blockersIds = await $data.getBlockersList();
+const blockedUsers = await $data.getBlockedUsers();
+const blockedIds = blockedUsers.map((user: User) => user.id);
 const store = $data.getStore();
 const search = ref('');
 const listUsersToAdd = ref([] as User[]);
@@ -81,8 +82,10 @@ const searchResults = computed(() => {
 	} else {
 		return listUsers.filter((users: User) => {
 			return users.username.toLowerCase().startsWith(search.value.toLowerCase()) && 
-					!listUsersToAdd.value.includes(users) && 
-						users.id !== currentUser.id;
+					!listUsersToAdd.value.includes(users)
+						&& users.id !== currentUser.id
+						&& !blockersIds.includes(users.id)
+						&& !blockedIds.includes(users.id);
 		});
 	}
 });
@@ -224,7 +227,6 @@ ul {
   margin: 0;
   width: 90%;
   max-height: 120px;
-  overflow-y: auto;
 }
 
 ul::-webkit-scrollbar {
@@ -273,7 +275,7 @@ ul::-webkit-scrollbar-track:active {
   display: flex;
   justify-content: space-between;
   list-style: none;
-  width: 90%;
+  width: 100%;
   cursor: pointer;
   padding: 5px;
   border-radius: 5px;

@@ -41,6 +41,7 @@ stop :
 clean:
 	@cd $(SRC) && $(SUDO) docker compose down -v
 	@docker system prune -f
+	@$(SUDO) rm -rf src/backend/nestjs/api/src/user/avatar-uploads/*
 
 re: clean all
 

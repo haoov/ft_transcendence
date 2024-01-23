@@ -1,40 +1,42 @@
 <script setup lang="ts">
-	defineProps(["p1Spells", "p2Spells"]);
-	const emit = defineEmits(["useSpell"]);
+	import { inject, type ComputedRef } from 'vue';
+	import type GameSocket from '../gameSocket';
 
-	function useSpell(spell: string) {
-		emit("useSpell", spell);
-	}
+	defineProps<{spellsOn: boolean[]}>();
+	const gameSocket: GameSocket = inject("gameSocket") as GameSocket;
+	const spells: string[] = ["fire", "ice", "small", "big"];
 </script>
 
 <template>
 	<div class="spells">
-		<div class="spellBar p2">
+		<div class="spellBar">
 			<div class="spellElem">
-				<img v-if="p2Spells[0]" class="spellImg" v-on:click="useSpell('fire')" src="@/assets/images/fire.color.png">
+				<img
+					v-if="spellsOn[0]"
+					class="spellImg"
+					v-on:click="gameSocket.useSpell(spells[0])"
+					src="@/assets/images/fire.png">
 			</div>
 			<div class="spellElem">
-				<img v-if="p2Spells[1]" class="spellImg" v-on:click="useSpell('ice')" src="@/assets/images/ice.color.jpg">
+				<img
+					v-if="spellsOn[1]"
+					class="spellImg"
+					v-on:click="gameSocket.useSpell(spells[1])"
+					src="@/assets/images/ice.jpg">
 			</div>
 			<div class="spellElem">
-				<img v-if="p2Spells[2]" class="spellImg" v-on:click="useSpell('small')" src="@/assets/images/small.png">
+				<img
+					v-if="spellsOn[2]"
+					class="spellImg"
+					v-on:click="gameSocket.useSpell(spells[2])"
+					src="@/assets/images/small.png">
 			</div>
 			<div class="spellElem">
-				<img v-if="p2Spells[3]" class="spellImg" v-on:click="useSpell('big')" src="@/assets/images/big.png">
-			</div>
-		</div>
-		<div class="spellBar p1">
-			<div class="spellElem">
-				<img v-if="p1Spells[0]" class="spellImg" v-on:click="useSpell('fire')" src="@/assets/images/fire.color.png">
-			</div>
-			<div class="spellElem">
-				<img v-if="p1Spells[1]" class="spellImg" v-on:click="useSpell('ice')" src="@/assets/images/ice.color.jpg">
-			</div>
-			<div class="spellElem">
-				<img v-if="p1Spells[2]" class="spellImg" v-on:click="useSpell('small')" src="@/assets/images/small.png">
-			</div>
-			<div class="spellElem">
-				<img v-if="p1Spells[3]" class="spellImg" v-on:click="useSpell('big')" src="@/assets/images/big.png">
+				<img
+					v-if="spellsOn[3]"
+					class="spellImg"
+					v-on:click="gameSocket.useSpell(spells[3])"
+					src="@/assets/images/big.png">
 			</div>
 		</div>
 	</div>
@@ -42,26 +44,31 @@
 
 <style scoped>
 	.spells {
+		align-self: flex-end;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: center;
 		width: 720px;
 		height: 50px;
 		border-radius: 5rem;
-		background: linear-gradient(145deg, var(--c-grey), transparent 35%);
-		background-size: 200% 100%;
+		background: linear-gradient(to right,var(--c-white),10%, transparent);
 		padding: 0px 10px 0px 10px;
-		margin-top: 2px;
+		margin-top: 5px;
+		animation: slide 0.3s ease-in;
+		overflow: hidden;
+	}
+
+	@keyframes slide {
+		0% {
+			width: 0%;
+		}
+		100% {
+			width: 720px;
+		}
 	}
 
 	.spellBar {
 		display: flex;
-		.p1 {
-			margin-right: 25px;
-		}
-		.p2 {
-			margin-left: 25px;
-		}
 	}
 
 	.spellElem {

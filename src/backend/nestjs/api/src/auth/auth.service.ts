@@ -9,7 +9,7 @@ export class AuthService {
 	constructor(private userService: UserService) {}
 
 	async validateUser(dto: UserAuthDTO): Promise<User> {
-		const user: User = await this.userService.getUser(dto.email);
+		const user: User = await this.userService.getUserByEmail(dto.email);
 		if (!user)
 			return await this.userService.createUser(dto as User);
 		return user;

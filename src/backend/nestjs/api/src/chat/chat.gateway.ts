@@ -10,14 +10,11 @@ import {
 	WebSocketGateway,
 	WebSocketServer
 } from '@nestjs/websockets';
-import { ChannelEntity } from 'src/postgreSQL/entities';
+import { ChannelEntity, UserEntity } from 'src/postgreSQL/entities';
 
-function buildMsg(senderName, profilePic, message) {
+function buildMsg(sender, message) {
 	return {
-		sender:{
-			name: senderName,
-			avatar: profilePic,
-		},
+		sender: sender as UserEntity,
 		message: {
 			channelId : message.channelId,
 			text : message.text,
@@ -40,7 +37,7 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(socket: Socket) {
 		let lastActiveChannel : string;
-		socket.emit('NewConnection');
+		//socket.emit('NewConnection');
 		socket.on('userConnected', async (user: any) => {
 			this.usersSocketList.set(user.id, socket);
 			const listChannel = await this.chatService.getCurrentUserChannels(user.id);
@@ -72,8 +69,7 @@ export class ChatGateway implements OnGatewayConnection {
 	async onNewMessage(@MessageBody() message: any) {
 		const sender = await this.userService.getUserById(message.senderId);
 		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
-			sender.username,
-			sender.avatar,
+			sender,
 			message
 		));
 		this.chatService.createMessage(message);
@@ -83,21 +79,32 @@ export class ChatGateway implements OnGatewayConnection {
 	async onNewChannel(@MessageBody() channel: any) {
 		const newChannelCreated = await this.chatService.createChannel(channel);
 		for (const userId of channel.users) {
-			this.usersSocketList.get(userId).join(newChannelCreated.id.toString());
-			this.usersSocketList.get(userId).emit('newChannelCreated', newChannelCreated);
+			const socket = this.usersSocketList.get(userId);
+			socket?.join(newChannelCreated.id.toString());
+			socket?.emit('newChannelCreated', newChannelCreated);
 		}
 	}
 
 	@SubscribeMessage('joinChannel')
 	async onJoinChannel(@MessageBody() channel: any) {
-		const channelToJoin = await this.chatService.getChannelById(channel.id);
+		const channelToJoin = await this.chatService.getChannelById(channel.channelId);
 		if (channelToJoin.mode === 'Protected' && channelToJoin.password !== channel.password) {
-			this.usersSocketList.get(channel.userId).emit('channelJoined', false);
+			this.usersSocketList.get(channel.userId)?.emit('channelJoined', false);
 			return;
 		}
 		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
-			this.usersSocketList.get(channel.userId).emit('channelJoined', true);
-			this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
+			this.usersSocketList.get(channel.userId)?.emit('channelJoined', true);
+			this.usersSocketList.get(channel.userId)?.emit('newChannelCreated', channelToJoin);
+			this.usersSocketList.get(channel.userId)?.join(channel.channelId.toString());
+		}
+	}
+
+	@SubscribeMessage('leaveChannel')
+	async onLeaveChannel(@MessageBody() data: any) {
+		const channelId = data.channelId;
+		const userId = data.userId;
+		if (await this.chatService.removeUserFromChannel(channelId, userId)) {
+			this.usersSocketList.get(userId)?.emit('channelDeleted', channelId);
 		}
 	}
 
@@ -110,7 +117,7 @@ export class ChatGateway implements OnGatewayConnection {
 		const channelUpdated = await this.chatService.updateChannel(channelToUpdate);
 		const users = await this.chatService.getUsersByChannelId(channel.channelId);
 		for (const user of users) {
-			this.usersSocketList.get(user.id).emit('channelUpdated', channelUpdated);
+			this.usersSocketList.get(user.id)?.emit('channelUpdated', channelUpdated);
 		}
 	}
 
@@ -119,7 +126,7 @@ export class ChatGateway implements OnGatewayConnection {
 		const users = await this.chatService.getUsersByChannelId(channelId);
 		if (await this.chatService.deleteChannel(channelId)) {
 			for (const user of users) {
-				this.usersSocketList.get(user.id).emit('channelDeleted', channelId);
+				this.usersSocketList.get(user.id)?.emit('channelDeleted', channelId);
 			}
 		}
 	}
@@ -133,8 +140,31 @@ export class ChatGateway implements OnGatewayConnection {
 		for (const userId of userIdList) {
 			await this.chatService.addUserToChannel(channelToUpdate.id, userId);
 			const socket = this.usersSocketList.get(userId);
-			socket.emit('channelJoined', true);
-			socket.emit('channelUpdated', channelId);
+			socket?.emit('channelJoined', true);
+			socket?.emit('channelUpdated', channelId);
 		}
 	}
+
+	@SubscribeMessage('blockUser')
+	async onBlockUser(@MessageBody() data: Object) {
+		const userId = data['userId'];
+		const userToBlockId = data['userToBlockId'];
+		try {
+			await this.userService.blockUser(userId, userToBlockId);
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	@SubscribeMessage('unblockUser')
+	async onUnblockUser(@MessageBody() data: Object) {
+		const userId = data['userId'];
+		const userToUnblockId = data['userToUnblockId'];
+		try {
+			await this.userService.unblockUser(userId, userToUnblockId);
+		} catch (err) {
+			throw err;
+		}
+	}
+
 }
