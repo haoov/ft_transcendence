@@ -16,7 +16,9 @@ export class AuthController {
 
 	@Get()
 	@UseGuards(Jwt2faGuard)
-	checkAuth() {}
+	checkAuth() {
+		return { "status": "ok" };
+	}
 
 	@Get("login")
 	@UseGuards(Intra42Guard)
