@@ -3,20 +3,18 @@ import axios from "axios";
 import { Socket, io } from "socket.io-client";
 import notify from "./notify/notify";
 import router from "./router";
-import { reactive, ref, type Ref } from "vue";
+import { reactive } from "vue";
 import type { GameParams } from "./game/interfaces";
 
 class SocketManager {
 	private readonly userSocket: Socket;
 	private readonly gameSocket: Socket;
-	private gameState: Ref<string>;
 	private user: User;
 
 	constructor() {
 		this.userSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/users`);
 		this.gameSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/game`);
 		this.user = {} as User;
-		this.gameState = ref("");
 	}
 
 	async initSocket() {
@@ -28,14 +26,13 @@ class SocketManager {
 
 		this.userSocket.on(ServerEvents.dataChanged, (data: User) => {
 			if (data.id == this.user.id) {
-				console.log("data changed: " + data.status);
 				this.user = data;
-				this.gameState.value = data.status;
 			}
 		});
 
 		this.userSocket.on(ServerEvents.gameReady, (data: User) => {
-			notify.newNotification("gameReady", { by: data.username });
+			if (data.id != this.user.id)
+				notify.newNotification("gameReady", { by: data.username });
 		});
 
 		this.userSocket.on(ServerEvents.gameInvite, (data: User) => {
@@ -81,10 +78,6 @@ class SocketManager {
 		return this.user;
 	}
 
-	getGameState(): Ref<string> {
-		return this.gameState;
-	}
-
 	selectParams(params: GameParams) {
 		this.gameSocket.emit(ClientEvents.gameParams, params);
 	}
@@ -122,4 +115,6 @@ class SocketManager {
 	}
 }
 
-export default SocketManager;
+const socketManager = new SocketManager();
+
+export { socketManager, SocketManager };

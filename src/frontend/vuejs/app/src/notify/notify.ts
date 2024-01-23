@@ -47,6 +47,7 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 			notification.by = params?.by;
 			notification.autoClose = (params?.autoClose !== undefined ? params.autoClose : true);
 			notification.timeout = params?.timeout || 10000;
+			notification.timeOutBar = (params?.timeOutBar !== undefined ? params.timeOutBar : true)
 			notification.buttons = [
 				{
 					text: "play",

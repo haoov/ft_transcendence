@@ -3,11 +3,10 @@
 	import loader from "@/components/loader.vue"
 	import selector from "@/components/selector.vue"
 	import CustumButton from "@/components/custumButton.vue";
-	import type SocketManager from "@/SocketManager";
+	import { type SocketManager } from "@/SocketManager";
 	import type { GameDifficulty, GameMap, GameMode, GameParams, GameType } from "@/game/interfaces";
+	import gameData from "../gameData";
 
-	const props = defineProps<{state: string, winner: string}>();
-	const emit = defineEmits(['click', 'stopWaiting', 'newGame']);
 	const socketManager: SocketManager = inject("socketManager") as SocketManager;
 
 	const selectedParams: Ref<GameParams> = ref({
@@ -29,21 +28,26 @@
 	function display(what: string): boolean {
 		switch (what) {
 			case "selectMenu":
-				return (props.state == "noGame");
+				return (gameData.getGameState().value == "noGame");
 			case "difficulty":
 				return (selectedParams.value.type == "singleplayer");
 			case "maps":
 				return (selectedParams.value.mode == "super"
 								&& selectedParams.value.type == "singleplayer");
 			case "waitingMenu":
-				return (props.state == "waiting");
+				return (gameData.getGameState().value == "waiting");
 			case "finishedMenu":
-				return (props.state == "finished");
+				return (gameData.getGameState().value == "finished");
 			case "readyMenu":
-				return (props.state == "ready");
+				return (gameData.getGameState().value == "ready");
 			default:
 				return false;
 		}
+	}
+
+	function selectParams(gameParams: GameParams) {
+		gameData.setDifficulty(gameParams.difficulty);
+		socketManager.selectParams(gameParams);
 	}
 
 	function newGame() {
@@ -51,7 +55,7 @@
 		selectedParams.value.map = "classic";
 		selectedParams.value.difficulty = "easy";
 		selectedParams.value.mode = undefined;
-		emit("newGame");
+		gameData.setGameState("noGame");
 	}
 
 	function stopWaiting() {
@@ -92,7 +96,7 @@
 			<CustumButton
 				id="play"
 				:disabled="!isEnabled"
-				v-on:click="emit('click', selectedParams)">
+				v-on:click="selectParams(selectedParams)">
 				Play
 			</CustumButton>
 		</div>
@@ -107,7 +111,7 @@
 
 		<!--Menu game finished-->
 		<div v-if="display('finishedMenu')" class="menu-box">
-			<span>{{ winner }} won!</span>
+			<span>{{ gameData.getWinner() }} won!</span>
 			<CustumButton id="reset" v-on:click="newGame()">
 				New game
 			</CustumButton>

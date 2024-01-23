@@ -7,30 +7,33 @@
 
 <template>
 	<div id="notification">
-		<img v-if="data.icon" id="icon" :src="data.icon">
-		<div id="notification-content">
-			<span id="text">{{ data.message }}</span>
-			<span class="sub-text" v-if="data.by">{{ data.by }}</span>
-			<div id="buttons-container">
-				<v_button
-					v-for="button in data.buttons"
-					class="v_button"
-					v-on:click="button.action()">
-					{{ button.text }}
-				</v_button>
+		<div id="notification-infos">
+			<img v-if="data.icon" id="icon" :src="data.icon">
+			<div id="notification-content">
+				<span id="text">{{ data.message }}</span>
+				<span class="sub-text" v-if="data.by">{{ data.by }}</span>
+				<div id="buttons-container">
+					<v_button
+						v-for="button in data.buttons"
+						class="v_button"
+						v-on:click="button.action()">
+						{{ button.text }}
+					</v_button>
+				</div>
 			</div>
 		</div>
 		<div
 			id="timeout-bar"
 			v-if="data.autoClose && data.timeOutBar"
-			:style="`animation: timeOutBar ${data.timeout}ms linear forwards`"></div>
+			:style="`animation: timeOutBar ${data.timeout}ms linear forwards`">
+		</div>
 	</div>
 </template>
 
 <style>
 	#notification {
-		display: grid;
-		grid-template-columns: min-content;
+		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		padding: 5px;
@@ -38,8 +41,15 @@
 		border-radius: 0.8rem;
 		box-shadow: 0 0 0 1px var(--c-black-light);
 		margin-top: 10px;
-		width: 180px;
+		width: 200px;
 		min-height: 50px;
+	}
+
+	#notification-infos {
+		display: grid;
+		grid-template-columns: min-content;
+		align-items: center;
+		justify-content: center;
 	}
 
 	#icon {
@@ -52,6 +62,7 @@
 
 	#notification-content {
 		grid-row: 1;
+		width: max-content;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
