@@ -2,26 +2,33 @@ import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards, Use
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { Request } from "express";
-import { Jwt2faStrategy } from "src/auth/jwt-2fa/jwt-2fa.strategy";
+import Jwt2faGuard from "src/auth/jwt-2fa/jwt-2fa.guard";
+import { UserAuthDTO } from "./dto/userAuth.dto";
 
 @Controller("user")
-@UseGuards(Jwt2faStrategy)
+@UseGuards(Jwt2faGuard)
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get()
 	async getAllUsers(): Promise<User[]> {
-		return await this.userService.getAllUsers();
+		const users: User[] = await this.userService.getAllUsers();
+		users.forEach(user => user.twofa_secret = "");
+		return users;
 	}
 
 	@Get("me")
-	getCurrentUser(@Req() req: Request): Express.User {
-		return this.userService.getCurrentUser(req);
+	async getCurrentUser(@Req() req: Request): Promise<User> {
+		const user: User = await this.userService.getCurrentUser(req);
+		user.twofa_secret = "";
+		return user;
 	}
 
 	@Get(":id")
-	getUser(@Param("id") id: number): Promise<User> {
-		return this.userService.getUserById(id);
+	async getUser(@Param("id") id: number): Promise<User> {
+		const user: User = await  this.userService.getUserById(id);
+		user.twofa_secret = "";
+		return user;
 	}
 
 	// @Post(':id/upload-avatar')
