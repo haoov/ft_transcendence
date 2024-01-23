@@ -19,6 +19,7 @@ const myStats = ref<UserStat>();
 const myGames = ref<GameStat[]>([]);
 const search = ref('');
 
+const $data : any = inject('$data');
 const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 const playersDisplayed = computed(() => {
@@ -171,6 +172,11 @@ function inviteToPlay(player: UserStat) {
 	}
 }
 
+function sendMessage(id : number) {
+	router.push(`/chat`);
+	$data.sendDirectMessage(id);
+}
+
 </script>
 
 <template>
@@ -287,7 +293,7 @@ function inviteToPlay(player: UserStat) {
 											<a v-if="player.id!=me?.id" class="u-mr--8" target="_blank">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play" v-on:click="inviteToPlay(player)">
 											</a>
-											<a v-if="player.id!=me?.id" href="https://www.google.com" target="_blank">
+											<a v-if="player.id!=me?.id" @click="sendMessage(player.id)" target="_blank">
 												<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 											</a>
 										</div>
