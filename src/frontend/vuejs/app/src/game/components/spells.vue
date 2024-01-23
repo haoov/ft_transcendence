@@ -1,42 +1,20 @@
 <script setup lang="ts">
-	import { inject, type ComputedRef } from 'vue';
-	import type GameSocket from '../gameSocket';
+	import { inject } from 'vue';
+	import type { SocketManager } from '@/SocketManager';
+	import gameData from '../gameData';
 
-	defineProps<{spellsOn: boolean[]}>();
-	const gameSocket: GameSocket = inject("gameSocket") as GameSocket;
-	const spells: string[] = ["fire", "ice", "small", "big"];
+	const socketManager: SocketManager = inject("socketManager") as SocketManager;
 </script>
 
 <template>
 	<div class="spells">
 		<div class="spellBar">
-			<div class="spellElem">
+			<div class="spellElem" v-for="spell in gameData.getCurrentPlayer().value.spells">
 				<img
-					v-if="spellsOn[0]"
+					v-if="spell.on"
 					class="spellImg"
-					v-on:click="gameSocket.useSpell(spells[0])"
-					src="@/assets/images/fire.png">
-			</div>
-			<div class="spellElem">
-				<img
-					v-if="spellsOn[1]"
-					class="spellImg"
-					v-on:click="gameSocket.useSpell(spells[1])"
-					src="@/assets/images/ice.jpg">
-			</div>
-			<div class="spellElem">
-				<img
-					v-if="spellsOn[2]"
-					class="spellImg"
-					v-on:click="gameSocket.useSpell(spells[2])"
-					src="@/assets/images/small.png">
-			</div>
-			<div class="spellElem">
-				<img
-					v-if="spellsOn[3]"
-					class="spellImg"
-					v-on:click="gameSocket.useSpell(spells[3])"
-					src="@/assets/images/big.png">
+					v-on:click="socketManager.useSpell(spell.type)"
+					:src="spell.icon">
 			</div>
 		</div>
 	</div>
