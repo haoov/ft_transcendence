@@ -1,11 +1,6 @@
 <script setup lang="ts">
 	import Leaderboard from '@/components/leaderboard.vue';
 	import navigationBar from '@/components/navigationBar.vue';
-	import GlobalSocket from '@/GlobalSocket';
-	import { inject } from 'vue';
-	import v_notify from '@/notify/components/notify.vue';
-
-	const globalSocket: GlobalSocket = inject("globalSocket") as GlobalSocket;
 </script>
 
 <template>
