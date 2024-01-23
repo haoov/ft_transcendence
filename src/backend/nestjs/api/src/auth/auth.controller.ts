@@ -22,9 +22,10 @@ export class AuthController {
 
 	@Get("login")
 	@UseGuards(Intra42Guard)
-	async login(@Req() req: Request, @Res() res: Response): Promise<Response> {
-		const user: User = await this.userService.getUserById((req.user as User).id);
-		return res.send(user);
+	async login(@Res() res: Response): Promise<Response> {
+   		return res.status(200).send({
+			"status": "logout"
+		});
 	}
 
 	@Get("42-redirect")
@@ -51,8 +52,7 @@ export class AuthController {
 	@Post('2fa/turn-on')
 	@UseGuards(JwtAuthGuard)
 	async swithOn2fa(@Req() req: Request, @Body() body: Body2faDTO) {
-		const user_tmp: User = req.user as User;
-		const user = await this.userService.getUserById(user_tmp.id);
+		const user = await this.userService.getUserById((req.user as User).id);
 		if (!user.twofa_secret)
 			throw new UnauthorizedException('no secret generated');
 		const isCodeValid = this.authService.is2faValid(
@@ -61,8 +61,20 @@ export class AuthController {
 		);
 		if (!isCodeValid)
 			throw new UnauthorizedException('Wrong Auth Code');
+		await this.userService.set2faMode(user.id, true);
 		const accessTokenCookie = this.authService.getCookieWithJwtAccessToken(user.id, true);
 		req.res.setHeader('Set-Cookie', [accessTokenCookie]);
+		return { "2fa_status": "on" };
+	}
+
+	@Post('2fa/turn-off')
+	@UseGuards(JwtAuthGuard)
+	async swithOff2fa(@Req() req: Request, @Body() body: Body2faDTO) {
+		const user = await this.userService.getUserById((req.user as User).id);
+		if (!user.twofa_enabled)
+			throw new UnauthorizedException('2fa already off');
+		await this.userService.set2faMode(user.id, false);
+		return { "2fa_status": "off" };
 	}
 
 	@Get('2fa/generate')
@@ -108,13 +120,16 @@ export class AuthController {
 	async reset(@Req() req: Request) {
 		const user: User = req.user as User;
 		await this.userService.set2faMode(user.id, false);
-		return "2fa reset"
+		return { "2fa_status": "reset" };
+
 	}
 
 	@Get("logout")
 	@UseGuards(JwtAuthGuard)
 	logout(@Req() req: Request, @Res() res: Response) {
 		res.setHeader('Set-Cookie', this.authService.getCookieForLogout());
-   		return res.sendStatus(200);
+   		return res.status(200).send({
+			"status": "logout"
+		});
 	}
 }
