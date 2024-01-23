@@ -82,7 +82,7 @@ const store = reactive({
 	isconfirmationLeavingModalOpen: false,
 	isProfileModalOpen: false,
 	activeChannel: null as Channel | null,
-	socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`, {autoConnect: false} as any),
+	socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`),
 });
 
 export default {
@@ -91,9 +91,7 @@ export default {
 	},
 
 	initSocket() {
-		store.socket.connect();
-		store.socket.on('NewConnection', async () => {
-			const user = await this.getCurrentUser();
+		this.getCurrentUser().then((user) => {
 			store.socket.emit('userConnected', user);
 		});
 		store.isSocketReady = true;

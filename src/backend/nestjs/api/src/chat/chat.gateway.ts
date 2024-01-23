@@ -37,7 +37,7 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(socket: Socket) {
 		let lastActiveChannel : string;
-		socket.emit('NewConnection');
+		//socket.emit('NewConnection');
 		socket.on('userConnected', async (user: any) => {
 			this.usersSocketList.set(user.id, socket);
 			const listChannel = await this.chatService.getCurrentUserChannels(user.id);
