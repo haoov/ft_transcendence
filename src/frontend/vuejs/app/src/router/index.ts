@@ -12,14 +12,11 @@ const router = createRouter({
 router.beforeEach((to) => {
 	if (to.name != "login") {
 		const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
-		const $data: any = inject('$data');
 		axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth`).then(
 			() => {
 				if (!globalSocket.socketIsReady()) {
+					console.log("init socket");
 					globalSocket.initSocket();
-				}
-				if (!$data.isSocketReady()) {
-					$data.initSocket();
 				}
 			},
 			() => {

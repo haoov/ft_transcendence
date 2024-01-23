@@ -35,10 +35,8 @@ const username = user.username;
 const status = user.status;
 const classStatus = (user.status === 'offline' || user.status === 'undefined' ) ? 'logged-out' : 'logged-in';
 const router = useRouter();
-
-const goToProfile = async () => {
-	const user = await $data.getUserById(store.userIdClicked);
-	router.push(`/${user.username}`);
+const goToProfile = () => {
+	router.push({path:'profile', params: {id: store.userIdClicked}});
 	$data.closeProfileModal();
 }
 const inviteToGame = () => {
@@ -48,12 +46,11 @@ const inviteToGame = () => {
 }
 const blockUser = () => {
 	console.log('block user')
-	$data.blockUser(store.userIdClicked);
+	store.socket.emit('blockUser', {userIdToBlock: store.userIdClicked, userId: currentUser.id});
 	$data.closeProfileModal();
 }
 const sendDirectMessage = () => {
 	console.log('send direct message')
-	$data.sendDirectMessage(store.userIdClicked);
 	$data.closeProfileModal();
 }
 

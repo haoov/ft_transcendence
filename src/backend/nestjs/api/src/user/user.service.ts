@@ -122,30 +122,24 @@ export class UserService {
 		res.sendFile(path.join(directoryPath, avatar));
 	}
 
-	async blockUser(blockerId: number, blockedId: number) {
-		const blocker = await this.usersRepository.findOne({where : { id: blockerId },  relations: ['users_blocked']});
-		const blocked = await this.usersRepository.findOne({where : { id: blockedId },  relations: ['blockers']});
-		if (blockerId === blockedId)
+	async blockUser(idUser: number, idUserToBlock: number) {
+		if (idUser === idUserToBlock)
 			throw new ForbiddenException("You can't block yourself");
-		if (blocker && blocked) {
-			blocker.users_blocked.push(blocked);
-			blocked.blockers.push(blocker);
-			await this.usersRepository.save(blocker);
-			await this.usersRepository.save(blocked);
-		}
+		const user: UserEntity = await this.usersRepository.findOne({ where : { id: idUser }, relations: ["users_blocked"]}) as UserEntity;
+		const userToBlock: UserEntity = await this.usersRepository.findOne({ where : { id: idUserToBlock }}) as UserEntity;
+		if (!user || !userToBlock)
+			throw new NotFoundException("User not found in database");
+		user.users_blocked.push(userToBlock);
+		await this.usersRepository.save(user);
 	}
 
-	async unblockUser(blockerId: number, blockedId: number) {
-		const blocker = await this.usersRepository.findOne({where : { id: blockerId },  relations: ['users_blocked']});
-		const blocked = await this.usersRepository.findOne({where : { id: blockedId },  relations: ['blockers']});
-		if (blockerId === blockedId)
-			throw new ForbiddenException("You can't unblock yourself");
-		if (blocker && blocked) {
-			blocker.users_blocked = blocker.users_blocked.filter(user => user.id !== blockedId);
-			blocked.blockers = blocked.blockers.filter(user => user.id !== blockerId);
-			await this.usersRepository.save(blocker);
-			await this.usersRepository.save(blocked);
-		}
+	async unblockUser(idUser: number, idUserToUnblock: number) {
+		const user: UserEntity = await this.usersRepository.findOne({ where : { id: idUser }, relations: ["users_blocked"]}) as UserEntity;
+		const userToUnblock: UserEntity = await this.usersRepository.findOne({ where : { id: idUserToUnblock }}) as UserEntity;
+		if (!user || !userToUnblock)
+			throw new NotFoundException("User not found in database");
+		user.users_blocked.splice(user.users_blocked.indexOf(userToUnblock), 1);
+		await this.usersRepository.save(user);
 	}
 
 	async getBlockedUsers(idUser: number): Promise<User[]> {
@@ -153,15 +147,5 @@ export class UserService {
 		if (!user)
 			throw new NotFoundException("User not found in database");
 		return user.users_blocked;
-	}
-
-	async getBlockerList(idUser: number): Promise<number []> {
-		const userIdListBlockedBy: number [] = [];
-		const user = await this.usersRepository.findOne({ where: { id: idUser }, relations: ['blockers'] }) as UserEntity;
-		const blockers = user.blockers;
-		for (const blocker of blockers) {
-			userIdListBlockedBy.push(blocker.id);
-		}
-		return userIdListBlockedBy;
 	}
 }

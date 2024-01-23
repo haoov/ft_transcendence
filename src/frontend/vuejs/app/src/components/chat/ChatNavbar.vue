@@ -1,13 +1,17 @@
 <template>
 	<div class="channel-navbar">
-		<ul v-for="(channel, index) in channels">
-			<ChannelWidget
-			:channel="channel"
-			:key="channel.id"
-			@click="setActiveChannel(channel, currentUser.id)"
-			></ChannelWidget>
-		</ul>
-		<NewChannelWidget title="Add/Join Channel"></NewChannelWidget>
+		<nav>
+			<div>
+				<ul v-for="(channel, index) in channels">
+					<ChannelWidget
+					:channel="channel"
+					:key="channel.id"
+					@click="setActiveChannel(channel, currentUser.id)"
+					></ChannelWidget>
+				</ul>
+			</div>
+			<NewChannelWidget title="Add/Join Channel"></NewChannelWidget>
+		</nav>
 	</div>
 </template>
 
@@ -37,10 +41,6 @@ const setActiveChannel = (channel : any, currentUserId: number) => {
 
 socket.on('newChannelCreated', (newChannelCreated : any) => {
 	$data.addChannel(newChannelCreated);
-	socket.emit('setActiveChannel', {
-		'channelId':newChannelCreated.id,
-		'currentUserId':currentUser.id
-		});
 	$data.setActiveChannel(newChannelCreated);
 });
 
@@ -62,14 +62,31 @@ socket.on('channelUpdated', (channelUpdated : any) => {
 <style scoped>
 
 .channel-navbar {
-    display: flex;
+	display: flex;
 	justify-content: center;
-    align-items: center;
-    height: 100%;
-    border-right: 2px solid #fe019973;
-    overflow-x: hidden;
-    overflow-y: auto;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	background: transparent;
+	border-right: 2px solid #fe019973;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+nav {
+	display: flex;
     flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    min-height: 50%;
+    height: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+nav ul {
+	margin-bottom: 10%;
 }
 
 ::-webkit-scrollbar {
@@ -82,6 +99,17 @@ socket.on('channelUpdated', (channelUpdated : any) => {
 }
 
 ::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background-color: #07cece;
+  box-shadow:0 0 6px #07cece;
+}
+
+::-webkit-scrollbar-track:hover,
+::-webkit-scrollbar-track:active {
   background-color: transparent;
 }
 
