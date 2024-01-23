@@ -311,7 +311,7 @@ ul::-webkit-scrollbar-track:active {
   display: flex;
   justify-content: space-between;
   list-style: none;
-  width: 100%;
+  width: 90%;
   cursor: pointer;
   padding: 5px;
   border-radius: 5px;
@@ -351,7 +351,7 @@ span {
 
 .cancel-icon-adduser-input {
   position: absolute;
-  right: 5px;
+  right: 25px;
   top: 10px;
   cursor: pointer;
 }

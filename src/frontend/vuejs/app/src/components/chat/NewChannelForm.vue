@@ -104,7 +104,6 @@ const submitForm = () => {
 		}
 		const name = '#' + userIds.value.sort((a,b) => a -b).join('#');
 		if (currentPrivateChannels.some((channel: any) => channel.name === name)) {
-			console.log('channel already exists');
 			const newActiveChannel = currentPrivateChannels.find((channel: any) => channel.name === name);
 			$data.setActiveChannel(newActiveChannel);
 			$data.closeModalForm();

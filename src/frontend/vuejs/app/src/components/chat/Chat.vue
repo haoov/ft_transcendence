@@ -45,8 +45,6 @@ import { onBeforeRouteLeave } from 'vue-router';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
-$data.setSocket(io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`));
-// $data.setSocket(io(`/chat`));
 const socket : Socket = store.socket; 
 
 socket.on('NewConnection', async () => {
@@ -54,7 +52,7 @@ socket.on('NewConnection', async () => {
 	socket.emit('userConnected', user);
 });
 
-socket.on('lastActiveChannel', async (id : string) => {
+store.socket.on('lastActiveChannel', async (id : string) => {
 	const user = await $data.getCurrentUser();
 	$data.loadChannels(user.id);
 	const channel = store.channels.find((channel : any) => channel.id === parseInt(id));
