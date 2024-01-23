@@ -11,7 +11,7 @@ import axios from 'axios';
 		await axios.post(uri2fa, { "twofaCode": twofaValue })
 		.then(() => {
 			btn!.style.backgroundColor = "green";
-			router.push("/");
+			router.push({ path: '/', replace: true })
 		})
 		.catch(() => {
 			btn!.classList.add("bounce");
