@@ -73,11 +73,11 @@ import qr from "../assets/images/qrcode.png";
 
 const dynamicHeight = computed(() => {
 	if (selectedOption.value == "Enabled" && !me.value.twofa_enabled)
-		return "height: 670px";
+		return "height: 680px";
 	else if (selectedOption.value == "Disabled" && me.value.twofa_enabled)
-		return "height: 520px";
+		return "height: 530px";
 	else
-		return "height: 450px";
+		return "height: 460px";
 });
 const me = ref<User>(({
 	id: 0,
@@ -328,7 +328,6 @@ onMounted(async () => {
 
 .formField input {
 		width: 60%;
-		height: 1.3rem;
 		border-radius: 0.5rem;
 		padding: 0.5rem 1rem;
 		color: #fff;
@@ -343,8 +342,7 @@ onMounted(async () => {
 .formField .forbidden {
 		width: 60%;
 		font-size: small;
-		height: 1.3rem;
-		border-radius: 8px;
+		border-radius: 0.5rem;
 		padding: 0.5rem 1rem;
 		color: var(--c-grey);
 		font-family: Overpass;
@@ -372,12 +370,13 @@ onMounted(async () => {
     flex-wrap: wrap;
     border-radius: 0.5rem;
     box-sizing: border-box;
-		background-color: linear-gradient(#212121, #212121) padding-box;
+	background-color: var(--c-black-light);
     box-shadow: 0 0 0 1px #0000000f;
     padding: 0.25rem;
     font-size: small;
     width: 14rem;
     margin-left: 6rem;
+	margin-top: 0.5rem;
 }
 
 .radio-inputs .radio {
@@ -394,7 +393,7 @@ onMounted(async () => {
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  border-radius: 0.5rem;
+  border-radius: 0.6rem;
   border: none;
   padding: .5rem 0;
   color: #717171;
