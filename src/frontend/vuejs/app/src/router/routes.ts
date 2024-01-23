@@ -32,7 +32,6 @@ const routes = [
 		path: "/chat",
 		name: "chat",
 		component: ChatView,
-		children: [],
 	},
 	{
 		path: "/settings",

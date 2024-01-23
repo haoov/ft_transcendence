@@ -126,6 +126,7 @@ export class GameGateway
 			if (data.finished) {
 				this.endGame(room);
 				this.deleteRoom(room);
+				//test
 			}
 		}
 	}

@@ -19,12 +19,9 @@ export class HomeService {
 			relations: ['games_won', 'games_lost'],
 	
 		});
-		//console.log(usersWithGames);
 			
 		// Map as UserStat type
 		const userStats = usersWithGames.map((user) => {
-			// console.log(user.username + ", id:" + user.id);
-			// console.log(user.games.length);
 			// Calculate win rate
 			const game_count: number = user.games_won.length + user.games_lost.length;
 			let rate: number;
