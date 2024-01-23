@@ -64,6 +64,9 @@ interface User {
 const $data : any = inject('$data');
 const listUsers = await $data.getUsers();
 const currentUser = await $data.getCurrentUser();
+const blockersIds = await $data.getBlockersList();
+const blockedUsers = await $data.getBlockedUsers();
+const blockedIds = blockedUsers.map((user: User) => user.id);
 const store = $data.getStore();
 const search = ref('');
 const listUsersToAdd = ref([] as User[]);
@@ -79,8 +82,10 @@ const searchResults = computed(() => {
 	} else {
 		return listUsers.filter((users: User) => {
 			return users.username.toLowerCase().startsWith(search.value.toLowerCase()) && 
-					!listUsersToAdd.value.includes(users) && 
-						users.id !== currentUser.id;
+					!listUsersToAdd.value.includes(users)
+						&& users.id !== currentUser.id
+						&& !blockersIds.includes(users.id)
+						&& !blockedIds.includes(users.id);
 		});
 	}
 });

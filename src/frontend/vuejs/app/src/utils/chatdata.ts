@@ -61,7 +61,16 @@ async function fetchBlockedUsers() : Promise<User[]> {
 	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block`).then((res) => { return res.data });
 }
 
+async function fetchBlockersList() : Promise<number []> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/blockedBy`).then((res) => { return res.data });
+}
+
+async function blockUser(id: number) {
+	axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${id}`)
+}
+
 const store = reactive({
+	isSocketReady: false,
 	channels: [] as Channel[],
 	messages: [] as Message [],
 	users: [] as User [],
@@ -73,11 +82,23 @@ const store = reactive({
 	isconfirmationLeavingModalOpen: false,
 	isProfileModalOpen: false,
 	activeChannel: null as Channel | null,
-	socket: null as Socket | null,
+	socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`, {autoConnect: false} as any),
 });
 
 export default {
+	isSocketReady() : boolean {
+		return store.isSocketReady;
+	},
 
+	initSocket() {
+		store.socket.connect();
+		store.socket.on('NewConnection', async () => {
+			const user = await this.getCurrentUser();
+			store.socket.emit('userConnected', user);
+		});
+		store.isSocketReady = true;
+	},
+	
 	getUsers() : Promise<User []> {
 		return fetchUsers();
 	},
@@ -90,7 +111,15 @@ export default {
 		return fetchBlockedUsers();
 	},
 
-	getCurrentUser() : Object {
+	getBlockersList() : Promise<number []> {
+		return fetchBlockersList();
+	},
+
+	blockUser(id: number) {
+		return blockUser(id);
+	},
+
+	getCurrentUser() : Promise<User> {
 		return fetchCurrentUser();
 	},
 
@@ -106,9 +135,6 @@ export default {
 		return store;
 	},
 
-	setSocket(socket: Socket) {
-		store.socket = socket;
-	},
 
 	loadChannels() {
 		fetchCurrentUserChannels().then((channels) => {
@@ -142,6 +168,31 @@ export default {
 
 	addMessage(message: Message) {
 		store.messages.push(message);
+	},
+
+	async sendDirectMessage(userId : number) {
+		const user = await this.getUserById(userId);
+		const currentUser = await this.getCurrentUser();
+		const userIds : Array<number> = Array(userId, currentUser.id);
+		const currentPrivateChannels = store.channels.filter((channel: any) => channel.mode === 'Private');
+		const name = '#' + userIds.sort((a,b) => a -b).join('#');
+		if (currentPrivateChannels.some((channel: any) => channel.name === name)) {
+			const newActiveChannel = currentPrivateChannels.find((channel: any) => channel.name === name);
+			if (newActiveChannel) {
+				this.setActiveChannel(newActiveChannel);
+			}
+			this.closeModalForm();
+		} else {
+			const newChannel = {
+				name: name,
+				mode: 'Private',
+				creatorId: currentUser.id,
+				password: "",
+				users: userIds,
+			};
+			store.socket.emit('createNewChannel', newChannel);
+		}
+		this.closeModalForm();
 	},
 
 	loadUsers() {
