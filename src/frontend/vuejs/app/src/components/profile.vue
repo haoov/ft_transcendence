@@ -19,6 +19,7 @@ const isBlocked = ref<boolean>(false);
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
 const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
+const $data : any = inject('$data');
 
 globalSocket.getSocket().on(ServerEvents.dataChanged, async (newUser: User) => {
 	if (user.value?.id == newUser.id) {
@@ -145,6 +146,11 @@ function getScoreColor(winFlag: boolean): string {
 		return "var(--c-grey)"
 }
 
+function sendMessage(id : number | undefined) {
+	router.push(`/chat`);
+	$data.sendDirectMessage(id);
+}
+
 onMounted(async () => {
 	await fetchUser();
 	await fetchMe();
@@ -173,7 +179,7 @@ onMounted(async () => {
 								<a v-if="user?.id!=me?.id && !isBlocked" class="u-mr--8" target="_blank">
 									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 								</a>
-								<a v-if="user?.id!=me?.id && !isBlocked" class="u-mr--8" target="_blank">
+								<a v-if="user?.id!=me?.id && !isBlocked" class="u-mr--8" @click="sendMessage(user?.id)" target="_blank">
 									<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 								</a>
 								<a v-if="user?.id!=me?.id && !isBlocked" @click="blockUser()" target="_blank">
