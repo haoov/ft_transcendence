@@ -30,8 +30,12 @@ interface User {
 };
 
 async function fetchUsers() : Promise<User []> {
-	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user`).then((res) => { return res.data });
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/all`).then((res) => { return res.data });
 };
+
+async function fetchUserById(id: number) : Promise<User> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user?id=${id}`).then((res) => { return res.data });
+}
 
 async function fetchCurrentUser() : Promise<any> {
 	return  axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((res) => { return res.data });
@@ -41,37 +45,79 @@ async function fetchChannels() : Promise<Channel[]> {
 	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels`).then((res) => { return res.data });
 };
 
-async function fetchJoinableChannels(id: number) : Promise<Channel[]> {
-	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/joinable/${id}`).then((res) => { return res.data });
+async function fetchJoinableChannels() : Promise<Channel[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/joinable`).then((res) => { return res.data });
 }
 
-async function fetchCurrentUserChannels(id: number) : Promise<Channel []> {
-	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/${id}`).then((res) => { return res.data });
+async function fetchCurrentUserChannels() : Promise<Channel []> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/`).then((res) => { return res.data });
 }
 
-async function fetchMessagesByChannelId(id: number) : Promise<Message[]> {
-	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/messages/${id}`).then((res) => { return res.data });
+async function fetchMessagesByChannelId(channelId: number) : Promise<Message[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/messages/${channelId}`).then((res) => { return res.data });
 };
 
+async function fetchBlockedUsers() : Promise<User[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block`).then((res) => { return res.data });
+}
+
+async function fetchBlockersList() : Promise<number []> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/blockedBy`).then((res) => { return res.data });
+}
+
+async function blockUser(id: number) {
+	axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${id}`)
+}
+
 const store = reactive({
+	isSocketReady: false,
 	channels: [] as Channel[],
 	messages: [] as Message [],
 	users: [] as User [],
+	userIdClicked: null as number | null,
 	currentUser: null as User | null,
 	isModalOpen: false,
 	isEditModalOpen: false,
 	isAddUserModalOpen: false,
+	isconfirmationLeavingModalOpen: false,
+	isProfileModalOpen: false,
 	activeChannel: null as Channel | null,
-	socket: null as Socket | null,
+	socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`),
 });
 
 export default {
+	isSocketReady() : boolean {
+		return store.isSocketReady;
+	},
 
+	initSocket() {
+		this.getCurrentUser().then((user) => {
+			store.socket.emit('userConnected', user);
+		});
+		store.isSocketReady = true;
+	},
+	
 	getUsers() : Promise<User []> {
 		return fetchUsers();
 	},
 
-	getCurrentUser() : Object {
+	getUserById(id: number) : Promise<User> {
+		return fetchUserById(id);
+	},
+
+	getBlockedUsers() : Promise<User[]> {
+		return fetchBlockedUsers();
+	},
+
+	getBlockersList() : Promise<number []> {
+		return fetchBlockersList();
+	},
+
+	blockUser(id: number) {
+		return blockUser(id);
+	},
+
+	getCurrentUser() : Promise<User> {
 		return fetchCurrentUser();
 	},
 
@@ -80,19 +126,16 @@ export default {
 	},
 
 	getJoinableChannels(id: number) : Object {
-		return fetchJoinableChannels(id);
+		return fetchJoinableChannels();
 	},
 
 	getStore() : Object {
 		return store;
 	},
 
-	setSocket(socket: Socket) {
-		store.socket = socket;
-	},
 
-	loadChannels(idUser: number) {
-		fetchCurrentUserChannels(idUser).then((channels) => {
+	loadChannels() {
+		fetchCurrentUserChannels().then((channels) => {
 			store.channels = channels.slice().reverse();
 		});
 	},
@@ -125,6 +168,31 @@ export default {
 		store.messages.push(message);
 	},
 
+	async sendDirectMessage(userId : number) {
+		const user = await this.getUserById(userId);
+		const currentUser = await this.getCurrentUser();
+		const userIds : Array<number> = Array(userId, currentUser.id);
+		const currentPrivateChannels = store.channels.filter((channel: any) => channel.mode === 'Private');
+		const name = '#' + userIds.sort((a,b) => a -b).join('#');
+		if (currentPrivateChannels.some((channel: any) => channel.name === name)) {
+			const newActiveChannel = currentPrivateChannels.find((channel: any) => channel.name === name);
+			if (newActiveChannel) {
+				this.setActiveChannel(newActiveChannel);
+			}
+			this.closeModalForm();
+		} else {
+			const newChannel = {
+				name: name,
+				mode: 'Private',
+				creatorId: currentUser.id,
+				password: "",
+				users: userIds,
+			};
+			store.socket.emit('createNewChannel', newChannel);
+		}
+		this.closeModalForm();
+	},
+
 	loadUsers() {
 		fetchUsers().then((users) => {
 			store.users = users;
@@ -155,4 +223,20 @@ export default {
 		store.isAddUserModalOpen = false;
 	},
 
+	openConfirmationLeavingModal() {
+		store.isconfirmationLeavingModalOpen = true;
+	},
+
+	closeConfirmationLeavingModal() {
+		store.isconfirmationLeavingModalOpen = false;
+	},
+
+	openProfileModal(id : number) {
+		store.userIdClicked = id;
+		store.isProfileModalOpen = true;
+	},
+
+	closeProfileModal() {
+		store.isProfileModalOpen = false;
+	},
 };

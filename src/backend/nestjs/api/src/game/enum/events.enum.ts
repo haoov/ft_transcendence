@@ -9,6 +9,8 @@ export enum clientEvents {
 	leave = "leave",
 	gamePlay = "gamePlay",
 	gameForfeit = "gameForfeit",
+	gameInvite = "gameInvite",
+	gameInviteResponse = "gameInviteResponse",
 };
 
 export enum serverEvents {
@@ -16,10 +18,10 @@ export enum serverEvents {
 	ready = "ready",
 	started = "started",
 	finished = "finished",
-	waiting = "waiting",
-	waitingForOpponent = "waitingForOpponent",
-	playing = "playing",
 	gameReady = "gameReady",
 	gameInvite = "gameInvite",
 	disableNotifications = "disableNotifications",
+	updateStatus = "updateStatus",
+	dataChanged = "dataChanged",
+	gameInviteResponse = "gameInviteResponse",
 };

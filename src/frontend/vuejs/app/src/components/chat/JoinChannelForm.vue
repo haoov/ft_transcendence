@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue';
+import { ref, computed, inject, watch } from 'vue';
 
 interface Channel {
   creatorId: string;
@@ -74,12 +74,11 @@ const $data : any = inject('$data');
 const store = $data.getStore();
 const socket = store.socket;
 const currentUser = await $data.getCurrentUser();
-const channelList = await $data.getJoinableChannels(currentUser.id);
+const channelList = await $data.getJoinableChannels();
 const channelToJoin = ref<Channel>();
 const password = ref('');
 const passwordError = ref(false);
 const errorMessagePassword = ref('');
-
 const search = ref('');
 
 const searchResults = computed(() => {
@@ -124,7 +123,6 @@ const submitForm = () => {
 		password: password.value,
 		userId: currentUser.id,
 	});
-
 };
 
 socket.on('channelJoined', (ret : boolean) => {
@@ -134,6 +132,12 @@ socket.on('channelJoined', (ret : boolean) => {
 	} else {
 		passwordError.value = true;
 		errorMessagePassword.value = 'Wrong password';
+	}
+});
+
+watch(() => password.value, () => {
+	if (password.value.length > 0) {
+		passwordError.value = false;
 	}
 });
 
@@ -293,7 +297,7 @@ ul::-webkit-scrollbar-track:active {
   display: flex;
   justify-content: space-between;
   list-style: none;
-  width: 91%;
+  width: 90%;
   cursor: pointer;
   padding: 5px;
   border-radius: 5px;
@@ -330,7 +334,7 @@ span {
 }
 
 .cancel-icon {
-    right: 5px;
+    right: 25px;
 	cursor: pointer;
 }
 </style>

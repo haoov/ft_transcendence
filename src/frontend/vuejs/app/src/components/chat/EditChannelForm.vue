@@ -37,7 +37,6 @@
 						<span class="name">{{ option }}</span>
 					</label>
 				</div>
-				<SeachBar :userIds="userIds"></SeachBar>
 				<div v-if="selectedOption === 'Protected'">
 					<label for="password">Password :</label>
 					<p v-if="passwordError" style="color: red;">Password missing</p>
@@ -122,6 +121,7 @@ const submitForm = () => {
 		password: password.value,
 		userIds: userIds.value,
 	});
+	activeChannel.value.name = channelName.value;
 	$data.closeEditModalForm();
 };
 
@@ -318,7 +318,7 @@ const cancelDelete = () => {
 
 .cancel-icon {
     position: absolute;
-    right: 90px;
+    right: 50px;
     top: 64px;
     cursor: pointer;
 }

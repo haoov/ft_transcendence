@@ -13,6 +13,7 @@
 <style>
 
     .setting-body {
+        overflow-x: hidden;
         height: 100%;
         background: linear-gradient(	to right,
                                         var(--c-black),
