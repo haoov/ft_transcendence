@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Req } from "@nestjs/common";
+import { Controller, Get, Post, Param, Req, Put, Query } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
@@ -90,5 +90,17 @@ export class ChatController {
 		const user = req.user as User;
 		const userId = user.id;
 		return await this.chatService.getJoinableChannels(userId);
+	}
+
+	@Put('/block')
+	async blockUser(@Query('id') idToBlock: number, @Req() req : Request): Promise<void> {
+		const user = req.user as User;
+		await this.userService.blockUser(user.id, idToBlock);
+	}
+
+	@Put('/unblock')
+	async unblockUser(@Query('id') idToUnblock: number, @Req() req : Request): Promise<void> {
+		const user = req.user as User;
+		await this.userService.unblockUser(user.id, idToUnblock);
 	}
 }

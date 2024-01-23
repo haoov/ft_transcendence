@@ -119,12 +119,11 @@ function getStatusIcon(user: UserStat) : string {
 	// Faire option forbidden
 	if (user.status == "undefined" || user.status == "offline")
 		return offline;
-	else if (user.status == "playing" || user.status == "waiting")
+	else if (user.status == "playing")
 		return playing;
 	else
 		return online;
 }
-
 
 function getPieProportions() : string {
 	let loses: number = 0;
@@ -137,7 +136,6 @@ function getDateStr(dt: Date) : string {
 	let date = new Date(dt);
 	return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });	
 }
-
 
 function getHourStr(dt: Date) : string {
 	let date = new Date(dt);
@@ -235,7 +233,7 @@ function inviteToPlay(player: UserStat) {
 										<span class="c-game-history__score" :style="{ '--score-color': getScoreColor(game.winFlag)}"> {{ game.userScore }} - {{ game.opponentScore }} </span>
 									</div>
 									<div class="c-game-history__opponent">{{ game.opponent.username }}</div>
-									<div class="u-text-left u-text--extra-small u-text--overpass">{{ game.type }}</div>
+									<div class="u-text-left u-text--extra-small u-text--overpass">{{ game.mode }}</div>
 								</div>
 							</li>
 						</div>

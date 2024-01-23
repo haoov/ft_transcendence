@@ -1,6 +1,6 @@
 <template>
 	<div class="message-div" :id="id">
-		<div class="profile-img-div" @click="openProfilModal">
+		<div :class=classDiv @click=openProfilModal>
 			<img :src="profilePic" alt="Profile Picture" >
 		</div>
 		<div class="core-message-div">
@@ -17,10 +17,11 @@
 
 <script setup lang="ts">
 import moment from 'moment-timezone';
-import { inject } from 'vue';
+import { inject, computed } from 'vue';
 
 const props : any = defineProps({
 	data: Object,
+	currentUser: Object,
 	id: Number
 });
 const $data : any = inject('$data');
@@ -32,9 +33,16 @@ const DateRawStamp : string = props.data.message.time;
 const timeFr = moment.tz(DateRawStamp, 'Europe/Paris');
 const timestamp : string = timeFr.format('HH:mm:ss');
 const id : string = props.id.toString();
+const currentUserId = props.currentUser.id;
+const classDiv = computed(() => {
+	if(userId === currentUserId)
+		return 'profile-img-div disabled';
+	return 'profile-img-div';
+});
 
 const openProfilModal = () => {
-	$data.openProfileModal(userId);
+	if(userId !== currentUserId)
+		$data.openProfileModal(userId);
 }
 
 </script>
@@ -53,11 +61,13 @@ const openProfilModal = () => {
 	display: inline-flex;
 	cursor: pointer;
 }
+.profile-img-div.disabled {
+	cursor: default;
+}
 .profile-img-div img {
   max-width: 100%;
   max-height: 100%;
   object-fit: cover;
-
 }
 
 .core-message-div {
