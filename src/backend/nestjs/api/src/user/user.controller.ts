@@ -3,7 +3,6 @@ import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { Request } from "express";
 import Jwt2faGuard from "src/auth/jwt-2fa/jwt-2fa.guard";
-import { UserAuthDTO } from "./dto/userAuth.dto";
 
 @Controller("user")
 @UseGuards(Jwt2faGuard)
