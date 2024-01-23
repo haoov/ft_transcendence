@@ -78,7 +78,6 @@ export class GameGateway
 	 */
 	@SubscribeMessage(clientEvents.gameParams)
 	async manageRooms(client: Socket, params: GameParams): Promise<void> {
-		console.log(params);
 		//check if there is an open room with the same game
 		const openRoom: Room = this.checkOpenRoom(client.data.user, params);
 		if (openRoom) {
@@ -91,8 +90,8 @@ export class GameGateway
 				//else add user to the room and send notification to opponent
 				openRoom.addSocket(client);
 				openRoom.addUser(client.data.user);
-				this.userGateway.gameReady(openRoom);
-				client.emit(serverEvents.updateStatus, "waiting for opponent");
+				this.userGateway.gameReady(openRoom, client.data.user);
+				client.emit(serverEvents.gameReady);
 				//wait for opponent to be ready
 				setTimeout(() => {
 					if (openRoom.isOpen()) {
@@ -112,8 +111,7 @@ export class GameGateway
 			}
 			else {
 				//else wait for opponent
-				await this.userService.updateUserStatus(client.data.user, userStatus.waiting);
-				client.emit(serverEvents.updateStatus, "waiting");
+				client.data.user = await this.userService.updateUserStatus(client.data.user, userStatus.waiting);
 				this.userGateway.dataChanged(client.data.user);
 			}
 		}
@@ -132,7 +130,7 @@ export class GameGateway
 			}
 		}
 	}
-	
+
 	@SubscribeMessage(clientEvents.move)
 	move(client: Socket, direction: string) {
 		const room: Room = this.findRoom(client);
@@ -174,6 +172,14 @@ export class GameGateway
 			room.quitGame(client);
 			this.endGame(room);
 			this.deleteRoom(room);
+		}
+	}
+
+	@SubscribeMessage(clientEvents.gameResponse)
+	gameResponse(client: Socket, response: {accepted: boolean, opponent: User}) {
+		if (response.accepted) {
+			const room: Room = this.createPrivateRoom(client.data.user, response.opponent);
+			this.userGateway.gameReady(room, client.data.user);
 		}
 	}
 
@@ -236,12 +242,17 @@ export class GameGateway
 		return newRoom;
 	}
 
-	createPrivateRoom(params: GameParams, user: User, opponent: User) {
+	createPrivateRoom(user: User, opponent: User) {
 		console.log("creating private room: " + this.roomId);
+		const params: GameParams = {
+			mode: "super",
+			type: "multiplayer",
+			map: "random",
+		};
 		const newRoom = new Room(this.roomId.toString(), {gameParams: params, setPrivate: true});
 		++this.roomId;
-		newRoom.addUser(user);
 		newRoom.addUser(opponent);
+		newRoom.addUser(user);
 		this.rooms.push(newRoom);
 		return newRoom;
 	}
@@ -251,14 +262,17 @@ export class GameGateway
 	 * @param client socket of the user
 	 * @param room room where the socket's user is
 	 */
-	manageSocket(client: Socket, room: Room) {
+	async manageSocket(client: Socket, room: Room) {
 		room.addSocket(client);
 		if (room.isClosed()) {
 			//if room is closed notify that game has started
 			client.emit(serverEvents.started, room.getUsers(), room.getParams());
+			client.data.user = await this.userService.updateUserStatus(client.data.user, userStatus.playing);
+			this.userGateway.dataChanged(client.data.user);
 		}
 		else {
 			if (room.isFull()) {
+				console.log("room is full: " + room.getName());
 				//if room is full start game
 				this.closeRoom(room);
 			}
@@ -276,7 +290,7 @@ export class GameGateway
 	closeRoom(room: Room) {
 		console.log("closing room: " + room.getName());
 		room.getUsers().forEach(async (user) => {
-			await this.userService.updateUserStatus(user, userStatus.playing);
+			user = await this.userService.updateUserStatus(user, userStatus.playing);
 			this.userGateway.dataChanged(user);
 		});
 		this.server.to(room.getName()).emit(serverEvents.started, room.getUsers(), room.getParams());
@@ -289,11 +303,10 @@ export class GameGateway
 	 */
 	deleteRoom(room: Room) {
 		console.log("deleting room: " + room.getName());
-		this.server.to(room.getName()).emit(serverEvents.updateStatus, "");
 		room.getSockets().forEach(async (socket) => {
-			room.removeSocket(socket);
-			await this.userService.updateUserStatus(socket.data.user, userStatus.online);
+			socket.data.user = await this.userService.updateUserStatus(socket.data.user, userStatus.online);
 			this.userGateway.dataChanged(socket.data.user);
+			room.removeSocket(socket);
 		});
 		this.rooms.splice(this.rooms.indexOf(room), 1);
 		room.close();

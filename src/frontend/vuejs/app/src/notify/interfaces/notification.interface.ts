@@ -1,3 +1,5 @@
+import type { NotificationButton } from ".";
+
 export interface Notification {
 	id: string;
 	message: string;
@@ -5,4 +7,7 @@ export interface Notification {
 	by?: string;
 	autoClose?: boolean;
 	timeout?: number;
+	timeOutBar?: boolean;
+	buttons?: NotificationButton[];
+	icon?: string;
 }

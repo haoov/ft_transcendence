@@ -10,9 +10,9 @@ export enum ClientEvents {
 	gamePlay = "gamePlay",
 	gameForfeit = "gameForfeit",
 	gameInvite = "gameInvite",
+	gameResponse = "gameResponse",
 };
 export enum ServerEvents {
-	position = "position",
 	started = "started",
 	updated = "updated",
 	finished = "finished",
