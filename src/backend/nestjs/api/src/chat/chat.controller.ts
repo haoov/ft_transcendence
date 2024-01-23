@@ -94,7 +94,6 @@ export class ChatController {
 
 	@Put('/block')
 	async blockUser(@Query('id') idToBlock: number, @Req() req : Request): Promise<void> {
-		console.log("je suis dans blockUser")
 		const user = req.user as User;
 		await this.userService.blockUser(user.id, idToBlock);
 	}

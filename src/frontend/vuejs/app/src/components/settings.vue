@@ -1,6 +1,6 @@
 <template>
 	<div class="l-wrapper">
-		<div class="l-grid">
+		<div class="l-grid" :style="dynamicHeight">
 			<div class ="u-justify--center u-display--flex">
 				<div class="c-avatar-container" @click="uploadFile">
 					<img class="c-avatar" :src="avatarSrc"/>
@@ -19,7 +19,6 @@
 				<input 
 				v-model="usernameSet"
 				name="username"
-				id="searchUser"
 				type="text"
 				autocomplete="off"
 				>
@@ -37,12 +36,23 @@
 				<input
 				autocomplete="off"
 				type="radio"
-				v-model="selectedOption"
 				:value="option"
 				name="2fa"
+				@click="getQRcode(option)"
+				v-model="selectedOption"
 				>
 				<span class="name">{{ option }}</span>
 				</label>
+			</div>
+			<img v-if="!me.twofa_enabled && selectedOption == 'Enabled'" id="qrCode" :src="qrCode">
+			<div v-if="twoFaChanged" class="codeTitle">Enter code:</div>
+			<div v-if="twoFaChanged" class="formField codeField">
+				<input 
+				v-model="twoFaCode"
+				name="twoFaCode"
+				type="text"
+				autocomplete="off"
+				>
 			</div>
 			<div class ="u-justify--center u-display--flex">
 				<button id="saveButton" :disabled="disableSave" @click="updateProfile()">Save</button>
@@ -59,16 +69,26 @@ import type { User } from "@/utils";
 import { computed, onMounted, ref } from "vue";
 import { toast, type ToastType } from 'vue3-toastify';
 import "vue3-toastify/dist/index.css"
+import qr from "../assets/images/qrcode.png";
 
-const me = ref<User>({
+const dynamicHeight = computed(() => {
+	if (selectedOption.value == "Enabled" && !me.value.twofa_enabled)
+		return "height: 670px";
+	else if (selectedOption.value == "Disabled" && me.value.twofa_enabled)
+		return "height: 520px";
+	else
+		return "height: 450px";
+});
+const me = ref<User>(({
 	id: 0,
 	username: "",
 	avatar: "",
+	twofa_enabled: false,
 	email: "",
 	status: "",
 	games_won: [],
 	games_lost: []
-});
+}));
 const usernameSet = ref<string>("");
 const avatarSet = ref<File | null>(null);
 const avatarSrc = computed(() => {
@@ -82,10 +102,17 @@ const avatarSrc = computed(() => {
 });
 const fileInput = ref<HTMLElement | null>(null);
 const disableSave = computed(() => {
-	return (!usernameSet.value || usernameSet.value === me.value.username || usernameSet.value.length > 15) && (!avatarSet.value);
+	return (!usernameSet.value || usernameSet.value === me.value.username || usernameSet.value.length > 15) 
+		&& (!avatarSet.value) && ((twoFaChanged.value && !twoFaCode.value) || !twoFaChanged.value);
 });
-const options = ['Disable', 'Enable'];
-const selectedOption = ref("Disable");
+const options = ['Disabled', 'Enabled'];
+const selectedOption = ref("");
+const twoFaChanged = computed(() => {
+	return (selectedOption.value == "Enabled" && !me.value.twofa_enabled)
+		|| (selectedOption.value == "Disabled" && me.value.twofa_enabled);
+});
+const twoFaCode = ref<string>("");
+const qrCode = ref<string>("");
 
 // FETCHING DATA
 async function fetchMe() {
@@ -93,30 +120,33 @@ async function fetchMe() {
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
 		.then( (data) => { 
 			me.value = data.data;
+			// LIGNE A COMMENTER ARES MERGE
+			me.value.twofa_enabled = false;
 			usernameSet.value = data.data.username;
+			selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
 		});
 }
 
 
 // UTIL FUNCTIONS
 function updateProfile() {
-	if (usernameSet.value && usernameSet.value !== me.value.username) {
+	if (usernameSet.value && usernameSet.value !== me.value.username)
 		updateUsername();
-	}
-	if (avatarSet.value) {
+	if (avatarSet.value)
 		updateAvatar();
-	}
+	if (twoFaCode.value)
+		update2FA();
 }
 
-function	updateUsername() {
-	axios
+async function	updateUsername() {
+	await axios
 		.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/update/username`, {
 			username: usernameSet.value
 		})
 		.then( (data) => { 
 			me.value = data.data;
 			usernameSet.value = data.data.username;
-		 sendToast("success", "Username has been updated!");
+			sendToast("success", "Username has been updated!");
 		})
 		.catch( (err) => {
 			if (err.response.status == 409) {
@@ -126,10 +156,10 @@ function	updateUsername() {
 		});
 }
 
-function	updateAvatar() {
+async function	updateAvatar() {
 	const formData = new FormData();
 	formData.append('avatar', avatarSet.value as Blob);
-	axios
+	await axios
 		.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/update/avatar`, formData)
 		.then( async (data) => { 
 			avatarSet.value = null;
@@ -140,6 +170,33 @@ function	updateAvatar() {
 			avatarSet.value = null;
 			sendToast("error", "Invalid format avatar!");
 		});
+}
+
+async function	update2FA() {
+	// await axios
+	// 	.post(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/turn-on`, {
+	// 		twofaCode: twoFaCode.value,
+	// 	})
+	// 	.then( async () => { 
+	// 		await fetchMe();
+	// 		// RETURN THE NEW USER OR NEW 2FA ENABLED
+	// 		twoFaCode.value = "";
+	// 		qrCode.value = "";
+	// 		if (me.value.twofa_enabled)
+	// 			sendToast("success", "2FA has been enabled!");
+	// 		else
+	// 			sendToast("success", "2FA has been disabled!");
+	// 	})
+	// 	.catch( (err) => {
+	// 		twoFaCode.value = "";
+	// 		qrCode.value = "";
+	// 		selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
+	// 		sendToast("error", "Invalid code!");
+	// 	});
+	twoFaCode.value = "";
+	qrCode.value = "";
+	me.value.twofa_enabled = !me.value.twofa_enabled;
+	sendToast("success", "2FA notif!");
 }
 
 function uploadFile() {
@@ -165,6 +222,23 @@ function sendToast(type: ToastType, message: string) {
 	})
 }
 
+async function getQRcode(option: string) {
+	selectedOption.value = option;
+	if (selectedOption.value === "Enabled" && !me.value.twofa_enabled) {
+		// await axios
+		// 	.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/generate`)
+		// 	.then( (data) => { 
+		// 		qrCode.value = data.data;
+		// 	})
+		// 	.catch( (err) => {
+		// 		sendToast("error", "An error occured !");
+		// 		selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
+		// 	});
+		console.log("QR code generated");
+		qrCode.value = qr;
+	}
+}
+
 onMounted(async () => {
 	await fetchMe();
 });
@@ -176,7 +250,7 @@ onMounted(async () => {
 .l-wrapper {
 	width: 100%;
 	max-width: 400px;
-	height: 500px;
+	max-height: 800px;
 	margin: auto;
 	padding: 1.6rem 1.6rem 3.2rem;
 }
@@ -190,6 +264,53 @@ onMounted(async () => {
 	box-shadow: 0px 0px 0px 1px var(--c-black-light);
 	box-sizing: border-box;
 	padding: 1.6rem;
+}
+
+
+.c-avatar-container {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 10rem;
+	height: 10rem;
+	box-shadow: 0 0 3px, 0 0 5px var(--c-black-light), 0 0 7px var(--c-black-light), 0 0 10px var(--c-black-light);
+	border-radius: 50%;
+	background: var(--lightest);
+	color: var(--dark);
+	margin-top: 3rem;
+	margin-bottom: 1.5rem;
+}
+.c-avatar {
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.c-avatar-container:hover .image {
+	filter: brightness(70%);
+}
+
+.c-avatar-container::before {
+	content: url('../assets/images/camera-30.png');
+	position: absolute;
+	background-color: rgba(211, 211, 211, 0.5);
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	display: none;
+}
+.c-avatar-container:hover::before {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.uploadPicture {
+	display: none;
 }
 
 
@@ -208,7 +329,7 @@ onMounted(async () => {
 .formField input {
 		width: 60%;
 		height: 1.3rem;
-		border-radius: 8px;
+		border-radius: 0.5rem;
 		padding: 0.5rem 1rem;
 		color: #fff;
 		font-family: inherit;
@@ -284,6 +405,23 @@ onMounted(async () => {
   background-color: #fff;
 }
 
+#qrCode {
+	width: 13rem;
+    height: 13rem;
+    margin-left: 7rem;
+    margin-top: 1.5rem;
+}
+.codeTitle {
+	margin-left: 7rem;
+	margin-top: 1rem;
+	font-family: Overpass;
+	font-size: 1.1rem;
+}
+
+.codeField input {
+	width: 30%;
+	margin-left: 7rem;
+}
 
 #saveButton {
 		font-size: small;
@@ -310,52 +448,6 @@ onMounted(async () => {
 	transform: none !important;
 }
 
-.c-avatar-container {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 10rem;
-	height: 10rem;
-	box-shadow: 0 0 3px, 0 0 5px var(--c-black-light), 0 0 7px var(--c-black-light), 0 0 10px var(--c-black-light);
-	border-radius: 50%;
-	background: var(--lightest);
-	color: var(--dark);
-	margin-top: 3rem;
-	margin-bottom: 1.5rem;
-}
-
-.c-avatar {
-	width: 100%;
-	height: 100%;
-	border-radius: 50%;
-	object-fit: cover;
-}
-
-.c-avatar-container:hover .image {
-	filter: brightness(70%);
-}
-
-.c-avatar-container::before {
-	content: url('../assets/images/camera-30.png');
-	position: absolute;
-	background-color: rgba(211, 211, 211, 0.5);
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	border-radius: 50%;
-	display: none;
-}
-.c-avatar-container:hover::before {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.uploadPicture {
-	display: none;
-}
 
 .c-warning {
 	display: flex;
