@@ -1,11 +1,11 @@
 import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
-import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
 import { Request } from "express";
+import { Jwt2faStrategy } from "src/auth/jwt-2fa/jwt-2fa.strategy";
 
 @Controller("user")
-@UseGuards(AuthentificatedGuard)
+@UseGuards(Jwt2faStrategy)
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
