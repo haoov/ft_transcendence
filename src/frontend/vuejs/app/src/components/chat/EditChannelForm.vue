@@ -121,7 +121,6 @@ const submitForm = () => {
 		password: password.value,
 		userIds: userIds.value,
 	});
-	activeChannel.value.name = channelName.value;
 	$data.closeEditModalForm();
 };
 
@@ -318,7 +317,7 @@ const cancelDelete = () => {
 
 .cancel-icon {
     position: absolute;
-    right: 50px;
+    right: 90px;
     top: 64px;
     cursor: pointer;
 }

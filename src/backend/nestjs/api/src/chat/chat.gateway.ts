@@ -79,9 +79,8 @@ export class ChatGateway implements OnGatewayConnection {
 	async onNewChannel(@MessageBody() channel: any) {
 		const newChannelCreated = await this.chatService.createChannel(channel);
 		for (const userId of channel.users) {
-			const socket = this.usersSocketList.get(userId);
-			socket?.join(newChannelCreated.id.toString());
-			socket?.emit('newChannelCreated', newChannelCreated);
+			this.usersSocketList.get(userId).join(newChannelCreated.id.toString());
+			this.usersSocketList.get(userId).emit('newChannelCreated', newChannelCreated);
 		}
 	}
 
@@ -89,13 +88,12 @@ export class ChatGateway implements OnGatewayConnection {
 	async onJoinChannel(@MessageBody() channel: any) {
 		const channelToJoin = await this.chatService.getChannelById(channel.channelId);
 		if (channelToJoin.mode === 'Protected' && channelToJoin.password !== channel.password) {
-			this.usersSocketList.get(channel.userId)?.emit('channelJoined', false);
+			this.usersSocketList.get(channel.userId).emit('channelJoined', false);
 			return;
 		}
 		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
-			this.usersSocketList.get(channel.userId)?.emit('channelJoined', true);
-			this.usersSocketList.get(channel.userId)?.emit('newChannelCreated', channelToJoin);
-			this.usersSocketList.get(channel.userId)?.join(channel.channelId.toString());
+			this.usersSocketList.get(channel.userId).emit('channelJoined', true);
+			this.usersSocketList.get(channel.userId).emit('newChannelCreated', channelToJoin);
 		}
 	}
 
@@ -104,7 +102,7 @@ export class ChatGateway implements OnGatewayConnection {
 		const channelId = data.channelId;
 		const userId = data.userId;
 		if (await this.chatService.removeUserFromChannel(channelId, userId)) {
-			this.usersSocketList.get(userId)?.emit('channelDeleted', channelId);
+			this.usersSocketList.get(userId).emit('channelDeleted', channelId);
 		}
 	}
 
@@ -117,7 +115,7 @@ export class ChatGateway implements OnGatewayConnection {
 		const channelUpdated = await this.chatService.updateChannel(channelToUpdate);
 		const users = await this.chatService.getUsersByChannelId(channel.channelId);
 		for (const user of users) {
-			this.usersSocketList.get(user.id)?.emit('channelUpdated', channelUpdated);
+			this.usersSocketList.get(user.id).emit('channelUpdated', channelUpdated);
 		}
 	}
 
@@ -126,7 +124,7 @@ export class ChatGateway implements OnGatewayConnection {
 		const users = await this.chatService.getUsersByChannelId(channelId);
 		if (await this.chatService.deleteChannel(channelId)) {
 			for (const user of users) {
-				this.usersSocketList.get(user.id)?.emit('channelDeleted', channelId);
+				this.usersSocketList.get(user.id).emit('channelDeleted', channelId);
 			}
 		}
 	}
@@ -140,8 +138,8 @@ export class ChatGateway implements OnGatewayConnection {
 		for (const userId of userIdList) {
 			await this.chatService.addUserToChannel(channelToUpdate.id, userId);
 			const socket = this.usersSocketList.get(userId);
-			socket?.emit('channelJoined', true);
-			socket?.emit('channelUpdated', channelId);
+			socket.emit('channelJoined', true);
+			socket.emit('channelUpdated', channelId);
 		}
 	}
 

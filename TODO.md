@@ -1,12 +1,14 @@
-- Verifier l'ajout des users dans channel already existing
+- !!! [DONE] Message Privee !!!
+	- NEED TO AVOID DOUBLON
 
-- Faire la fonction pour creer un message prive depuis le modal
+- Fixe l'envoie de message
 
-- 
+- Fixe la creation de channel 
+
+-
+
 
 -----------------------------------------------------------
-- !!! [DONE] Message Privee !!!
-	- [DONE] NEED TO AVOID DOUBLON
 
 - Implementer la creation des channels
 	- [DONE] Implementer le widget pour creer un channel (Modal Wrapper)

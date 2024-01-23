@@ -77,9 +77,6 @@ interface User {
 const $data : any = inject('$data');
 const listUsers = await $data.getUsers();
 const currentUser = await $data.getCurrentUser();
-const blockersIds = await $data.getBlockersList();
-const blockedUsers = await $data.getBlockedUsers();
-const blockedIds = blockedUsers.map((user: User) => user.id);
 const store = $data.getStore();
 const search = ref('');
 const listUsersToAdd = ref([] as User[]);
@@ -90,10 +87,8 @@ const searchResults = computed(() => {
 	} else {
 		return listUsers.filter((users: User) => {
 			return users.username.toLowerCase().includes(search.value.toLowerCase()) && 
-					!listUsersToAdd.value.includes(users)
-					&& users.id !== currentUser.id
-					&& !blockersIds.includes(users.id)
-					&& !blockedIds.includes(users.id);
+					!listUsersToAdd.value.includes(users) && 
+						users.id !== currentUser.id;
 		});
 	}
 });
@@ -292,7 +287,7 @@ ul::-webkit-scrollbar-track:active {
   display: flex;
   justify-content: space-between;
   list-style: none;
-  width: 90%;
+  width: 100%;
   cursor: pointer;
   padding: 5px;
   border-radius: 5px;
@@ -311,7 +306,7 @@ ul::-webkit-scrollbar-track:active {
   display: flex;
   justify-content: space-between;
   list-style: none;
-  width: 90%;
+  width: 100%;
   cursor: pointer;
   padding: 5px;
   border-radius: 5px;
@@ -351,7 +346,7 @@ span {
 
 .cancel-icon-adduser-input {
   position: absolute;
-  right: 25px;
+  right: 5px;
   top: 10px;
   cursor: pointer;
 }

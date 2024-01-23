@@ -8,7 +8,6 @@
 				:id="index"
 				:data="message"
 				:key="message.id"
-				:currentUser="currentUser"
 			></Message>
 		</ul>
 	</div>
@@ -40,9 +39,9 @@ function scrollToBottomSmooth() {
 };
 
 const $data : any = inject('$data');
-const currentUser : any = await $data.getCurrentUser();
 const store = $data.getStore();
 const socket: Socket = store.socket;
+const blockedUsers = await $data.getBlockedUsers();
 const componentKey = ref(0);
 const activeChannel = computed(() => store.activeChannel);
 const messages = computed(() => store.messages);
@@ -65,8 +64,7 @@ onUpdated(() => {
 	scrollToBottomSmooth();
 });
 
-socket.on("newMessage", async (message : any) => {
-	const blockedUsers = await $data.getBlockedUsers();
+socket.on("newMessage", (message : any) => {
 	if (activeChannel.value.id !== message.message.channelId) {
 		return;
 	}

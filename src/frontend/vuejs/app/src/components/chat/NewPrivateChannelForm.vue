@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted } from 'vue';
+import { ref, computed, inject } from 'vue';
 
 interface User {
 	id: number;
@@ -66,19 +66,14 @@ interface User {
 const $data : any = inject('$data');
 const listUsers = await $data.getUsers();
 const currentUser = await $data.getCurrentUser();
-const blockersIds = await $data.getBlockersList();
-const blockedUsers = await $data.getBlockedUsers();
-const blockedIds = blockedUsers.map((user: User) => user.id);
 const search = ref('');
 const searchResults = computed(() => {
 	if (search.value.length === 0 || userSelected.value) {
 		return [] as User [];
 	} else {
 		return listUsers.filter((users: User) => {
-			return users.username.toLowerCase().includes(search.value.toLowerCase())
-					&& users.id !== currentUser.id
-					&& !blockersIds.includes(users.id)
-					&& !blockedIds.includes(users.id);
+			return users.username.toLowerCase().includes(search.value.toLowerCase()) && 
+					users.id !== currentUser.id;
 		});
 	}
 });
@@ -91,11 +86,11 @@ const SelectResult = (result: User) => {
 	userSelected.value = result;
 	props.userIds.push(result.id);
 	search.value = '';
-};
+}
 
 const resetSearch = () => {
 	search.value = '';
-};
+}
 
 const removeUser = (user: User) => {
 	const index = props.userIds.indexOf(user.id);
@@ -103,7 +98,7 @@ const removeUser = (user: User) => {
 		props.userIds.splice(index, 1);
 	}
 	userSelected.value = null;
-};
+}
 
 </script>
 
@@ -267,7 +262,7 @@ ul::-webkit-scrollbar-track:active {
   display: flex;
   justify-content: space-between;
   list-style: none;
-  width: 90%;
+  width: 100%;
   cursor: pointer;
   padding: 5px;
   border-radius: 5px;
@@ -303,15 +298,22 @@ ul::-webkit-scrollbar-track:active {
 .input-container {
     position: relative;
 }
+
+.search-icon, .cancel-icon {
+    position: absolute;display: none;
+    top: 45%;
+    transform: translateY(-50%);
+}
+
 .search-icon-adduser {
   position: absolute;
   left: 7px;
   top: 12px;
 }
 
-.cancel-icon-adduser-input {
+.cancel-icon {
   position: absolute;
-  right: 25px;
+  right: 7px;
   top: 10px;
   cursor: pointer;
 }
