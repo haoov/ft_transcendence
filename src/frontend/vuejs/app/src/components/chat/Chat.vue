@@ -47,11 +47,6 @@ const $data: any = inject('$data');
 const store = $data.getStore();
 const socket : Socket = store.socket; 
 
-socket.on('NewConnection', async () => {
-	const user = await $data.getCurrentUser();
-	socket.emit('userConnected', user);
-});
-
 store.socket.on('lastActiveChannel', async (id : string) => {
 	const user = await $data.getCurrentUser();
 	$data.loadChannels(user.id);
