@@ -53,6 +53,7 @@ export class Room {
 		socket.data.room = this.name;
 		this.sockets.push(socket);
 		socket.join(this.name);
+		this.checkFull();
 	}
 
 	removeSocket(socket: Socket): void {

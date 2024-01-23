@@ -6,12 +6,10 @@ import offline from '../assets/images/status-offline-32.png';
 import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
-import { type UserStat, type User, type GameStat, ClientEvents, ServerEvents } from "@/utils";
+import { type UserStat, type User, type GameStat, ServerEvents } from "@/utils";
 import { computed, inject, onMounted, ref } from "vue";
-import GlobalSocket from "@/GlobalSocket";
-import GameSocket from "@/game/gameSocket";
-import gameNotification from "@/game/components/gameNotification.vue";
-import notify from "@/notify/components/notify.vue";
+import { type SocketManager } from "@/SocketManager";
+import notify from "@/notify/notify";
 
 const router = useRouter();
 const players = ref<UserStat[]>([]);
@@ -21,9 +19,8 @@ const myStats = ref<UserStat>();
 const myGames = ref<GameStat[]>([]);
 const search = ref('');
 
-const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
-const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
 const $data : any = inject('$data');
+const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 const playersDisplayed = computed(() => {
 		if (search.value.length === 0) {
@@ -35,7 +32,7 @@ const playersDisplayed = computed(() => {
 		}
 });
 
-globalSocket.getSocket().on(ServerEvents.dataChanged, async (user: User) => {
+socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
 	await fetchLeaderboard();
 });
 
@@ -164,14 +161,15 @@ onMounted(async () => {
 	await fetchData();
 });
 
-/*----------------------------------------------------------------------------*/
-/*                                   RAPH                                     */
-/*----------------------------------------------------------------------------*/
-
 function inviteToPlay(player: UserStat) {
-	// if (player.status == "playing")
-	// 	notify;
-	// globalSocket.getSocket().emit(ClientEvents.gameInvite, player.id);
+	if (player.status == "offline")
+		notify.newNotification("error", {message: "User offline", by: player.username});
+	else if (player.status == "playing")
+		notify.newNotification("error", {message: "Already playing", by: player.username});
+	else {
+		notify.newNotification("success", {message: "Invitation sent"});
+		socketManager.invite(player.id);
+	}
 }
 
 function sendMessage(id : number) {
@@ -292,8 +290,8 @@ function sendMessage(id : number) {
 											<div>
 												<a class="c-media__title u-text--overpass" @click="goToProfile(player.username)" title="Go to profile">{{ player.username }}</a>
 											</div>
-											<a v-if="player.id!=me?.id" class="u-mr--8" :click="inviteToPlay(player)" target="_blank">
-												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
+											<a v-if="player.id!=me?.id" class="u-mr--8" target="_blank">
+												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play" v-on:click="inviteToPlay(player)">
 											</a>
 											<a v-if="player.id!=me?.id" @click="sendMessage(player.id)" target="_blank">
 												<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">

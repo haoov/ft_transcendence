@@ -14,7 +14,7 @@ interface Material {
 	displacementMap?: string
 };
 
-interface initParams {
+export interface InitParams {
 	window: {
 		WIDTH: number,
 		HEIGHT: number,
@@ -63,7 +63,7 @@ interface textures {
 	fire: th.Texture,
 }
 
-export class Game {
+export class GameRenderer {
 	/*------------------------------------*/
 	/*              PROPERTIES            */
 	/*------------------------------------*/
@@ -83,7 +83,7 @@ export class Game {
 	/*------------------------------------*/
 	/*      CONSTRUCTOR / INIT PHASE      */
 	/*------------------------------------*/
-	constructor(id: string, init: initParams) {
+	constructor(id: string, init: InitParams) {
 		//init scene camera and renderer
 		this.container = document.getElementById(id) as HTMLDivElement;
 		this.scene = new th.Scene();
@@ -133,7 +133,7 @@ export class Game {
 		return ball;
 	}
 
-	createPaddle(init: initParams) {
+	createPaddle(init: InitParams) {
 		const paddleGeometry = new RoundedBoxGeometry(init.params.PADDLE_WIDTH,
 																									init.params.PADDLE_HEIGHT,
 																									init.params.PADDLE_DEPTH, 5);
@@ -178,7 +178,7 @@ export class Game {
 				break;
 		}
 
-		//create field and 
+		//create field and add it to the scene
 		const geometry = new th.PlaneGeometry(width, height);
 		const field = new th.Mesh(geometry, material);
 		field.position.set(0, 0, -1);
@@ -254,9 +254,5 @@ export class Game {
 			default: break;
 		}
 		obj.material.needsUpdate = true;
-	}
-
-	stopGame() {
-		this.started = false;
 	}
 }
