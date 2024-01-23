@@ -58,7 +58,7 @@ services:
       - LOCAL_CALLBACK=http://${LOCAL_ADDRESS}:${LOCAL_PORT}/${LOCAL_CALLBACK_ENDPOINT}
     
       - OTP_NAME=${OTP_NAME}
-      - TOKEN_2FA_KEY=${TOKEN_2FA_KEY}
+      - JWT_ACCESS_TOKEN=${JWT_ACCESS_TOKEN}
     depends_on:
       postgresql:
         condition: service_healthy

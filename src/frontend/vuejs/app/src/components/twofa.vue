@@ -6,7 +6,7 @@ import axios from 'axios';
 	let twofaValue: string;
 
 	async function send2fa() {
-		const uri2fa: string = "http://localhost:3000/api/auth/2fa/authentificate"
+		const uri2fa: string = "http://localhost:3000/api/auth/2fa/authenticate"
 		const btn = document.getElementById("twofa_access_btn");
 		await axios.post(uri2fa, { "twofaCode": twofaValue })
 		.then(() => {

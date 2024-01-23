@@ -2,12 +2,8 @@ import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards, Use
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
-import { SkipThrottle } from "@nestjs/throttler";
 import { Request } from "express";
-import { multerConfig } from "src/config/multer.config";
-import { FileInterceptor } from "@nestjs/platform-express";
 
-@SkipThrottle()
 @Controller("user")
 @UseGuards(AuthentificatedGuard)
 export class UserController {
