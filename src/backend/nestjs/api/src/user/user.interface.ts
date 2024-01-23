@@ -8,7 +8,6 @@ export interface User {
 	status: string;
 	twofa_secret: string;
 	twofa_enabled: boolean;
-	twofa_auth: boolean;
 	games_won: Game[]
 	games_lost: Game[]
 }

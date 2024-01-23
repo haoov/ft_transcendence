@@ -60,17 +60,6 @@ export class UserService {
 		try {
 			const user: User = await this.getUserById(id);
 			user.twofa_enabled = mode;
-			user.twofa_auth = mode;
-			return this.usersRepository.save(user);
-		} catch (err) {
-			throw err;
-		}
-	}
-
-	async set2faAuth(id: number, status: boolean) {
-		try {
-			const user: User = await this.getUserById(id);
-			user.twofa_auth = status;
 			return this.usersRepository.save(user);
 		} catch (err) {
 			throw err;

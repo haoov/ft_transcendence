@@ -2,10 +2,10 @@ import { Body, Controller, Post, Get, Req, Res, UnauthorizedException, UseGuards
 import { AuthService } from "./auth.service";
 import { Intra42Guard } from "./intra42/auth.Intra42Guard";
 import { Request, Response } from "express";
-import { AuthentificatedGuard } from "./guards/auth.AuthentificatedGuard";
 import { UserService } from "src/user/user.service";
 import { Body2faDTO, User } from "src/user/user.interface";
-import { Authentificated2faGuard } from "./guards/auth.Authentificated2faGuard";
+import JwtAuthGuard from "./jwt/jwt.guard";
+import Jwt2faGuard from "./jwt-2fa/jwt-2fa.guard";
 
 @Controller("auth")
 export class AuthController {
@@ -15,42 +15,39 @@ export class AuthController {
 	) {}
 
 	@Get()
-	@UseGuards(Authentificated2faGuard)
+	@UseGuards(Jwt2faGuard)
 	checkAuth() {}
 
 	@Get("login")
 	@UseGuards(Intra42Guard)
-	async login(@Res() res: Response): Promise<Response> {
-		return res;
+	async login(@Req() req: Request, @Res() res: Response): Promise<Response> {
+		const user: User = await this.userService.getUserById((req.user as User).id);
+		return res.send(user);
 	}
 
 	@Get("42-redirect")
 	@UseGuards(Intra42Guard)
-	async redirect(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+	async redirect(@Req() req: Request, @Res() res: Response) {
 		const user: User = await this.userService.getUserById((req.user as User).id);
-		if (user.twofa_enabled && !user.twofa_auth) {
-			console.log("redirect to 2fa");
-			res.status(302).redirect("/twofa");
-		}
-		else {
-			console.log("redirect to home");
-			res.status(302).redirect("/");
-		}
+		const cookie = this.authService.getCookieWithJwtToken(user.id);
+		res.setHeader('Set-Cookie', cookie);
+		if (user.twofa_enabled) 
+			return res.redirect("/twofa");
+		return res.redirect("/");
 	}
 
 	@Get("2fa")
-	@UseGuards(AuthentificatedGuard)
+	@UseGuards(JwtAuthGuard)
 	async get2FA(@Req() req: Request) {
 		const user: User = req.user as User;
 		const userDB = await this.userService.getUserById(user.id);
 		return { 
 			"twofa_status": userDB.twofa_enabled,
-			"twofa_logged": userDB.twofa_auth
 		};
 	}
 
 	@Post('2fa/turn-on')
-	@UseGuards(AuthentificatedGuard)
+	@UseGuards(JwtAuthGuard)
 	async swithOn2fa(@Req() req: Request, @Body() body: Body2faDTO) {
 		const user_tmp: User = req.user as User;
 		const user = await this.userService.getUserById(user_tmp.id);
@@ -62,11 +59,12 @@ export class AuthController {
 		);
 		if (!isCodeValid)
 			throw new UnauthorizedException('Wrong Auth Code');
-		await this.userService.set2faMode(user.id, true);
+		const accessTokenCookie = this.authService.getCookieWithJwtAccessToken(user.id, true);
+		req.res.setHeader('Set-Cookie', [accessTokenCookie]);
 	}
 
 	@Get('2fa/generate')
-	@UseGuards(AuthentificatedGuard)
+	@UseGuards(JwtAuthGuard)
 	async generateQRCode(@Res() res: Response, @Req() req: Request) {
 		const user: User = req.user as User;
 
@@ -77,8 +75,8 @@ export class AuthController {
 		);
 	}
 
-	@Post('2fa/authentificate')
-	@UseGuards(AuthentificatedGuard)
+	@Post('2fa/authenticate')
+	@UseGuards(JwtAuthGuard)
 	async authentificate(@Req() req: Request, @Body() body: Body2faDTO) {
 		const user_tmp: User = req.user as User;
 		const user = await this.userService.getUserById(user_tmp.id);
@@ -92,28 +90,29 @@ export class AuthController {
 		);
 		if (!isCodeValid)
 			throw new UnauthorizedException('Wrong Auth Code');
-		this.userService.set2faAuth(user.id, true);
+		const accessTokenCookie = this.authService.getCookieWithJwtAccessToken(user.id, true);
+		req.res.setHeader('Set-Cookie', [accessTokenCookie]);
 		return { "message": "2fa logged"}
 	}
 
 	@Get("2fa/test")
-	@UseGuards(Authentificated2faGuard)
+	@UseGuards(JwtAuthGuard)
 	async random() {
 		return { 'message': `logged with 2fa` }; 
 	}
 
 	@Get('2fa/reset')
-	@UseGuards(AuthentificatedGuard)
+	@UseGuards(JwtAuthGuard)
 	async reset(@Req() req: Request) {
 		const user: User = req.user as User;
-		user.twofa_auth = false;
 		await this.userService.set2faMode(user.id, false);
 		return "2fa reset"
 	}
 
 	@Get("logout")
-	@UseGuards(AuthentificatedGuard)
+	@UseGuards(JwtAuthGuard)
 	logout(@Req() req: Request, @Res() res: Response) {
-		this.authService.logout(req, res);
+		res.setHeader('Set-Cookie', this.authService.getCookieForLogout());
+   		return res.sendStatus(200);
 	}
 }

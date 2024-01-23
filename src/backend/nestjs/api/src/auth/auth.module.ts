@@ -10,23 +10,26 @@ import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { Auth42Strategy } from "./intra42/auth.intra42Strategy";
 import { SessionSerializer } from "./auth.sessionSerializer";
-import { ThrottlerModule } from "@nestjs/throttler";
+import { JwtStrategy } from "./jwt/jwt.strategy";
+import { Jwt2faStrategy } from "./jwt-2fa/jwt-2fa.strategy";
 
 @Module({
 	imports: [
 		UserModule, 
 		PassportModule.register({ session: true }),
 		TypeOrmModule.forFeature([UserEntity]),
-		ThrottlerModule.forRoot([{
-			ttl: 6000,
-			limit: 10,
-		}])
+		JwtModule.register({
+			secret: process.env.JWT_ACCESS_TOKEN,
+			signOptions: { expiresIn: 3600 },
+		}),
 	],
 	controllers: [AuthController],
 	providers: [
 		AuthService, 
+		SessionSerializer,
 		Auth42Strategy, 
-		SessionSerializer
+		JwtStrategy,
+		Jwt2faStrategy,
 	]
 })
 export class AuthModule {}

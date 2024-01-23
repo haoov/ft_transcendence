@@ -13,7 +13,10 @@ router.beforeEach((to) => {
 	console.log(to.name);
 	if (to.name != "login" && to.name != "twofa") {
 		const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
-		axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth`).then(
+		axios(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth`, {
+			method: "get",
+			withCredentials: true,
+		}).then(
 			() => {
 				if (!globalSocket.socketIsReady())
 					globalSocket.initSocket();
