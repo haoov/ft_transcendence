@@ -8,7 +8,7 @@ import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
 import { type UserStat, type User, type GameStat, ServerEvents } from "@/utils";
 import { computed, inject, onMounted, ref } from "vue";
-import SocketManager from "@/SocketManager";
+import { type SocketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
 
 const router = useRouter();

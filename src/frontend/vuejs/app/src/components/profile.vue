@@ -9,7 +9,7 @@ import offline from '../assets/images/status-offline-32.png';
 import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
-import type SocketManager from "@/SocketManager";
+import { type SocketManager } from "@/SocketManager";
 
 const route = useRoute();
 let username = route.params.username;

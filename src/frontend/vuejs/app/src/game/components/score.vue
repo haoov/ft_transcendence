@@ -1,7 +1,8 @@
 <script setup lang="ts">
 	import { inject } from 'vue';
-	import type SocketManager from '@/SocketManager';
+	import { type SocketManager } from '@/SocketManager';
 	import CustumButton from '@/components/custumButton.vue';
+	import gameData from '../gameData';
 
 	defineProps(["p1", "p2", "state"]);
 	const emit = defineEmits(["leaveGame"]);
@@ -10,7 +11,7 @@
 
 	function leaveGame() {
 		socketManager.forfeit();
-		emit("leaveGame");
+		gameData.setGameState("noGame");
 	}
 </script>
 
@@ -18,22 +19,20 @@
 
 <div class="score-container">
 		<div class="score-div p2">
-			<span class="score p2">{{ p2.score }}</span>
-			<img v-if="p2.avatar" class="avatar" :src="p2.avatar">
-			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
-			<span class="username">{{ p2.username }}</span>
+			<span class="score p2">{{ gameData.getPlayer2().value.score }}</span>
+			<img class="avatar" :src="gameData.getPlayer2().value.avatar">
+			<span class="username">{{ gameData.getPlayer2().value.username }}</span>
 		</div>
 		<CustumButton
-			v-if="state == 'playing'"
+			v-if="gameData.getGameState().value == 'started'"
 			class="leave"
 			v-on:click="leaveGame()">
 			Leave game
 		</CustumButton>
 		<div class="score-div p1">
-			<span class="username">{{ p1.username }}</span>
-			<img v-if="p1.avatar" class="avatar" :src="p1.avatar">
-			<img v-else class="avatar" src="@/assets/images/defaultAvatar.avif">
-			<span class="score p1">{{ p1.score }}</span>
+			<span class="username">{{ gameData.getPlayer1().value.username }}</span>
+			<img class="avatar" :src="gameData.getPlayer1().value.avatar">
+			<span class="score p1">{{ gameData.getPlayer1().value.score }}</span>
 		</div>
 	</div>
 

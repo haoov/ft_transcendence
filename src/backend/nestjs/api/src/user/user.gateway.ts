@@ -60,11 +60,11 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	gameReady(room: Room) {
+	gameReady(room: Room, user: User) {
 		const sockets: Socket[] = this.usersSockets.get(room.getUsers()[0].id);
 		if (sockets) {
 			sockets.forEach(socket => {
-				socket.emit(serverEvents.gameReady);
+				socket.emit(serverEvents.gameReady, user);
 			});
 		}
 	}

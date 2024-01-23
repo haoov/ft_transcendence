@@ -2,7 +2,7 @@ import { createRouter, createWebHistory, onBeforeRouteLeave } from 'vue-router'
 import routes from './routes'
 import axios from 'axios';
 import { inject } from 'vue';
-import SocketManager from '@/SocketManager';
+import { type SocketManager } from '@/SocketManager';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
