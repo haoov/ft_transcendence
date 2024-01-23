@@ -34,3 +34,5 @@
 - [DONE] Probleme ID Channel a fix
 
 - [DONE] Refuser les messages plus grands que XX characteres
+
+- Tuer la session si nestJS est rechargé (utile pour le dev)
