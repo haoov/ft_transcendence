@@ -92,6 +92,10 @@ export default {
 
 	initSocket() {
 		store.socket.connect();
+		store.socket.on('NewConnection', async () => {
+			const user = await this.getCurrentUser();
+			store.socket.emit('userConnected', user);
+		});
 		store.isSocketReady = true;
 	},
 	
