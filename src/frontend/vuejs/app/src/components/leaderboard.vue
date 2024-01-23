@@ -23,6 +23,7 @@ const search = ref('');
 
 const globalSocket: GlobalSocket = inject('globalSocket') as GlobalSocket;
 const gameSocket: GameSocket = inject('gameSocket') as GameSocket;
+const $data : any = inject('$data');
 
 const playersDisplayed = computed(() => {
 		if (search.value.length === 0) {
@@ -173,6 +174,11 @@ function inviteToPlay(player: UserStat) {
 	// globalSocket.getSocket().emit(ClientEvents.gameInvite, player.id);
 }
 
+function sendMessage(id : number) {
+	router.push(`/chat`);
+	$data.sendDirectMessage(id);
+}
+
 </script>
 
 <template>
@@ -289,7 +295,7 @@ function inviteToPlay(player: UserStat) {
 											<a v-if="player.id!=me?.id" class="u-mr--8" :click="inviteToPlay(player)" target="_blank">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 											</a>
-											<a v-if="player.id!=me?.id" href="https://www.google.com" target="_blank">
+											<a v-if="player.id!=me?.id" @click="sendMessage(player.id)" target="_blank">
 												<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 											</a>
 										</div>
