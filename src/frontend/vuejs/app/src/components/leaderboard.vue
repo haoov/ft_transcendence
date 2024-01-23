@@ -63,8 +63,7 @@ async function fetchMe() {
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
-				myGames.value = data.data;
-				console.log(data.data)})
+				myGames.value = data.data;})
 			});
 }
 
@@ -129,7 +128,6 @@ function getStatusIcon(user: UserStat) : string {
 		return online;
 }
 
-
 function getPieProportions() : string {
 	let loses: number = 0;
 	if (myStats.value)
@@ -141,7 +139,6 @@ function getDateStr(dt: Date) : string {
 	let date = new Date(dt);
 	return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });	
 }
-
 
 function getHourStr(dt: Date) : string {
 	let date = new Date(dt);
