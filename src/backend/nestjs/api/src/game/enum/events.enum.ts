@@ -12,6 +12,7 @@ export enum clientEvents {
 	gameInvite = "gameInvite",
 	gameInviteResponse = "gameInviteResponse",
 	gameResponse = "gameResponse",
+	checkGame = "checkGame",
 };
 
 export enum serverEvents {

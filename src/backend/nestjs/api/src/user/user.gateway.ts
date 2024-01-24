@@ -51,7 +51,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage(clientEvents.gameInvite)
 	async gameInvite(client: Socket, opponentID: number) {
-		const opponent: User = await this.userService.getUserById(opponentID);
 		const sockets: Socket[] = this.usersSockets.get(opponentID);
 		if (sockets) {
 			sockets.forEach(socket => {
