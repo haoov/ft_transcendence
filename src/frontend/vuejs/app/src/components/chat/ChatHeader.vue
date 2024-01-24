@@ -62,6 +62,9 @@ const isPrivate = computed(() => {
 	return false;
 });
 const isAdmin = computed(async () => {
+	if (!activeChannel.value) {
+		return false;
+	}
 	const admins = await $data.getAdmins(activeChannel.value.id);
 	if (activeChannel.value.creatorId === currentUser.value.id
 		|| admins.find((admin: any) => admin.id === currentUser.value.id)) {

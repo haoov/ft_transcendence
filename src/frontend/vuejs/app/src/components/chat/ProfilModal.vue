@@ -51,6 +51,9 @@ const isBlocked = ref<boolean>(false);
 const blockedList = ref<User []>(await $data.getBlockedUsers());
 const admins = ref<User []>(await $data.getAdmins(store.activeChannel?.id));
 const isAdmin = computed(() => {
+	if (store.userIdClicked == store.activeChannel?.creatorId) {
+		return false;
+	}
 	for (let i = 0; i < admins.value.length; i++) {
 		if (admins.value[i].id == currentUser.value.id) {
 			return true;
@@ -142,17 +145,17 @@ const options = [
 ]
 
 const setAdmin = () => {
-	socket.emit('setAdmin', store.userIdClicked);
+	socket.emit('setAdmin', {userId: store.userIdClicked, channelId: store.activeChannel?.id});
 	$data.closeProfileModal();
 }
 
 const kickUser = () => {
-	socket.emit('kickUser', store.userIdClicked);
+	socket.emit('kickUser', {userId: store.userIdClicked, channelId: store.activeChannel?.id});
 	$data.closeProfileModal();
 }
 
 const banUser = () => {
-	socket.emit('banUser', store.userIdClicked);
+	socket.emit('banUser', {userId: store.userIdClicked, channelId: store.activeChannel?.id});
 	$data.closeProfileModal();
 }
 

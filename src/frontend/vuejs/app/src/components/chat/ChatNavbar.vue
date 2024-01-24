@@ -18,6 +18,7 @@ import { Socket } from "socket.io-client";
 import { inject, onMounted, computed } from 'vue';
 import {ServerEvents, type User} from '@/utils';
 import { type SocketManager } from "@/SocketManager";
+import notify from '@/notify/notify';
 
 const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const $data : any = inject('$data');
@@ -62,6 +63,20 @@ socket.on('channelDeleted', (channelIdDeleted : number) => {
 
 socket.on('channelUpdated', (channelUpdated : any) => {
 	$data.updateChannel(channelUpdated);
+});
+
+socket.on('kicked', (channelId : number) => {
+	$data.deleteChannel(channelId);
+	if (store.channels.length > 0) {
+		store.activeChannel = store.channels[store.channels.length - 1];
+	} else {
+		store.activeChannel = null;
+		store.messages = [];
+	}
+	notify.newNotification("error", {
+		message: "Kicked from channel",
+		by: channelId.toString(),
+	})
 });
 
 </script>center
