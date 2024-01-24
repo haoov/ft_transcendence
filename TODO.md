@@ -30,3 +30,5 @@
 - [DONE] Faire en sorte que les setting du channel soit dipso uniquement quand on est admin
 
 - [DONE] Refuser les messages plus grands que XX characteres
+
+- Tuer la session si nestJS est rechargé (utile pour le dev)

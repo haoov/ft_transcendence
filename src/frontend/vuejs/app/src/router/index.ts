@@ -4,6 +4,7 @@ import axios from 'axios';
 import { inject } from 'vue';
 import { type SocketManager } from '@/SocketManager';
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
 	routes: routes
@@ -13,10 +14,15 @@ router.beforeEach((to) => {
 	if (to.name != "login") {
 		const socketManager: SocketManager = inject('socketManager') as SocketManager;
 		const $data: any = inject('$data');
-		axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth`).then(
+		axios(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth`, {
+			method: "get",
+			//withCredentials: true,
+		}).then(
 			() => {
-				if (socketManager.disconnected())
+				if (socketManager.disconnected()) {
+					console.log("checking auth");
 					socketManager.initSocket();
+				}
 				if (!$data.isSocketReady()) {
 					$data.initSocket();
 				}
