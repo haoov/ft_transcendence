@@ -9,11 +9,11 @@ import * as passport from 'passport';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 	app.use(cookieParser());
-	app.use(session(	{
-											secret: 'my-secret',
-											resave: false,
-											saveUninitialized: false,
-										}));
+	app.use(session({
+		secret: 'my-secret',
+		resave: false,
+		saveUninitialized: false,
+	}));
 	app.enableCors({origin: true});
 	app.use(passport.initialize());
 	app.use(passport.session());

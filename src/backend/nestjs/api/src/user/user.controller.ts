@@ -1,14 +1,15 @@
-import { Controller, Delete, Get, Param, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, Param, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
-import { AuthentificatedGuard } from "src/auth/guards/auth.AuthentificatedGuard";
 import { Request, Response } from "express";
 import { multerConfig } from "src/user/config/multer.config";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UserGateway } from "./user.gateway";
+import Jwt2faGuard from "src/auth/jwt-2fa/jwt-2fa.guard";
+import { UserEntity } from "src/postgreSQL/entities";
 
 @Controller("user")
-@UseGuards(new AuthentificatedGuard())
+@UseGuards(Jwt2faGuard)
 export class UserController {
 	constructor(private readonly userService: UserService,
 				private readonly userGateway: UserGateway) {}
@@ -28,8 +29,10 @@ export class UserController {
 	}
 
 	@Get("me")
-	getCurrentUser(@Req() req: Request): Express.User {
-		return this.userService.getCurrentUser(req);
+	async getCurrentUser(@Req() req: Request): Promise<User> {
+		const user: UserEntity = await this.userService.getCurrentUser(req) as UserEntity;
+		const { twofa_secret, ...user_ret } = user;
+		return user_ret as User;
 	}
 	
 	@Get("block")
@@ -41,7 +44,7 @@ export class UserController {
 	@Get("blockedBy")
 	isBlocked(@Param("id") id: number, @Req() req: Request): Promise<number []> {
 		const user = req.user as User;
-		return this.userService.getBlockerList(user.id);
+		return this.userService.getBlockingList(user.id);
 	}
 
 	@Put('update/username')
