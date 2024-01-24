@@ -167,4 +167,27 @@ export class ChatGateway implements OnGatewayConnection {
 		}
 	}
 
+
+	@SubscribeMessage('setAdmin')
+	async onSetAdmin(@MessageBody() data: Object) {
+		const userId = data['userId'];
+		const channelId = data['channelId'];
+		try {
+			await this.chatService.addAdminToChannel(channelId, userId);
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	@SubscribeMessage('kickUser')
+	async onKickUser(@MessageBody() data: Object) {
+		const userId = data['userId'];
+		const channelId = data['channelId'];
+		try {
+			await this.chatService.removeUserFromChannel(channelId, userId);
+			this.usersSocketList.get(userId)?.emit('kicked', channelId);
+		} catch (err) {
+			throw err;
+		}
+	}
 }

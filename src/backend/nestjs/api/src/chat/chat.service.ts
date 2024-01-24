@@ -140,7 +140,7 @@ export class ChatService {
 		return true;
 	}
 
-	//Delete a user from a channel
+	//Delete a user from a channel (kick)
 	async removeUserFromChannel(channelId: number, userId: number): Promise<boolean> {
 		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
 		const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
@@ -166,22 +166,5 @@ export class ChatService {
 		await this.channelRepository.save(channel);
 		return true;
 	}
-	
-	//Add a user into the banned users list of a channel
-	async addBannedUserToChannel(channelId: number, userId: number): Promise<boolean> {
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["bannedUsers"]});
-		const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
-		channel.bannedUsers.push(user);
-		await this.channelRepository.save(channel);
-		return true;
-	}
 
-	//Remove a user from the banned users list of a channel
-	async removeBannedUserFromChannel(channelId: number, userId: number): Promise<boolean> {
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["bannedUsers"]});
-		const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
-		channel.bannedUsers.splice(channel.bannedUsers.indexOf(user), 1);
-		await this.channelRepository.save(channel);
-		return true;
-	}
 }
