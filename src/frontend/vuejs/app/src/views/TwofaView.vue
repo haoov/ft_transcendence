@@ -1,13 +1,13 @@
 <script setup lang="ts">
 	import mainTitle from '../components/mainTitle.vue'
-	import auth from '../components/42auth.vue'
+	import twofa from '../components/twofa.vue'
 </script>
 
 <template>
 	<div class="login body">
 		<mainTitle class="login title" :text="'TRANSCENDENCE'"></mainTitle>
 		<div class="login wrapper">
-				<auth></auth>
+				<twofa></twofa>
 		</div>
 	</div>
 </template>
