@@ -177,7 +177,7 @@ export class UserService {
 		.createQueryBuilder('user')
 		.innerJoin('user.users_blocked', 'blockedUser')
 		.where('blockedUser.id = :userId', { userId: idUser })
-		.getMany();
+		.getMany()
 
 		const blockingListIds = blockingList.map((user) => user.id);
 	
