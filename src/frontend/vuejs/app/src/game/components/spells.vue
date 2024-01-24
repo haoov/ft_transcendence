@@ -4,12 +4,16 @@
 	import gameData from '../gameData';
 
 	const socketManager: SocketManager = inject("socketManager") as SocketManager;
+	function getSpells() {
+		const username: string = socketManager.getUser().username;
+		return gameData.getCurrentPlayer(username).value.spells;
+	}
 </script>
 
 <template>
 	<div class="spells">
 		<div class="spellBar">
-			<div class="spellElem" v-for="spell in gameData.getCurrentPlayer().value.spells">
+			<div class="spellElem" v-for="spell in getSpells()">
 				<img
 					v-if="spell.on"
 					class="spellImg"

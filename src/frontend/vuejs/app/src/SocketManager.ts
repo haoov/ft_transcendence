@@ -5,6 +5,7 @@ import notify from "./notify/notify";
 import router from "./router";
 import { reactive } from "vue";
 import type { GameParams } from "./game/interfaces";
+import gameData from "./game/gameData";
 
 class SocketManager {
 	private readonly userSocket: Socket;
@@ -27,17 +28,37 @@ class SocketManager {
 		this.userSocket.on(ServerEvents.dataChanged, (data: User) => {
 			if (data.id == this.user.id) {
 				this.user = data;
+				if (data.status == "waiting")
+				gameData.setGameState("waiting");
 			}
 		});
 
 		this.userSocket.on(ServerEvents.gameReady, (data: User) => {
-			if (data.id != this.user.id)
-				notify.newNotification("gameReady", { by: data.username });
+			if (router.currentRoute.value.path != "/game") {
+				const play = () => {
+					this.checkGame();
+					router.push("/game");
+				};
+				if (data.id != this.user.id) {
+					notify.newNotification("gameReady", {
+						by: data.username,
+						buttons: [
+							{action: play}
+						]
+					});
+				}
+			}
+			else {
+				gameData.setGameState("play")
+			}
 		});
 
 		this.userSocket.on(ServerEvents.gameInvite, (data: User) => {
 			const accept = () => {
 				this.gameSocket.emit(ClientEvents.gameResponse, {accepted: true, opponent: data});
+				gameData.setGameState("ready");
+				gameData.setOpponent(data.username);
+				this.checkGame();
 				router.push("/game");
 			}
 			const decline = () => {
@@ -50,6 +71,10 @@ class SocketManager {
 					{action: decline}
 				]});
 		});
+	}
+
+	checkGame() {
+		this.gameSocket.emit(ClientEvents.checkGame);
 	}
 
 	addEventListener(socket: "user" | "game", event: string, callback: (...args: any[]) => void) {

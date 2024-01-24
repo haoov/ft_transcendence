@@ -37,11 +37,13 @@
 		align-items: center;
 		justify-content: center;
 		padding: 5px;
+		padding-right: 10px;
 		background: var(--c-surface);
 		border-radius: 0.8rem;
 		box-shadow: 0 0 0 1px var(--c-black-light);
 		margin-top: 10px;
-		width: 200px;
+		width: max-content;
+		min-width: 180px;
 		min-height: 50px;
 	}
 
@@ -58,6 +60,7 @@
 		height: 20px;
 		border-radius: 50%;
 		margin-right: 10px;
+		margin-left: 10px;
 	}
 
 	#notification-content {

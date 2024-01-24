@@ -70,6 +70,7 @@ import { computed, onMounted, ref } from "vue";
 import { toast, type ToastType } from 'vue3-toastify';
 import "vue3-toastify/dist/index.css"
 import qr from "../assets/images/qrcode.png";
+import notify from "@/notify/notify";
 
 const dynamicHeight = computed(() => {
 	if (selectedOption.value == "Enabled" && !me.value.twofa_enabled)
@@ -146,12 +147,12 @@ async function	updateUsername() {
 		.then( (data) => { 
 			me.value = data.data;
 			usernameSet.value = data.data.username;
-			sendToast("success", "Username has been updated!");
+			notify.newNotification("success", {message: "Username has been updated!"})
 		})
 		.catch( (err) => {
 			if (err.response.status == 409) {
 				usernameSet.value = me.value.username;
-				sendToast("error", "Username is already in use!");
+				notify.newNotification("error", {message: "Username is already in use!"})
 			}
 		});
 }
@@ -164,11 +165,11 @@ async function	updateAvatar() {
 		.then( async (data) => { 
 			avatarSet.value = null;
 			me.value.avatar = data.data.avatar;
-			sendToast("success", "Avatar has been updated!");
+			notify.newNotification("success", {message: "Avatar has been updated!"})
 		})
 		.catch( (err) => {
 			avatarSet.value = null;
-			sendToast("error", "Invalid format avatar!");
+			notify.newNotification("error", {message: "Invalid format avatar!"})
 		});
 }
 
