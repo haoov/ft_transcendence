@@ -122,32 +122,28 @@ export class UserService {
 		res.sendFile(path.join(directoryPath, avatar));
 	}
 
-	async blockUser(blockerId: number, blockedId: number) {
-		const blocker = await this.usersRepository.findOne({where : { id: blockerId },  relations: ['users_blocked']});
-		const blocked = await this.usersRepository.findOne({where : { id: blockedId },  relations: ['blockers']});
-		if (blockerId === blockedId)
+	async blockUser(userId: number, blockedId: number) {
+		if (userId === blockedId)
 			throw new ForbiddenException("You can't block yourself");
-		if (blocker && blocked) {
-			blocker.users_blocked.push(blocked);
-			blocked.blockers.push(blocker);
-			await this.usersRepository.save(blocker);
-			await this.usersRepository.save(blocked);
+		const user = await this.usersRepository.findOne({where : { id: userId },  relations: ['users_blocked']});
+		const blocked = await this.usersRepository.findOne({where : { id: blockedId }});
+		if (user && blocked) {
+			user.users_blocked.push(blocked);;
+			await this.usersRepository.save(user);
 		}
 	}
 
-	async unblockUser(blockerId: number, blockedId: number) {
-		const blocker = await this.usersRepository.findOne({where : { id: blockerId },  relations: ['users_blocked']});
-		const blocked = await this.usersRepository.findOne({where : { id: blockedId },  relations: ['blockers']});
-		if (blockerId === blockedId)
+	async unblockUser(userId: number, blockedId: number) {
+		if (userId === blockedId)
 			throw new ForbiddenException("You can't unblock yourself");
-		if (blocker && blocked) {
-			blocker.users_blocked = blocker.users_blocked.filter(user => user.id !== blockedId);
-			blocked.blockers = blocked.blockers.filter(user => user.id !== blockerId);
-			await this.usersRepository.save(blocker);
-			await this.usersRepository.save(blocked);
+		const user = await this.usersRepository.findOne({where : { id: userId },  relations: ['users_blocked']});
+		if (user) {
+			user.users_blocked = user.users_blocked.filter(user => user.id != blockedId);
+			await this.usersRepository.save(user);
 		}
 	}
 
+	// Users blocked by the user with id idUser
 	async getBlockedUsers(idUser: number): Promise<User[]> {
 		const user: UserEntity = await this.usersRepository.findOne({ where : { id: idUser }, relations: ["users_blocked"]}) as UserEntity;
 		if (!user)
@@ -155,13 +151,16 @@ export class UserService {
 		return user.users_blocked;
 	}
 
-	async getBlockerList(idUser: number): Promise<number []> {
-		const userIdListBlockedBy: number [] = [];
-		const user = await this.usersRepository.findOne({ where: { id: idUser }, relations: ['blockers'] }) as UserEntity;
-		const blockers = user.blockers;
-		for (const blocker of blockers) {
-			userIdListBlockedBy.push(blocker.id);
-		}
-		return userIdListBlockedBy;
+	// Users blocking the user with id idUser
+	async getBlockingList(idUser: number): Promise<number []> {
+		const blockingList = await this.usersRepository
+		.createQueryBuilder('user')
+		.innerJoin('user.users_blocked', 'blockedUser')
+		.where('blockedUser.id = :userId', { userId: idUser })
+		.getMany();
+
+		const blockingListIds = blockingList.map((user) => user.id);
+	
+		return blockingListIds;
 	}
 }
