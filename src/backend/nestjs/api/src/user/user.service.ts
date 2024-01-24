@@ -29,9 +29,9 @@ export class UserService {
 	}
 
 	async getCurrentUser(req: Request): Promise<User> {
-		const reqUser :User = req.user as User;
+		const reqUser: User = req.user as User;
 		try {
-			const user: User = await this.usersRepository.findOneBy({ email: reqUser.email });
+			const user: User = await this.usersRepository.findOneBy({ id: reqUser.id });
 			return user;
 		}
 		catch (err) {
@@ -49,6 +49,26 @@ export class UserService {
 				throw new ForbiddenException("User already exists");
 		}
 		return null;
+	}
+
+	async set2faSecret(id: number, secret: string): Promise<User> {
+		try {
+			const user: UserEntity = await this.getUserById(id) as UserEntity;
+			user.twofa_secret = secret;
+			return this.usersRepository.save(user);
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	async set2faMode(id: number, mode: boolean) {
+		try {
+			const user: User = await this.getUserById(id);
+			user.twofa_enabled = mode;
+			return this.usersRepository.save(user);
+		} catch (err) {
+			throw err;
+		}
 	}
 
 	async deleteUser(username: string) {

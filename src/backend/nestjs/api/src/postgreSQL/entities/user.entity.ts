@@ -12,6 +12,12 @@ export class UserEntity {
 	@Column()
 	avatar: string;
 
+	@Column({ default: null })
+	twofa_secret: string;
+
+	@Column({ default: false })
+	twofa_enabled: boolean;
+
 	@Column()
 	email: string;
 
