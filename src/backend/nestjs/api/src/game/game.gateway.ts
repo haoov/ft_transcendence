@@ -191,6 +191,13 @@ export class GameGateway
 		if (response.accepted) {
 			const room: Room = this.createPrivateRoom(client.data.user, response.opponent);
 			this.userGateway.gameReady(room, client.data.user);
+			setTimeout(() => {
+				if (room.isOpen()) {
+					room.quitGame(room.getSockets()[0]);
+					this.endGame(room);
+					this.deleteRoom(room);
+				}
+			}, 10000);
 		}
 	}
 

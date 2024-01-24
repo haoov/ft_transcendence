@@ -26,4 +26,5 @@ export enum ServerEvents {
 	updateStatus = "updateStatus",
 	gameInvite = "gameInvite",
 	dataChanged = "dataChanged",
+	gameResponse = "gameResponse",
 };
