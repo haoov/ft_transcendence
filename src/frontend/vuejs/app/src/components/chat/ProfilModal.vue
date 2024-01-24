@@ -16,7 +16,7 @@
 				</div>
 			</div>
 			<div class="u-text--right btn-div">
-				<button v-for="action in actions" @click="action.function" class="btn">{{ action.action }}</button>
+				<button v-if="isAdmin" v-for="action in actions" @click="action.function" class="btn">{{ action.action }}</button>
 			</div>
 		</div>
 	</div>
@@ -40,14 +40,24 @@ import blocked from '../../assets/images/status-blocked-32.png';
 const router = useRouter();
 const $data : any = inject('$data');
 const store = $data.getStore();
+const socket = store.socket;
+const currentUser = ref<User>(await $data.getCurrentUser());
 const socketManager: SocketManager = inject('socketManager') as SocketManager;
-const currentUser = await $data.getCurrentUser();
 const user = ref<User>(await $data.getUserById(store.userIdClicked));
 const profilePic = ref<string>(user.value.avatar);
 const username = ref<string>(user.value.username);
 const email = ref<string>(user.value.email);
 const isBlocked = ref<boolean>(false);
 const blockedList = ref<User []>(await $data.getBlockedUsers());
+const admins = ref<User []>(await $data.getAdmins(store.activeChannel?.id));
+const isAdmin = computed(() => {
+	for (let i = 0; i < admins.value.length; i++) {
+		if (admins.value[i].id == currentUser.value.id) {
+			return true;
+		}
+	}
+	return false;
+});
 const status = computed ( () => {
 	if (user.value.status == 'blocked') {
 		return blocked;
@@ -72,7 +82,9 @@ const statusTitle = computed ( () => {
 });
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
+	currentUser.value = await $data.getCurrentUser();
 	user.value = await $data.getUserById(store.userIdClicked);
+	admins.value = await $data.getAdmins(store.activeChannel?.id);
 	blockedList.value = await $data.getBlockedUsers();
 	blockedList.value.forEach((blockedUser: User) => {
 		if (blockedUser.id == store.userIdClicked) {
@@ -81,23 +93,19 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
 	});
 });
 
-
 const goToProfile = async () => {
 	router.push(`/${user.value.username}`);
 	$data.closeProfileModal();
 }
 const inviteToGame = () => {
-	console.log('invite to game')
 	router.push('/game');
 	$data.closeProfileModal();
 }
 const blockUser = () => {
-	console.log('block user')
 	$data.blockUser(store.userIdClicked);
 	$data.closeProfileModal();
 }
 const sendDirectMessage = () => {
-	console.log('send direct message')
 	$data.sendDirectMessage(store.userIdClicked);
 	$data.closeProfileModal();
 }
@@ -133,20 +141,35 @@ const options = [
 	},
 ]
 
+const setAdmin = () => {
+	socket.emit('setAdmin', store.userIdClicked);
+	$data.closeProfileModal();
+}
+
+const kickUser = () => {
+	socket.emit('kickUser', store.userIdClicked);
+	$data.closeProfileModal();
+}
+
+const banUser = () => {
+	socket.emit('banUser', store.userIdClicked);
+	$data.closeProfileModal();
+}
+
 const actions = [
 	{
 		action: 'Admin',
-		function: () => console.log('admin'),
+		function: setAdmin,
 		title: 'Make admin',
 	},
 	{
 		action: 'Kick',
-		function: () => console.log('kick'),
+		function: kickUser,
 		title: 'Kick user',
 	},
 	{
 		action: 'Ban',
-		function: () => console.log('ban'),
+		function: banUser,
 		title: 'Ban user',
 	},
 
