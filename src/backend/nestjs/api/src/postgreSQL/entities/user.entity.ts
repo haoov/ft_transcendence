@@ -12,6 +12,12 @@ export class UserEntity {
 	@Column()
 	avatar: string;
 
+	@Column({ default: null })
+	twofa_secret: string;
+
+	@Column({ default: false })
+	twofa_enabled: boolean;
+
 	@Column()
 	email: string;
 
@@ -32,7 +38,4 @@ export class UserEntity {
 	@JoinTable()
 	users_blocked: UserEntity[];
 
-	@ManyToMany(() => UserEntity, { cascade: true })
-	@JoinTable()
-	blockers: UserEntity[];
 }
