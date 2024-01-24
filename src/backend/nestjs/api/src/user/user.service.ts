@@ -48,7 +48,7 @@ export class UserService {
 
 	async set2faSecret(id: number, secret: string): Promise<User> {
 		try {
-			const user: User = await this.getUserById(id);
+			const user: UserEntity = await this.getUserById(id) as UserEntity;
 			user.twofa_secret = secret;
 			return this.usersRepository.save(user);
 		} catch (err) {
@@ -75,9 +75,11 @@ export class UserService {
 
 
 	async updateUserStatus(user: User, newStatus: string) {
-		if (user) {
-			user.status = newStatus;
+		const updatedUser: User = await this.getUserById(user.id);
+		if (updatedUser) {
+			updatedUser.status = newStatus;
 			this.usersRepository.save(user as UserEntity);
 		}
+		return updatedUser;
 	}
 }

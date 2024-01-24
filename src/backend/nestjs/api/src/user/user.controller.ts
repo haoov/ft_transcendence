@@ -3,6 +3,7 @@ import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { Request } from "express";
 import Jwt2faGuard from "src/auth/jwt-2fa/jwt-2fa.guard";
+import { UserEntity } from "src/postgreSQL/entities";
 
 @Controller("user")
 @UseGuards(Jwt2faGuard)
@@ -12,22 +13,25 @@ export class UserController {
 	@Get()
 	async getAllUsers(): Promise<User[]> {
 		const users: User[] = await this.userService.getAllUsers();
-		users.forEach(user => user.twofa_secret = "");
-		return users;
+		// const users_ret = users.map(user => {
+		// 	const { twofa_secret, ...user_ret } = user;
+		// 	return user_ret;
+		// });
+		return users as User[];
 	}
 
 	@Get("me")
 	async getCurrentUser(@Req() req: Request): Promise<User> {
-		const user: User = await this.userService.getCurrentUser(req);
-		user.twofa_secret = "";
-		return user;
+		const user: UserEntity = await this.userService.getCurrentUser(req) as UserEntity;
+		const { twofa_secret, ...user_ret } = user;
+		return user_ret as User;
 	}
 
 	@Get(":id")
 	async getUser(@Param("id") id: number): Promise<User> {
-		const user: User = await  this.userService.getUserById(id);
-		user.twofa_secret = "";
-		return user;
+		const user: UserEntity = await this.userService.getUserById(id) as UserEntity;
+		const { twofa_secret, ...user_ret } = user;
+		return user_ret as User;
 	}
 
 	// @Post(':id/upload-avatar')

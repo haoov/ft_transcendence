@@ -6,7 +6,7 @@ export interface User {
 	avatar: string;
 	email: string;
 	status: string;
-	twofa_secret: string;
+	twofa_secret?: string;
 	twofa_enabled: boolean;
 	games_won: Game[]
 	games_lost: Game[]
