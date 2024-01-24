@@ -92,6 +92,16 @@ export class ChatController {
 		return await this.chatService.getJoinableChannels(userId);
 	}
 
+	@Get('/channels/banned')
+	async getBanlist(@Query("id") id : number): Promise<User []> {
+		return await this.chatService.getBannedUsersByChannelId(id);
+	}
+
+	@Get('/channels/admins')
+	async getAdmins(@Query("id") id : number) : Promise<User []> {
+		return await this.chatService.getAdminsByChannelId(id);
+	}
+
 	@Put('/block')
 	async blockUser(@Query('id') idToBlock: number, @Req() req : Request): Promise<void> {
 		const user = req.user as User;
@@ -103,4 +113,5 @@ export class ChatController {
 		const user = req.user as User;
 		await this.userService.unblockUser(user.id, idToUnblock);
 	}
+
 }

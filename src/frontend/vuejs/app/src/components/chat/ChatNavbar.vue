@@ -1,6 +1,6 @@
 <template>
 	<div class="channel-navbar">
-		<ul v-for="(channel, index) in channels">
+		<ul v-for="channel in channels">
 			<ChannelWidget
 			:channel="channel"
 			:key="channel.id"
@@ -16,7 +16,10 @@ import ChannelWidget from './ChannelWidget.vue';
 import NewChannelWidget from './NewChannelWidget.vue';
 import { Socket } from "socket.io-client";
 import { inject, onMounted, computed } from 'vue';
+import {ServerEvents, type User} from '@/utils';
+import { type SocketManager } from "@/SocketManager";
 
+const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const $data : any = inject('$data');
 const store = $data.getStore();
 const socket : Socket = store.socket;
@@ -24,6 +27,10 @@ const currentUser = await $data.getCurrentUser();
 const channels = computed (() => store.channels);
 
 onMounted(() => {
+	$data.loadChannels(currentUser.id);
+});
+
+socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
 	$data.loadChannels(currentUser.id);
 });
 
