@@ -46,11 +46,14 @@
 
 <script setup lang="ts">
 import { inject, computed, ref, watch } from 'vue';
+import { type SocketManager } from "@/SocketManager";
+import {ServerEvents, type User} from '@/utils'
 
+const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const $data : any = inject('$data');
 const store = $data.getStore();
-const currentUser = await $data.getCurrentUser();
-const listUsers = await $data.getUsers();
+const currentUser =ref<User>(await $data.getCurrentUser());
+const listUsers =ref<User []>(await $data.getUsers());
 const activeChannel = computed(() => store.activeChannel);
 const isPrivate = computed(() => {
 	if (activeChannel.value?.mode === 'Private') {
@@ -58,8 +61,10 @@ const isPrivate = computed(() => {
 	}
 	return false;
 });
-const isAdmin = computed(() => {
-	if (activeChannel.value.creatorId === currentUser.id) {
+const isAdmin = computed(async () => {
+	const admins = await $data.getAdmins(activeChannel.value.id);
+	if (activeChannel.value.creatorId === currentUser.value.id
+		|| admins.find((admin: any) => admin.id === currentUser.value.id)) {
 		return true;
 	}
 	return false;
@@ -70,10 +75,10 @@ const channelName = computed(() => {
 	} else if (activeChannel.value?.mode === 'Private') {
 		const id1 = activeChannel.value.name.split('#')[1];
 		const id2 = activeChannel.value.name.split('#')[2];
-		if (parseInt(id1)  === currentUser.id) {
-			return listUsers.find((user: any) => user.id === parseInt(id2)).username;
+		if (parseInt(id1)  === currentUser.value.id) {
+			return listUsers.value.find((user: any) => user.id === parseInt(id2))?.username;
 		}
-		return listUsers.find((user: any) => user.id === parseInt(id1)).username;
+		return listUsers.value.find((user: any) => user.id === parseInt(id1))?.username;
 	}
 	return activeChannel.value.name;
 });
@@ -82,14 +87,14 @@ const channelImage = computed(() => {
 	if (activeChannel.value?.mode === 'Private') {
 		const id1 = activeChannel.value.name.split('#')[1];
 		const id2 = activeChannel.value.name.split('#')[2];
-		let avatar = '';
-		if (parseInt(id1) === currentUser.id) {
-			avatar = listUsers.find((user: any) => user.id === parseInt(id2)).avatar;
+		let avatar : string | undefined = '';
+		if (parseInt(id1) === currentUser.value.id) {
+			avatar = listUsers.value.find((user: any) => user.id === parseInt(id2))?.avatar;
 		} else {
-			avatar = listUsers.find((user: any) => user.id === parseInt(id1)).avatar;
+			avatar = listUsers.value.find((user: any) => user.id === parseInt(id1))?.avatar;
 		}
 		const timestamp = Date.now();
-		if (avatar.includes(':3000/api/user/avatar/'))
+		if (avatar?.includes(':3000/api/user/avatar/'))
 			return `${avatar}?${timestamp}`;
 		else
 			return avatar;
@@ -97,6 +102,10 @@ const channelImage = computed(() => {
 	return undefined;
 });
 
+socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
+	listUsers.value = await $data.getUsers();
+	currentUser.value = await $data.getCurrentUser();
+});
 
 
 const openEditChannelForm = () => {

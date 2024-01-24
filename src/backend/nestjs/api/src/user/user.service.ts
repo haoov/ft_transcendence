@@ -58,7 +58,6 @@ export class UserService {
 		this.usersRepository.remove(user as UserEntity);
 	}
 
-
 	async updateUserStatus(user: User, newStatus: string) {
 		const updatedUser: User = await this.getUserById(user.id);
 		if (updatedUser) {
@@ -141,8 +140,8 @@ export class UserService {
 		if (blockerId === blockedId)
 			throw new ForbiddenException("You can't unblock yourself");
 		if (blocker && blocked) {
-			blocker.users_blocked = blocker.users_blocked.filter(user => user.id !== blockedId);
-			blocked.blockers = blocked.blockers.filter(user => user.id !== blockerId);
+			blocker.users_blocked = blocker.users_blocked.filter(user => user.id != blockedId);
+			blocked.blockers = blocked.blockers.filter(user => user.id != blockerId);
 			await this.usersRepository.save(blocker);
 			await this.usersRepository.save(blocked);
 		}

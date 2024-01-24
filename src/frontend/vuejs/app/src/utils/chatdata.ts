@@ -8,6 +8,8 @@ interface Channel {
 	name: string;
 	mode: string;
 	creatorId: any;
+	admins: User [];
+	bannedUsers: User [];
 };
 
 interface Message {
@@ -65,8 +67,16 @@ async function fetchBlockersList() : Promise<number []> {
 	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/blockedBy`).then((res) => { return res.data });
 }
 
+async function getBanlist(channelId: number ) : Promise<User[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/banned?id=${channelId}`).then((res) => { return res.data });
+}
+
+async function getAdmins(channelId: number ) : Promise<User[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/admins?id=${channelId}`).then((res) => { return res.data });
+}
+
 async function blockUser(id: number) {
-	axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${id}`)
+	axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${id}`);
 }
 
 const store = reactive({
@@ -133,11 +143,18 @@ export default {
 		return store;
 	},
 
-
 	loadChannels() {
 		fetchCurrentUserChannels().then((channels) => {
 			store.channels = channels.slice().reverse();
 		});
+	},
+
+	getAdmins(channelId: number) : Promise<User []> {
+		return getAdmins(channelId);
+	},
+
+	getBanlist(channelId: number) : Promise<User []> {
+		return getBanlist(channelId);
 	},
 
 	addChannel(channel: Channel) {
