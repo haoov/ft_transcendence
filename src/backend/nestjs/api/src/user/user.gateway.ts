@@ -59,6 +59,18 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@SubscribeMessage(clientEvents.gameResponse)
+	gameResponse(client: Socket, response: {accepted: boolean, opponent: User}) {
+		const sockets: Socket[] = this.usersSockets.get(response.opponent.id);
+		if (sockets) {
+			if (!response.accepted) {
+				sockets.forEach((socket) => {
+					socket.emit(serverEvents.gameResponse, {accepted: false, opponent: client.data.user});
+				})
+			}
+		}
+	}
+
 	gameReady(room: Room, user: User) {
 		const sockets: Socket[] = this.usersSockets.get(room.getUsers()[0].id);
 		if (sockets) {

@@ -71,6 +71,15 @@ class SocketManager {
 					{action: decline}
 				]});
 		});
+
+		this.userSocket.on(ServerEvents.gameResponse, (response: {accepted: boolean, opponent: User}) => {
+			if (!response.accepted) {
+				notify.newNotification("error", {
+					message: 'Invitation declined',
+					by: response.opponent.username,
+				});
+			}
+		});
 	}
 
 	checkGame() {
