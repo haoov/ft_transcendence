@@ -1,10 +1,10 @@
 import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import GameView from "@/game/GameView.vue";
-import TwofaView from "@/views/TwofaView.vue";
 import ChatView from "@/views/ChatView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import SettingView from "@/views/SettingView.vue";
+import PageNotFoundView from "@/views/PageNotFoundView.vue";
 
 
 const routes = [
@@ -23,11 +23,6 @@ const routes = [
 		name: "profile",
 		component: ProfileView
 	},
-	// {
-	// 	path: "/twofa",
-	// 	name: "twofa",
-	// 	component: TwofaView,
-	// },
 	{
 		path: "/game",
 		name: "game",
@@ -42,6 +37,11 @@ const routes = [
 		path: "/settings",
 		name: "settings",
 		component: SettingView,
+	},
+	{
+		path: "/:pathMatch(.*)",
+		name: "Page not found",
+		component: PageNotFoundView,
 	}
 ];
 
