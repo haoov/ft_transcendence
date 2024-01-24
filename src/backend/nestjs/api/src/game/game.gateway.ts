@@ -71,6 +71,17 @@ export class GameGateway
 		}
 	}
 
+	@SubscribeMessage(clientEvents.checkGame)
+	checkGame(client: Socket) {
+		console.log("checking game: " + client.data.user.username);
+		//check if user is already in a room
+		const room: Room = this.findRoom(client);
+		if (room) {
+			//if user is already in a room manage socket
+			this.manageSocket(client, room);
+		}
+	}
+
 	/**
 	 * Room management when user has selected game parameters
 	 * @param client socket of the user
@@ -249,7 +260,10 @@ export class GameGateway
 			type: "multiplayer",
 			map: "random",
 		};
-		const newRoom = new Room(this.roomId.toString(), {gameParams: params, setPrivate: true});
+		const newRoom = new Room(this.roomId.toString(), {
+			gameParams: params,
+			setPrivate: true
+		});
 		++this.roomId;
 		newRoom.addUser(opponent);
 		newRoom.addUser(user);
@@ -276,9 +290,10 @@ export class GameGateway
 				//if room is full start game
 				this.closeRoom(room);
 			}
-			else {
+			else if (room.isPublic()){
 				//else wait for opponent
-				client.emit(serverEvents.updateStatus, "waiting");
+				client.data.user = await this.userService.updateUserStatus(client.data.user, userStatus.waiting);
+				this.userGateway.dataChanged(client.data.user);
 			}
 		}
 	}
