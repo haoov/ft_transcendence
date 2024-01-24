@@ -7,6 +7,7 @@ import { authenticator } from "otplib";
 import { toDataURL } from 'qrcode'
 import { JwtService } from "@nestjs/jwt";
 import TokenPayload from "./tokenPayload.interface";
+import { UserEntity } from "src/postgreSQL/entities";
 
 @Injectable()
 export class AuthService {
@@ -57,7 +58,7 @@ export class AuthService {
 		};
 	}
 
-	is2faValid(code: string, user: User) {
+	is2faValid(code: string, user: UserEntity) {
 		return authenticator.verify({
 			token: code,
 			secret: user.twofa_secret,

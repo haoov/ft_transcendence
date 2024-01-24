@@ -6,6 +6,7 @@ import { UserService } from "src/user/user.service";
 import { Body2faDTO, User } from "src/user/user.interface";
 import JwtAuthGuard from "./jwt/jwt.guard";
 import Jwt2faGuard from "./jwt-2fa/jwt-2fa.guard";
+import { UserEntity } from "src/postgreSQL/entities";
 
 @Controller("auth")
 export class AuthController {
@@ -52,7 +53,7 @@ export class AuthController {
 	@Post('2fa/turn-on')
 	@UseGuards(JwtAuthGuard)
 	async swithOn2fa(@Req() req: Request, @Body() body: Body2faDTO) {
-		const user = await this.userService.getUserById((req.user as User).id);
+		const user: UserEntity = await this.userService.getUserById((req.user as User).id) as UserEntity;
 		if (!user.twofa_secret)
 			throw new UnauthorizedException('no secret generated');
 		const isCodeValid = this.authService.is2faValid(
@@ -92,8 +93,8 @@ export class AuthController {
 	@Post('2fa/authenticate')
 	@UseGuards(JwtAuthGuard)
 	async authentificate(@Req() req: Request, @Body() body: Body2faDTO) {
-		const user_tmp: User = req.user as User;
-		const user = await this.userService.getUserById(user_tmp.id);
+		const user: UserEntity = await this.userService.getUserById((req.user as User).id) as UserEntity;
+		console.log(user);
 		if (!user.twofa_enabled)
 			throw new UnauthorizedException('no 2fa needed');
 		if (!user.twofa_secret)
