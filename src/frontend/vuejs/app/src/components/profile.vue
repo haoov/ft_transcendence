@@ -15,15 +15,15 @@ const route = useRoute();
 let username = route.params.username;
 const me = ref<User>();
 const user = ref<User>();
-const isBlocked = ref<boolean>(false);
+//const isBlocked = ref<boolean>(false);
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
 const $data : any = inject('$data');
 const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser: User) => {
-	if (user.value?.id == newUser.id) {
-		if (newUser.username != username) {
+	if (user.value?.id == newUser.id || me.value?.id == newUser.id) {
+		if (user.value?.id == newUser.id && newUser.username != username) {
 			username = newUser.username;
 			await fetchUser();  
 			router.push(`/${newUser.username}`);
@@ -35,7 +35,7 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser:
 
 // FETCHING DATA
 async function fetchUser() {
-	axios
+	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user?username=${username}`)
 		.then( (data) => {
 			user.value = data.data;
@@ -51,37 +51,20 @@ async function fetchUser() {
 }
 
 async function fetchMe() {
-	axios
+	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
 		.then( (data) => {
-			me.value = data.data;
-			// Fetch blocked users
-			const url: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block`;
-			axios.get(url).then( (data) => {
-				const blockedUsers: User[] = data.data;
-				blockedUsers.forEach( (blockedUser) => {
-					if (blockedUser.id == user.value?.id)
-						isBlocked.value = true;
-				});
-			});
-		});
+			me.value = data.data; });
 }
 
 // BLOCK & UNBLOCK FUNCTIONS
-function blockUser() {
-	axios
-		.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
-		.then( () => {
-			isBlocked.value = true;
-		});
+async function blockUser() {
+
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
 }
 
-function unblockUser() {
-	axios
-		.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
-		.then( () => {
-			isBlocked.value = false;
-		});
+async function unblockUser() {
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
 }
 
 
@@ -95,8 +78,7 @@ function	getAvatarSrc() : string | undefined {
 }
 
 function getStatusIcon() : string {
-	// Faire option forbidden
-	if (isBlocked.value)
+	if (userStats.value?.blocked)
 		return blocked;
 	else if (user.value?.status == "undefined" || user.value?.status == "offline")
 		return offline;
@@ -107,8 +89,7 @@ function getStatusIcon() : string {
 }
 
 function getStatusTitle() : string {
-	// Faire option forbidden
-	if (isBlocked.value)
+	if (userStats.value?.blocked)
 		return "blocked";
 	else if (user.value?.status == "undefined" || user.value?.status == "offline")
 		return "offline";
@@ -146,6 +127,10 @@ function getScoreColor(winFlag: boolean): string {
 		return "var(--c-grey)"
 }
 
+function showActions() : boolean {
+	return (user.value?.id!=me.value?.id && !userStats.value?.blocked && !userStats.value?.blocking)
+}
+
 function sendMessage(id : number | undefined) {
 	router.push(`/chat`);
 	$data.sendDirectMessage(id);
@@ -165,27 +150,26 @@ onMounted(async () => {
 	<div class="l-grid">
 		<div class="l-grid__item l-grid__item--sticky">
 			<div class="c-card" id="profile">
-				<!-- <h3 class="u-p--24">PROFILE</h3> -->
 				<div class="c-card__body">
 					<div class="u-display--flex u-justify--space-between">
 						<div class="u-text--left">
 							<div class="c-avatar-container u-ml--24">
 								<img class="c-avatar c-avatar--lg" :src="getAvatarSrc()"/>
-								<img v-if="user" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
+								<img v-if="user && !userStats?.blocking" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
 							</div>
 							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ user?.username }}</div>
 							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
 							<div class="u-ml--24 u-mt--4">
-								<a v-if="user?.id!=me?.id && !isBlocked" class="u-mr--8" target="_blank">
+								<a v-if="showActions()" class="u-mr--8" target="_blank">
 									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 								</a>
-								<a v-if="user?.id!=me?.id && !isBlocked" class="u-mr--8" @click="sendMessage(user?.id)" target="_blank">
+								<a v-if="showActions()" class="u-mr--8" @click="sendMessage(user?.id)" target="_blank">
 									<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 								</a>
-								<a v-if="user?.id!=me?.id && !isBlocked" @click="blockUser()" target="_blank">
+								<a v-if="user?.id!=me?.id && !userStats?.blocked" @click="blockUser()" target="_blank">
 									<img src="../assets/images/status-blocked-32.png" width='20em' height="20em" alt="block-icon" title="Block">
 								</a>
-								<a v-if="user?.id!=me?.id && isBlocked" @click="unblockUser()" target="_blank">
+								<a v-if="user?.id!=me?.id && userStats?.blocked" @click="unblockUser()" target="_blank">
 									<img src="../assets/images/unblock-50.png" width='20em' height="20em" alt="unblock-icon" title="Unblock">
 								</a>
 							</div>

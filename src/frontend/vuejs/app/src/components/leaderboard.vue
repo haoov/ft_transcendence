@@ -117,8 +117,9 @@ function	getMyAvatarSrc() : string | undefined {
 }
 
 function getStatusIcon(user: UserStat) : string {
-	// Faire option forbidden
-	if (user.status == "undefined" || user.status == "offline")
+	if (user.blocked)
+		return blocked;
+	else if (user.status == "undefined" || user.status == "offline")
 		return offline;
 	else if (user.status == "playing")
 		return playing;
@@ -277,23 +278,22 @@ function sendMessage(id : number) {
 							</div>
 						</li>
 						<div v-if="playersDisplayed.length" id="leaderboardContent" class="scroll"> 
-							<!-- premier element -->
 							<li v-for="(player, index) in playersDisplayed" :key="player.id" class="c-list__item">
 								<div class="c-list__grid">
 									<div :class="getRankClass(player.rank)">{{ player.rank }}</div>
 									<div class="c-media">
 										<div v-if="imagesLoaded" class="c-avatar-container">
 											<img class="c-avatar c-media__img" :src="getAvatarSrc(player.id)" @click="goToProfile(player.username)" title="Go to profile"/>
-											<img class="c-avatar-icon" :src="getStatusIcon(player)"/>
+											<img v-if="!player.blocking" class="c-avatar-icon" :src="getStatusIcon(player)"/>
 										</div>
 										<div class="c-media__content">
 											<div>
 												<a class="c-media__title u-text--overpass" @click="goToProfile(player.username)" title="Go to profile">{{ player.username }}</a>
 											</div>
-											<a v-if="player.id!=me?.id" class="u-mr--8" target="_blank">
+											<a v-if="player.id!=me?.id && !player.blocking" class="u-mr--8" target="_blank">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play" v-on:click="inviteToPlay(player)">
 											</a>
-											<a v-if="player.id!=me?.id" @click="sendMessage(player.id)" target="_blank">
+											<a v-if="player.id!=me?.id && !player.blocking" @click="sendMessage(player.id)" target="_blank">
 												<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 											</a>
 										</div>
