@@ -15,11 +15,8 @@
 				</a>
 				</div>
 			</div>
-			<div class="u-text--right">
-					<div class="u-mt--16 u-text--small u-text--overpass">Rank</div>
-					<h2 class="u-text--oswald">Coucou</h2>
-					<div class="u-mt--24 u-text--small u-text--overpass">Wins</div>
-					<h2 class="u-text--oswald">coucou</h2>
+			<div class="u-text--right btn-div">
+				<button v-for="action in actions" @click="action.function" class="btn">{{ action.action }}</button>
 			</div>
 		</div>
 	</div>
@@ -247,10 +244,44 @@ const actions = [
 
 .u-mt--4 {
 	margin-top: 0.4rem;
+	display: flex;
+    flex-direction: row;
+    justify-content: space-around;
 }
 
 .u-text--right {
 	text-align: right;
 }
 
+.btn-div {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+}
+
+.btn {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    align-self: flex-start;
+    font-family: inherit;
+    color: #717171;
+    font-weight: 600;
+    width: 100%;
+    background: #313131;
+    border: 1px solid #414141;
+    padding: 12px 16px;
+    font-size: inherit;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.btn:hover {
+	background-color: #fff;
+	border-color: #fff;
+}
+
+a {
+	cursor: pointer;
+}
 </style>
