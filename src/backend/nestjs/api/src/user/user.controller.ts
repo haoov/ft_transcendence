@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, NotFoundException, Param, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { Request, Response } from "express";
@@ -20,7 +20,7 @@ export class UserController {
 			return this.userService.getUserById(id);
 		else if (username)
 			return this.userService.getUserByUsername(username);
-		return null;
+		throw new NotFoundException("User not found");
 	}
 
 	@Get("all")

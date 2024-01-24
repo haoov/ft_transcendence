@@ -47,7 +47,10 @@ async function fetchUser() {
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
 				userGames.value = data.data;})
-			});
+			})
+		.catch((err) => {
+			router.push("/user/not/found");
+		})
 }
 
 async function fetchMe() {
