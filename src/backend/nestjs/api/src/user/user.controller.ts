@@ -41,7 +41,7 @@ export class UserController {
 	@Get("blockedBy")
 	isBlocked(@Param("id") id: number, @Req() req: Request): Promise<number []> {
 		const user = req.user as User;
-		return this.userService.getBlockerList(user.id);
+		return this.userService.getBlockingList(user.id);
 	}
 
 	@Put('update/username')

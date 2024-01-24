@@ -130,7 +130,7 @@ async function fetchMe() {
 
 // UTIL FUNCTIONS
 function updateProfile() {
-	if (usernameSet.value && usernameSet.value !== me.value.username)
+	if (usernameSet.value && usernameSet.value != me.value.username)
 		updateUsername();
 	if (avatarSet.value)
 		updateAvatar();
