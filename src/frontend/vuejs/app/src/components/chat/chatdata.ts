@@ -83,7 +83,6 @@ const store = reactive({
 	isSocketReady: false,
 	channels: [] as Channel[],
 	messages: [] as Message [],
-	users: [] as User [],
 	userIdClicked: null as number | null,
 	currentUser: null as User | null,
 	isModalOpen: false,
@@ -135,7 +134,7 @@ export default {
 		return fetchChannels();
 	},
 
-	getJoinableChannels(id: number) : Object {
+	getJoinableChannels() : Object {
 		return fetchJoinableChannels();
 	},
 
@@ -157,17 +156,22 @@ export default {
 		return getBanlist(channelId);
 	},
 
+	findChannelById(id : number) : Channel {
+		const index = store.channels.findIndex((channel) => channel.id === id);
+		return store.channels[index];
+	},
+
 	addChannel(channel: Channel) {
 		store.channels.unshift(channel)
 	},
 
 	deleteChannel(channelId: number) {
-		const index = store.channels.findIndex((c) => c.id === channelId);
+		const index = store.channels.findIndex((channel) => channel.id === channelId);
 		store.channels.splice(index, 1);
 	},
 
 	updateChannel(channel: Channel) {
-		const index = store.channels.findIndex((c) => c.id === channel.id);
+		const index = store.channels.findIndex((channel) => channel.id === channel.id);
 		store.channels[index] = channel;
 	},
 
@@ -208,12 +212,6 @@ export default {
 			store.socket.emit('createNewChannel', newChannel);
 		}
 		this.closeModalForm();
-	},
-
-	loadUsers() {
-		fetchUsers().then((users) => {
-			store.users = users;
-		});
 	},
 
 	openModalForm() {

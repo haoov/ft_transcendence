@@ -20,7 +20,8 @@ import { onUpdated, onMounted, computed, watch} from 'vue';
 import { inject, ref } from 'vue';
 import { Socket } from 'socket.io-client';
 import { type SocketManager } from "@/SocketManager";
-import {ServerEvents, type User} from '@/utils'
+import { ServerEvents, type User} from '@/utils'
+import { onBeforeRouteLeave } from 'vue-router';
 
 type Message = {
 	sender: User;
@@ -65,8 +66,8 @@ onUpdated(() => {
 	scrollToBottomSmooth();
 });
 
-socket.on("newMessage", async (message : any) => {
-	console.log(message);
+async function recievedMessage(message : any) {
+	console.log('[MESSAGE RECEIVED]');
 	const blockedUsers = await $data.getBlockedUsers();
 	if (activeChannel.value.id !== message.message.channelId) {
 		return;
@@ -74,6 +75,11 @@ socket.on("newMessage", async (message : any) => {
 	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === message.sender.id)) {
 		store.messages.push(message);
 	}
+};
+
+socket.on("newMessage", recievedMessage);
+onBeforeRouteLeave(() => {
+	socket.off('newMessage', recievedMessage)
 });
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
@@ -82,6 +88,7 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
 		$data.loadMessagesByChannel(activeChannel.value.id);
 	}
 });
+
 
 </script>
 

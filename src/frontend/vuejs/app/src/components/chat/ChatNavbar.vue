@@ -19,6 +19,7 @@ import { inject, onMounted, computed } from 'vue';
 import {ServerEvents, type User} from '@/utils';
 import { type SocketManager } from "@/SocketManager";
 import notify from '@/notify/notify';
+import { onBeforeRouteLeave } from 'vue-router';
 
 const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const $data : any = inject('$data');
@@ -43,67 +44,90 @@ const setActiveChannel = (channel : any, currentUserId: number) => {
 	$data.setActiveChannel(channel);
 };
 
-socket.on('userAdded', (channelJoinned : any) => {
-	console.log(channelJoinned);
-	$data.addChannel(channelJoinned);
-})
+function userAddedHandler(channelJoined: any) {
+	$data.addChannel(channelJoined);
+}
 
-socket.on('newChannelCreated', (newChannelCreated : any) => {
+function newChannelCreatedHandler(newChannelCreated : any) {
 	$data.addChannel(newChannelCreated);
-	socket.emit('setActiveChannel', {
-		'channelId':newChannelCreated.id,
-		'currentUserId':currentUser.id
-	});
-	$data.setActiveChannel(newChannelCreated);
-});
+	if (newChannelCreated.creatorId == currentUser.id) {
+		socket.emit('setActiveChannel', {
+			'channelId':newChannelCreated.id,
+			'currentUserId':currentUser.id
+		});
+		$data.setActiveChannel(newChannelCreated);
+	}
+}
 
-socket.on('channelDeleted', (channelIdDeleted : number) => {
+function channelIdDeletedHandler(channelIdDeleted : number) {
 	$data.deleteChannel(channelIdDeleted);
 	if (store.channels.length > 0) {
 		store.activeChannel = store.channels[store.channels.length - 1];
 	} else {
 		store.activeChannel = null;
 	}
-});
+	socket.emit('setActiveChannel', {
+			'channelId': 0,
+			'currentUserId':currentUser.id
+		});
+}
 
-socket.on('channelUpdated', (channelUpdated : any) => {
+function channelUpdatedHandler(channelUpdated : any) {
 	$data.updateChannel(channelUpdated);
-});
+}
 
-socket.on('kicked', (channelId : number) => {
+async function KickedHandler(channelId : number) {
+	const channel = $data.findChannelById(channelId);
+	notify.newNotification("error", {
+		message: "Kicked from channel",
+		by: channel.name,
+	})
 	$data.deleteChannel(channelId);
 	if (store.channels?.length > 0) {
 		store.activeChannel = store.channels[store.channels.length - 1];
 		socket.emit('setActiveChannel', {
-		'channelId': store.activeChannel.id,
-		'currentUserId': currentUser.id
+			'channelId': store.activeChannel.id,
+			'currentUserId': currentUser.id
 		});
 	} else {
 		store.activeChannel = null;
 		store.messages = [];
 	}
-	notify.newNotification("error", {
-		message: "Kicked from channel",
-		by: channelId.toString(),
-	})
-});
+}
 
-socket.on('banned', (channelId : number) => {
+async function bannedHandler(channelId : number) {
+	const channel = $data.findChannelById(channelId);
+	notify.newNotification("error", {
+		message: "Banned from channel",
+		by: channel.name,
+	})
 	$data.deleteChannel(channelId);
 	if (store?.channels.length > 0) {
 		store.activeChannel = store.channels[store.channels.length - 1];
 		socket.emit('setActiveChannel', {
-		'channelId': store.activeChannel.id,
-		'currentUserId': currentUser.id
+			'channelId': store.activeChannel.id,
+			'currentUserId': currentUser.id
 		});
 	} else {
 		store.activeChannel = null;
 		store.messages = [];
 	}
-	notify.newNotification("error", {
-		message: "Banned from channel",
-		by: channelId.toString(),
-	})
+}
+
+socket.on('userAdded', userAddedHandler);
+socket.on('newChannelCreated', newChannelCreatedHandler);
+socket.on('channelDeleted', channelIdDeletedHandler);
+socket.on('channelUpdated', channelUpdatedHandler);
+socket.on('kicked', KickedHandler);
+socket.on('banned', bannedHandler);
+
+onBeforeRouteLeave(() => {
+	socket.off('userAdded', userAddedHandler);
+	socket.off('newChannelCreated', newChannelCreatedHandler);
+	socket.off('channelDeleted', channelIdDeletedHandler);
+	socket.off('channelUpdated', channelUpdatedHandler);
+	socket.off('kicked', KickedHandler);
+	socket.off('banned', bannedHandler);
 });
 
 </script>center
