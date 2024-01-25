@@ -76,9 +76,9 @@ import logoutIcon from "@/assets/images/logout.png";
 // CSS
 const dynamicHeight = computed(() => {
 	if (twoFaChangedToEnabled.value)
-		return "height: 720px";
+		return "height: 730px";
 	else
-		return "height: 470px";
+		return "height: 480px";
 });
 const disableSave = computed(() => {
 	if ((twoFaChangedToEnabled.value && !twoFaCode.value))
@@ -97,8 +97,6 @@ const me = ref<User>(({
 	twofa_enabled: false,
 	email: "",
 	status: "",
-	games_won: [],
-	games_lost: []
 }));
 
 // Username
@@ -239,7 +237,7 @@ function selectFile(event: Event) {
 
 async function getQRcode(option: string) {
 	selectedOption.value = option;
-	if (selectedOption.value === "Enabled" && !me.value.twofa_enabled) {
+	if (selectedOption.value === "Enabled" && !me.value.twofa_enabled && !qrCode.value) {
 		await axios
 			.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/generate`)
 			.then( (data) => { 
@@ -394,7 +392,7 @@ onMounted(async () => {
     box-shadow: 0 0 0 1px #0000000f;
     padding: 0.25rem;
     font-size: small;
-    width: 18.8rem;
+    width: 18.8em;
     margin-left: 6rem;
 	margin-top: 0.5rem;
 }
@@ -475,6 +473,7 @@ onMounted(async () => {
 	font-family: Overpass;
 	font-size: 1.1rem;
 	font-style: italic;
+	color: red;
 }
 
 .u-display--flex {

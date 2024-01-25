@@ -38,4 +38,8 @@ export class UserEntity {
 	@JoinTable()
 	users_blocked: UserEntity[];
 
+	@ManyToMany(() => UserEntity, { cascade: true })
+	@JoinTable()
+	friends: UserEntity[];
+
 }
