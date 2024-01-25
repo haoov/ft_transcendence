@@ -26,7 +26,7 @@ export class AuthService {
 	getCookieWithJwtToken(id: number) {
 		const payload: TokenPayload = { id };
 		const token = this.jwtService.sign(payload);
-		const EXPIRE = 3600;
+		const EXPIRE = 86400;
 		return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${EXPIRE}`;
 	}
 
@@ -36,7 +36,7 @@ export class AuthService {
 
 	getCookieWithJwtAccessToken(id: number, twofaAuth = false) {
 		const payload: TokenPayload = { id, twofaAuth };
-		const EXPIRE = 3600;
+		const EXPIRE = 86400;
 		const token = this.jwtService.sign(payload, {
 			secret: process.env.JWT_ACCESS_TOKEN_SECRET,
 			expiresIn: EXPIRE,
