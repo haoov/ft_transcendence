@@ -69,7 +69,9 @@ async function unblockUser() {
 async function addFriend(user: User | undefined) {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${user?.id}`)
 		.then( () => {
-			// Notification
+			if (user != undefined && me.value != undefined) {
+				socketManager.addFriend(user.id, me.value.id);
+			}
 		})
 		.catch( (err) => {
 			console.log(err);
