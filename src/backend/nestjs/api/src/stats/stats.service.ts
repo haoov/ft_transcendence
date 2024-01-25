@@ -9,7 +9,7 @@ import { Request } from 'express';
 import { User } from 'src/user/user.interface';
 
 @Injectable()
-export class HomeService {
+export class StatsService {
 	constructor(
 		@InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
 		@InjectRepository(GameEntity) private readonly gameRepository: Repository<GameEntity>,
@@ -20,34 +20,28 @@ export class HomeService {
 	  async getAllUserStats(userId: number): Promise<UserStat[]> {
 		// Extract all users with related games
 		const usersWithGames = await this.userRepository.find({
-			relations: ['games_won', 'games_lost'],
+			relations: ['games_won', 'games_lost', 'friends'],
 	
 		});
 		// Get all blocking users
 		const blockingList = await this.userSerivce.getBlockingList(userId);
 		const blockedList = (await this.userSerivce.getBlockedUsers(userId)).map((user) => user.id);
+		const friendList = await this.userSerivce.getFriendList(userId);
 			
 		// Map as UserStat type
 		const userStats = usersWithGames.map((user) => {
 			// Calculate win rate
 			const game_count: number = user.games_won.length + user.games_lost.length;
-			let rate: number;
-			if (game_count)
-				rate = Math.round((user.games_won.length / game_count) * 100);
-			else
-				rate = 0;
+			const rate: number = game_count ? Math.round((user.games_won.length / game_count) * 100) : 0;
 			// Check blocking
-			let isBlocking: boolean = false;
-			blockingList.forEach((blockingUser) => {
-				if (blockingUser == user.id)
-					isBlocking = true;
-			});
+			const isBlocking: boolean = blockingList.includes(user.id);
 			// Check blocked
-			let isBlocked: boolean = false;
-			blockedList.forEach((blockedUser) => {
-				if (blockedUser == user.id)
-					isBlocked = true;
-			});
+			const isBlocked: boolean = blockedList.includes(user.id);
+			// Check friend
+			let isFriend: boolean | string = false;
+			if (friendList.includes(user.id)){
+				(user.friends.map((friend) => friend.id).includes(userId)) ? isFriend = true: isFriend = 'pending';
+			}
 
 			return {
 				id: user.id,
@@ -60,6 +54,7 @@ export class HomeService {
 				rank: 0,
 				blocking: isBlocking,
 				blocked: isBlocked,
+				friend: isFriend,
 			};
 		});
 

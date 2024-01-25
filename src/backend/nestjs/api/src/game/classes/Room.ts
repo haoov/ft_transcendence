@@ -12,6 +12,7 @@ const computer = {
 	email: "",
 	games_won: [],
 	games_lost: [],
+	friends: [],
 	twofa_enabled: false,
 	twofa_auth: false,
 	twofa_secret: ""

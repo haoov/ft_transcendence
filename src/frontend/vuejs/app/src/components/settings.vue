@@ -94,8 +94,6 @@ const me = ref<User>(({
 	twofa_enabled: false,
 	email: "",
 	status: "",
-	games_won: [],
-	games_lost: []
 }));
 
 // Username

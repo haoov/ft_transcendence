@@ -40,11 +40,11 @@ async function fetchUser() {
 		.then( (data) => {
 			user.value = data.data;
 			// Fetch user stats
-			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/stats/${data.data.id}`;
+			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/user/${data.data.id}`;
 			axios.get(url1).then( data => {
 				userStats.value = data.data;})
 			// Fetch my games
-			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
+			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
 				userGames.value = data.data;})
 			});
@@ -65,6 +65,29 @@ async function blockUser() {
 
 async function unblockUser() {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
+}
+
+// ADD TO FRIEND & REMOVE FROM FRIENDS
+async function addFriend(user: User | undefined) {
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${user?.id}`)
+		.then( () => {
+			// Notification
+		})
+		.catch( (err) => {
+			console.log(err);
+			// Notification
+		});
+}
+
+async function deleteFriend(user: User | undefined) {
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${user?.id}`)
+		.then( () => {
+			// Notification
+		})
+		.catch( (err) => {
+			console.log(err);
+			// Notification
+		});
 }
 
 
@@ -160,9 +183,14 @@ onMounted(async () => {
 							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ user?.username }}</div>
 							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
 							<div class="u-ml--24 u-mt--4">
-								<a v-if="showActions()" class="u-mr--8" target="_blank">
-									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
+								<!-- BOUTONS -->
+								<a v-if="user?.id!=me?.id && userStats?.friend == false" class="u-mr--8">
+									<img src="../assets/images/friend-add.png" width='20em' height="20em" alt="friend-icon" title="Add to friends" v-on:click="addFriend(user)">
 								</a>
+								<a v-if="user?.id!=me?.id && userStats?.friend == true" class="u-mr--8">
+									<img src="../assets/images/friend-remove.png" width='20em' height="20em" alt="unfriend-icon" title="Remove from friends" v-on:click="deleteFriend(user)">
+								</a>
+								<img v-if="user?.id!=me?.id && userStats?.friend == 'pending'" src="../assets/images/friend-pending.png" class="u-mr--8" width='20em' height="20em" alt="pending-icon" title="Invitation pending">
 								<a v-if="showActions()" class="u-mr--8" @click="sendMessage(user?.id)" target="_blank">
 									<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 								</a>

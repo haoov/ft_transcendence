@@ -9,4 +9,5 @@ export interface UserStat {
 	rank: number;
 	blocking: boolean;
 	blocked: boolean;
+	friend: boolean | string;
   }

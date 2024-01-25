@@ -45,7 +45,7 @@ async function fetchData() {
 
 async function fetchLeaderboard() {
 	await axios
-		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/leaderboard`)
+		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/leaderboard`)
 		.then(data => { players.value = data.data; });
 }
 
@@ -55,11 +55,11 @@ async function fetchMe() {
 		.then( (data) => {
 			me.value = data.data;
 			// Fetch my stats
-			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/stats/${data.data.id}`;
+			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/user/${data.data.id}`;
 				axios.get(url1).then( data => {
 				myStats.value = data.data;})
 			// Fetch my games
-			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
+			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
 				myGames.value = data.data;})
 			});
@@ -154,13 +154,11 @@ function getScoreColor(winFlag: boolean): string {
 		return "var(--c-grey)"
 }
 
+
+// ACTIONS
 function goToProfile(username: string) {
       router.push(`/${username}`);
 }
-
-onMounted(async () => {
-	await fetchData();
-});
 
 function inviteToPlay(player: UserStat) {
 	if (player.status == "offline")
@@ -178,6 +176,9 @@ function sendMessage(id : number) {
 	$data.sendDirectMessage(id);
 }
 
+onMounted(async () => {
+	await fetchData();
+});
 </script>
 
 <template>
@@ -290,7 +291,7 @@ function sendMessage(id : number) {
 											<div>
 												<a class="c-media__title u-text--overpass" @click="goToProfile(player.username)" title="Go to profile">{{ player.username }}</a>
 											</div>
-											<a v-if="player.id!=me?.id && !player.blocking" class="u-mr--8" target="_blank">
+											<a v-if="player.id!=me?.id && !player.blocking" class="u-mr--8">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play" v-on:click="inviteToPlay(player)">
 											</a>
 											<a v-if="player.id!=me?.id && !player.blocking" @click="sendMessage(player.id)" target="_blank">

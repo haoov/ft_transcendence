@@ -10,6 +10,7 @@ export interface User {
 	twofa_enabled: boolean;
 	games_won: Game[]
 	games_lost: Game[]
+	friends: User[]
 }
 
 export interface Body2faDTO {

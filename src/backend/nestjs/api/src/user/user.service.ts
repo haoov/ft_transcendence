@@ -28,7 +28,7 @@ export class UserService {
 		return this.usersRepository.find() as Promise<User[]>;
 	}
 
-	async getCurrentUser(req: Request): Promise<User> {
+	async	getCurrentUser(req: Request): Promise<User> {
 		const reqUser: User = req.user as User;
 		try {
 			const user: User = await this.usersRepository.findOneBy({ id: reqUser.id });
@@ -39,7 +39,7 @@ export class UserService {
 		};
 	}
 
-	async createUser(user: User): Promise<User> {
+	async	createUser(user: User): Promise<User> {
 		try {
 			this.usersRepository.create(user as UserEntity);
 			return this.usersRepository.save(user as UserEntity) as Promise<User>;
@@ -51,7 +51,7 @@ export class UserService {
 		return null;
 	}
 
-	async set2faSecret(id: number, secret: string): Promise<User> {
+	async	set2faSecret(id: number, secret: string): Promise<User> {
 		try {
 			const user: UserEntity = await this.getUserById(id) as UserEntity;
 			user.twofa_secret = secret;
@@ -61,7 +61,7 @@ export class UserService {
 		}
 	}
 
-	async set2faMode(id: number, mode: boolean) {
+	async	set2faMode(id: number, mode: boolean) {
 		try {
 			const user: User = await this.getUserById(id);
 			user.twofa_enabled = mode;
@@ -71,7 +71,7 @@ export class UserService {
 		}
 	}
 
-	async deleteUser(username: string) {
+	async	deleteUser(username: string) {
 		const user: User = await this.usersRepository.findOneBy({ username: username }) as User;
 		if (!user)
 			throw new NotFoundException("User not found in database");
@@ -79,7 +79,7 @@ export class UserService {
 	}
 
 
-	async updateUserStatus(user: User, newStatus: string) {
+	async	updateUserStatus(user: User, newStatus: string) {
 		const updatedUser: User = await this.getUserById(user.id);
 		if (updatedUser) {
 				updatedUser.status = newStatus;
@@ -89,7 +89,7 @@ export class UserService {
 		return updatedUser;
 	}
 
-	async updateUsername(req: Request): Promise<User> {
+	async	updateUsername(req: Request): Promise<User> {
 		const reqUser :User = req.user as User;
 		const user: User = await this.usersRepository.findOneBy({ id: reqUser.id }) as User;
 		if (!user)
@@ -108,7 +108,7 @@ export class UserService {
 		}
 	}
 
-	async uptadeAvatar(id: number): Promise<User> {
+	async	uptadeAvatar(id: number): Promise<User> {
 		const user = await this.getUserById(id);
 
 		if (user.avatar.includes(':3000/api/user/avatar/')) {
@@ -142,7 +142,7 @@ export class UserService {
 		res.sendFile(path.join(directoryPath, avatar));
 	}
 
-	async blockUser(userId: number, blockedId: number) {
+	async	blockUser(userId: number, blockedId: number) {
 		if (userId === blockedId)
 			throw new ForbiddenException("You can't block yourself");
 		const user = await this.usersRepository.findOne({where : { id: userId },  relations: ['users_blocked']});
@@ -153,7 +153,7 @@ export class UserService {
 		}
 	}
 
-	async unblockUser(userId: number, blockedId: number) {
+	async	unblockUser(userId: number, blockedId: number) {
 		if (userId === blockedId)
 			throw new ForbiddenException("You can't unblock yourself");
 		const user = await this.usersRepository.findOne({where : { id: userId },  relations: ['users_blocked']});
@@ -164,7 +164,7 @@ export class UserService {
 	}
 
 	// Users blocked by the user with id idUser
-	async getBlockedUsers(idUser: number): Promise<User[]> {
+	async	getBlockedUsers(idUser: number): Promise<User[]> {
 		const user: UserEntity = await this.usersRepository.findOne({ where : { id: idUser }, relations: ["users_blocked"]}) as UserEntity;
 		if (!user)
 			throw new NotFoundException("User not found in database");
@@ -172,7 +172,7 @@ export class UserService {
 	}
 
 	// Users blocking the user with id idUser
-	async getBlockingList(idUser: number): Promise<number []> {
+	async	getBlockingList(idUser: number): Promise<number []> {
 		const blockingList = await this.usersRepository
 		.createQueryBuilder('user')
 		.innerJoin('user.users_blocked', 'blockedUser')
@@ -183,4 +183,31 @@ export class UserService {
 	
 		return blockingListIds;
 	}
+
+	async	addFriend(user1Id: number, user2Id: number) {
+		const user1 = await this.usersRepository.findOne({where : { id: user1Id },  relations: ['friends']});
+		const user2 = await this.usersRepository.findOne({where : { id: user2Id }});
+		if (!user1 || !user2)
+			throw new NotFoundException("User not found in database");
+		user1.friends.push(user2);
+		await this.usersRepository.save(user1);
+	}
+
+	async	deleteFriend(user1Id: number, user2Id: number) {
+		const user1 = await this.usersRepository.findOne({where : { id: user1Id },  relations: ['friends']});
+		const user2 = await this.usersRepository.findOne({where : { id: user2Id },  relations: ['friends']});
+		if (!user1 || !user2)
+			throw new NotFoundException("User not found in database");
+		user1.friends = user1.friends.filter(friend => friend.id != user2Id);
+		user2.friends = user2.friends.filter(friend => friend.id != user1Id);
+		await this.usersRepository.save([user1, user2]);
+	}
+
+	async	getFriendList(idUser: number): Promise<number []> {
+		const user: UserEntity = await this.usersRepository.findOne({ where : { id: idUser }, relations: ["friends"]});
+		if (!user)
+			throw new NotFoundException("User not found in database");
+		return user.friends.map((user) => user.id);
+	}
+
 }
