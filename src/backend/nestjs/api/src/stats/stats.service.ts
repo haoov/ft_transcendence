@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GameEntity, UserEntity } from 'src/postgreSQL/entities';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { UserStat } from './interfaces';
 import { GameStat } from './interfaces/gamestat.interface';
 import { UserService } from 'src/user/user.service';
@@ -23,51 +23,77 @@ export class StatsService {
 			relations: ['games_won', 'games_lost', 'friends'],
 	
 		});
-		// Get all blocking users
-		const blockingList = await this.userSerivce.getBlockingList(userId);
-		const blockedList = (await this.userSerivce.getBlockedUsers(userId)).map((user) => user.id);
-		const friendList = await this.userSerivce.getFriendAndPendingList(userId);
-			
-		// Map as UserStat type
-		const userStats = usersWithGames.map((user) => {
-			// Calculate win rate
-			const game_count: number = user.games_won.length + user.games_lost.length;
-			const rate: number = game_count ? Math.round((user.games_won.length / game_count) * 100) : 0;
-			// Check blocking
-			const isBlocking: boolean = blockingList.includes(user.id);
-			// Check blocked
-			const isBlocked: boolean = blockedList.includes(user.id);
-			// Check friend
-			let isFriend: boolean | string = false;
-			if (friendList.includes(user.id)){
-				(user.friends.map((friend) => friend.id).includes(userId)) ? isFriend = true: isFriend = 'pending';
-			}
+		return await this.mapUserStats(usersWithGames, userId, false);
 
-			return {
-				id: user.id,
-				username: user.username,
-				avatar: user.avatar,
-				status: user.status,
-				wins: user.games_won.length,
-				win_rate: rate,
-				games: game_count,
-				rank: 0,
-				blocking: isBlocking,
-				blocked: isBlocked,
-				friend: isFriend,
-			};
-		});
-
-		// Sort users based on wins or win rate
-		userStats.sort((a, b) => b.wins - a.wins || b.win_rate - a.win_rate || a.id - b.id);
-
-		// Assign ranks based on the sorted order
-		userStats.forEach((user, index) => {
-			user.rank = index + 1;
-		});
-		
-		return userStats;
 	  }
+
+
+	  async getFriendsUserStats(userId: number): Promise<UserStat[]> {
+		  // Extract all friends with related games
+		const friendList = await this.userSerivce.getMutualFriendList(userId);
+		const friendsWithGames = await this.userRepository.find({
+		  where: [
+			{ id: In([...friendList, userId]) }
+		  ],
+		  relations: ['games_won', 'games_lost', 'friends'],
+		});
+		return await this.mapUserStats(friendsWithGames, userId, true);
+	  
+	  }
+
+	async mapUserStats(users: UserEntity[], userId: number, forFriends: boolean): Promise<UserStat[]> {
+				// Get all special users
+				const blockingList = await this.userSerivce.getBlockingList(userId);
+				const blockedList = (await this.userSerivce.getBlockedUsers(userId)).map((user) => user.id);
+				let friendList: number[] = [];
+				if (!forFriends)
+					friendList = await this.userSerivce.getFriendAndPendingList(userId);
+					
+				// Map as UserStat type
+				const userStats = users.map((user) => {
+					// Calculate win rate
+					const game_count: number = user.games_won.length + user.games_lost.length;
+					const rate: number = game_count ? Math.round((user.games_won.length / game_count) * 100) : 0;
+					// Check blocking
+					const isBlocking: boolean = blockingList.includes(user.id);
+					// Check blocked
+					const isBlocked: boolean = blockedList.includes(user.id);
+					// Check friend
+					let isFriend: boolean | string = false;
+					if (!forFriends) {
+						if (friendList.includes(user.id)){
+							(user.friends.map((friend) => friend.id).includes(userId)) ? isFriend = true: isFriend = 'pending';
+						}
+					}
+					else 
+						isFriend = true;
+		
+					return {
+						id: user.id,
+						username: user.username,
+						avatar: user.avatar,
+						status: user.status,
+						wins: user.games_won.length,
+						win_rate: rate,
+						games: game_count,
+						rank: 0,
+						blocking: isBlocking,
+						blocked: isBlocked,
+						friend: isFriend,
+					};
+				});
+		
+				// Sort users based on wins or win rate
+				userStats.sort((a, b) => b.wins - a.wins || b.win_rate - a.win_rate || a.id - b.id);
+		
+				// Assign ranks based on the sorted order
+				userStats.forEach((user, index) => {
+					user.rank = index + 1;
+				});
+				
+				return userStats;
+	}
+
 
 	  // Get user stats according to their id
 	  async getOneUserStats(id: number, req: Request): Promise<UserStat> {

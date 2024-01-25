@@ -191,7 +191,6 @@ export class UserService {
 			throw new NotFoundException("User not found in database");
 		user1.friends.push(user2);
 		await this.usersRepository.save(user1);
-		console.log("MUTUAL: " + user2.friends.some(friend => friend.id == user1Id));
 		return user2.friends.some(friend => friend.id == user1Id);
 	}
 
@@ -205,7 +204,7 @@ export class UserService {
 		await this.usersRepository.save([user1, user2]);
 	}
 
-	async getMutualFriendList(userId: number): Promise<User[]> {
+	async getMutualFriendList(userId: number): Promise<number[]> {
 		const user = await this.usersRepository.findOne({where : { id: userId },  relations: ['friends']});
 		if (!user)
 			throw new NotFoundException("User not found in database");
@@ -213,7 +212,7 @@ export class UserService {
 		const mutualFriends = await Promise.all(
 		  user.friends.map(async friend => {
 			const friendEntity = await this.usersRepository.findOne({where : { id: friend.id },  relations: ['friends']});
-			return friendEntity.friends.some(friendOfFriend => friendOfFriend.id == userId) ? friendEntity : null;
+			return friendEntity.friends.some(friendOfFriend => friendOfFriend.id == userId) ? friendEntity.id : null;
 		  })
 		);
 	  

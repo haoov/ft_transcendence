@@ -75,7 +75,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	addFriend(client: Socket, friendID: number) {
 		const sockets: Socket[] = this.usersSockets.get(friendID);
 		if (sockets) {
-			console.log("add friend");
 			sockets.forEach(socket => {
 				socket.emit(serverEvents.addFriend, client.data.user);
 			});
