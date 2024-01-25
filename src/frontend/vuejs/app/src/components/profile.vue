@@ -49,7 +49,7 @@ async function fetchUser() {
 				userGames.value = data.data;})
 			})
 		.catch((err) => {
-			router.push("/user/not/found");
+			router.push("/error");
 		})
 }
 
