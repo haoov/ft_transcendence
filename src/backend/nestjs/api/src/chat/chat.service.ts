@@ -11,7 +11,9 @@ function createChannelObj(channel: any, users: User [], admins : User []) : Chan
 	newChannel.name = channel.name;
 	newChannel.creatorId = channel.creatorId;
 	newChannel.mode = channel.mode;
-	newChannel.password = channel.password;
+	//Encoder
+	newChannel.password = channel.password;//A encoder
+	//ENCODER
 	newChannel.users = users;
 	newChannel.admins = admins;
 	return newChannel;
@@ -89,22 +91,39 @@ export class ChatService {
 		.createQueryBuilder("channel")
 		.innerJoin("channel.users", "user", "user.id = :userId", { userId })
 		.getMany();
-		if (alreadyJoinedChannels.length === 0) {
+		const bannedChannels = await this.channelRepository
+		.createQueryBuilder("channel")
+		.innerJoin("channel.bannedUsers", "user", "user.id = :userId", { userId })
+		.getMany();
+		const nbchannelsJoined = alreadyJoinedChannels.length;
+		const nbchannelsBanned = bannedChannels.length;
+		if (nbchannelsJoined === 0 && nbchannelsBanned === 0) {
 			channels = await this.channelRepository
 			.createQueryBuilder("channel")
-			.leftJoin("channel.users", "user")
-			.leftJoin("channel.bannedUsers", "BannedUser")
+			.leftJoinAndSelect("channel.users", "user")
 			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
-			.andWhere("user.id != :userId", { userId })
-			.andWhere("BannedUser.id != :userId", { userId })
 			.getMany();
-		} else {
+		} else if (nbchannelsJoined > 0 && nbchannelsBanned === 0) {
 			channels = await this.channelRepository
 			.createQueryBuilder("channel")
-			.leftJoin("channel.users", "user")
+			.leftJoinAndSelect("channel.users", "user")
 			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
 			.andWhere("channel.id NOT IN (:...alreadyJoinedChannelIds)", { alreadyJoinedChannelIds: alreadyJoinedChannels.map(channel => channel.id) })
-			.andWhere("BannedUser.id != :userId", { userId })
+			.getMany();
+		} else if (nbchannelsBanned === 0 && nbchannelsJoined > 0) {
+			channels = await this.channelRepository
+			.createQueryBuilder("channel")
+			.leftJoinAndSelect("channel.users", "user")
+			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
+			.andWhere("channel.id NOT IN (:...alreadyJoinedChannelIds)", { alreadyJoinedChannelIds: alreadyJoinedChannels.map(channel => channel.id) })
+			.getMany();
+		} else if (nbchannelsBanned > 0 && nbchannelsJoined > 0) {
+			channels = await this.channelRepository
+			.createQueryBuilder("channel")
+			.leftJoinAndSelect("channel.users", "user")
+			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
+			.andWhere("channel.id NOT IN (:...alreadyJoinedChannelIds)", { alreadyJoinedChannelIds: alreadyJoinedChannels.map(channel => channel.id) })
+			.andWhere("channel.id NOT IN (:...bannedChannelIds)", { bannedChannelIds: bannedChannels.map(channel => channel.id) })
 			.getMany();
 		}
 		return channels;
@@ -152,8 +171,14 @@ export class ChatService {
 	async removeUserFromChannel(channelId: number, userId: number): Promise<boolean> {
 		try {
 			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
-			const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
-			channel.users.splice(channel.users.indexOf(user), 1);
+			let channelUsers = channel.users;
+			const index = channelUsers.findIndex((user: User) => user.id == userId);
+			if (index >= 0) {
+				channelUsers.splice(index, 1);
+			} else {
+				throw new Error('UserId not find in users of channel');
+			}
+			channel.users = channelUsers;
 			await this.channelRepository.save(channel);
 			return true;
 		} catch (err) {
