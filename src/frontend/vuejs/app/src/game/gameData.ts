@@ -2,12 +2,12 @@ import axios from "axios";
 import { GameRenderer, type InitParams } from "./gameRenderer";
 import type { GamePlayer, GameState } from "./interfaces";
 import {
-	defaultAvatar,
 	fireIcon,
 	iceIcon,
 	smallIcon,
 	bigIcon
 } from "@/assets/images/gameIcons";
+import raquetIcon from "@/assets/images/racket-50.png";
 import { ref, type Ref } from "vue";
 import { type User } from "@/utils";
 import type { Camera, Scene } from "three";
@@ -30,7 +30,7 @@ class GameData {
 		this.difficulty = ref("easy");
 		this.player1 = ref({
 			username: "Player1",
-			avatar: defaultAvatar,
+			avatar: raquetIcon,
 			score: 0,
 			spells: [
 				{ type: "fire", icon: fireIcon, on: false },
@@ -41,7 +41,7 @@ class GameData {
 		});
 		this.player2 = ref({
 			username: "Player2",
-			avatar: defaultAvatar,
+			avatar: raquetIcon,
 			score: 0,
 			spells: [
 				{ type: "fire", icon: fireIcon, on: false },
@@ -75,7 +75,7 @@ class GameData {
 		}
 		else {
 			this.player2.value.username = "Computer" + ": " + this.difficulty.value;
-			this.player2.value.avatar = defaultAvatar;
+			this.player2.value.avatar = raquetIcon;
 		}
 		this.gameRenderer?.createField(
 			this.initParams!.params.FIELD_WIDTH,
