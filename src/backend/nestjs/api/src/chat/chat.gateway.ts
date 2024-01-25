@@ -134,11 +134,15 @@ export class ChatGateway implements OnGatewayConnection {
 	async onAddUserToChannel(@MessageBody() data: Object ) {
 		const channelId = data['channelId'];
 		const users = data['users'];
+		console.log('add ',users ,'To Channel ->', channelId,)
 		const userIdList = users.map((user) => user.id);
 		const channelToUpdate = await this.chatService.getChannelById(channelId);
 		for (const userId of userIdList) {
 			await this.chatService.addUserToChannel(channelToUpdate.id, userId);
 			const socket = this.usersSocketList.get(userId);
+			if (socket) {
+				console.log('ici');
+			}
 			socket?.emit('channelJoined', true);
 			socket?.emit('channelUpdated', channelId);
 		}
@@ -165,7 +169,6 @@ export class ChatGateway implements OnGatewayConnection {
 			throw err;
 		}
 	}
-
 
 	@SubscribeMessage('setAdmin')
 	async onSetAdmin(@MessageBody() data: Object) {
