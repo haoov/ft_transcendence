@@ -13,6 +13,18 @@
 		socketManager.forfeit();
 		gameData.setGameState("noGame");
 	}
+
+	function iconClass(id: number) {
+		let playerAvatar: string;
+		if (id == 1)
+			playerAvatar = gameData.getPlayer1().value.avatar;
+		else
+			playerAvatar = gameData.getPlayer2().value.avatar;
+		if (playerAvatar.includes("http"))
+			return "avatar player";
+		else
+			return "avatar";
+	}
 </script>
 
 <template>
@@ -20,7 +32,7 @@
 <div class="score-container">
 		<div class="score-div p2">
 			<span class="score p2">{{ gameData.getPlayer2().value.score }}</span>
-			<img class="avatar" :src="gameData.getPlayer2().value.avatar">
+			<img :class="iconClass(2)" :src="gameData.getPlayer2().value.avatar">
 			<span class="username">{{ gameData.getPlayer2().value.username }}</span>
 		</div>
 		<CustumButton
@@ -31,7 +43,7 @@
 		</CustumButton>
 		<div class="score-div p1">
 			<span class="username">{{ gameData.getPlayer1().value.username }}</span>
-			<img class="avatar" :src="gameData.getPlayer1().value.avatar">
+			<img :class="iconClass(1)" :src="gameData.getPlayer1().value.avatar">
 			<span class="score p1">{{ gameData.getPlayer1().value.score }}</span>
 		</div>
 	</div>
@@ -78,10 +90,13 @@
 	}
 
 	.avatar {
-		width: 50px;
-		height: 50px;
-		border-radius: 50%;
+		width: 40px;
+		height: 40px;
 		object-fit: cover;
+	}
+
+	.avatar.player {
+		border-radius: 50%;
 	}
 
 	.username {

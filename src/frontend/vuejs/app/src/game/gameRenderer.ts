@@ -149,11 +149,7 @@ export class GameRenderer {
 		let material;
 		let map;
 
-		//select random map if option is "random"
-		if (mapOption == "random")
-			map = maps[Math.floor(Math.random() * maps.length)];
-		else
-			map = mapOption;
+		map = mapOption;
 
 		//create material according to map
 		switch (map) {
