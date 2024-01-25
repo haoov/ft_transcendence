@@ -16,7 +16,7 @@
 				</div>
 			</div>
 			<div class="u-text--right btn-div">
-				<button v-if="isAdmin" v-for="action in actions" @click="action.function" class="btn">{{ action.action }}</button>
+				<button v-if="isAdmin && store.activeChannel?.mode != 'Private'" v-for="action in actions" @click="action.function" class="btn">{{ action.action }}</button>
 			</div>
 		</div>
 	</div>
@@ -145,6 +145,7 @@ const options = [
 ]
 
 const setAdmin = () => {
+	if (store.activeChannel?.mode == '')
 	socket.emit('setAdmin', {userId: store.userIdClicked, channelId: store.activeChannel?.id});
 	$data.closeProfileModal();
 }

@@ -93,14 +93,18 @@ export class ChatService {
 			channels = await this.channelRepository
 			.createQueryBuilder("channel")
 			.leftJoin("channel.users", "user")
+			.leftJoin("channel.bannedUsers", "BannedUser")
 			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
 			.andWhere("user.id != :userId", { userId })
+			.andWhere("BannedUser.id != :userId", { userId })
 			.getMany();
 		} else {
 			channels = await this.channelRepository
 			.createQueryBuilder("channel")
+			.leftJoin("channel.users", "user")
 			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
 			.andWhere("channel.id NOT IN (:...alreadyJoinedChannelIds)", { alreadyJoinedChannelIds: alreadyJoinedChannels.map(channel => channel.id) })
+			.andWhere("BannedUser.id != :userId", { userId })
 			.getMany();
 		}
 		return channels;
@@ -133,38 +137,68 @@ export class ChatService {
 
 	//Add a user to a channel
 	async addUserToChannel(channelId: number, userId: number): Promise<boolean> {
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
-		const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
-		channel.users.push(user);
-		await this.channelRepository.save(channel);
-		return true;
+		try {
+			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+			const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
+			channel.users.push(user);
+			await this.channelRepository.save(channel);
+			return true;
+		} catch (err) {
+			throw err;
+		}
 	}
 
 	//Delete a user from a channel (kick)
 	async removeUserFromChannel(channelId: number, userId: number): Promise<boolean> {
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
-		const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
-		channel.users.splice(channel.users.indexOf(user), 1);
-		await this.channelRepository.save(channel);
-		return true;
+		try {
+			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+			const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
+			channel.users.splice(channel.users.indexOf(user), 1);
+			await this.channelRepository.save(channel);
+			return true;
+		} catch (err) {
+			throw err;
+		}
 	}
 
 	//Delete a channel
 	async deleteChannel(channelId: number): Promise<boolean> {
-		const messages = await this.messagesRepository.find({ where: { channelId: channelId }});
-		await this.messagesRepository.remove(messages);
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
-		await this.channelRepository.remove(channel);
-		return true;
+		try {
+			const messages = await this.messagesRepository.find({ where: { channelId: channelId }});
+			await this.messagesRepository.remove(messages);
+			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+			await this.channelRepository.remove(channel);
+			return true;
+		} catch (err) {
+			throw err;
+		}
 	}
 
 	//Add an admin to a channel
 	async addAdminToChannel(channelId: number, userId: number): Promise<boolean> {
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["admins"]});
-		const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
-		channel.admins.push(user);
-		await this.channelRepository.save(channel);
-		return true;
+		try {
+			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["admins"]});
+			const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
+			channel.admins.push(user);
+			await this.channelRepository.save(channel);
+			return true;
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
+	//Ban a user from a channel
+	async banUserFromChannel(channelId: number, userId: number): Promise<boolean> {
+		try {
+			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["bannedUsers"]});
+			const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
+			channel.bannedUsers.push(user);
+			await this.channelRepository.save(channel);
+			this.removeUserFromChannel(channelId, userId);
+			return true;
+		} catch (err) {
+			throw err;
+		}
+	}
 }

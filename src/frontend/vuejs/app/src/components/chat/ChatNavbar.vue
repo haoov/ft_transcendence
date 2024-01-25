@@ -79,6 +79,20 @@ socket.on('kicked', (channelId : number) => {
 	})
 });
 
+socket.on('banned', (channelId : number) => {
+	$data.deleteChannel(channelId);
+	if (store.channels.length > 0) {
+		store.activeChannel = store.channels[store.channels.length - 1];
+	} else {
+		store.activeChannel = null;
+		store.messages = [];
+	}
+	notify.newNotification("error", {
+		message: "Banned from channel",
+		by: channelId.toString(),
+	})
+});
+
 </script>center
 
 <style scoped>
