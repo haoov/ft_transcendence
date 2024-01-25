@@ -47,7 +47,7 @@ const inputErrorLenght = computed(() => {
 
 const sendMessage = () => {
 	if (input.value === "") return;
-	else if (input.value.length > 1024) {
+	else if (input.value.length > 512) {
 		return;
 	}
 	const DateRawStamp : string = new Date().toISOString();

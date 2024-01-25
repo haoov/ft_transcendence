@@ -6,15 +6,19 @@ import router from "./router";
 import { reactive } from "vue";
 import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
+import chat from "./chat/chat";
+import { Message } from "./chat/classes";
 
 class SocketManager {
 	private readonly userSocket: Socket;
 	private readonly gameSocket: Socket;
+	private readonly chatSocket: Socket;
 	private user: User;
 
 	constructor() {
 		this.userSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/users`);
 		this.gameSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/game`);
+		this.chatSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`);
 		this.user = {} as User;
 	}
 
@@ -23,6 +27,7 @@ class SocketManager {
 			this.user = reactive(response.data);
 			this.userSocket.emit(ClientEvents.connected, response.data);
 			this.gameSocket.emit(ClientEvents.connected, response.data);
+			this.chatSocket.emit('userConnected', response.data);
 		});
 
 		this.userSocket.on(ServerEvents.dataChanged, (data: User) => {
@@ -78,6 +83,15 @@ class SocketManager {
 					message: 'Invitation declined',
 					by: response.opponent.username,
 				});
+			}
+		});
+
+		this.chatSocket.on("newMessage", (data: any) => {
+			const channel = chat.getChannelById(data.message.channelId);
+			if (channel) {
+				const newMessage = new Message(	data.id, data.sender, data.message.text, data.message.time);
+				console.log(newMessage);
+				channel.addMessage(newMessage);
 			}
 		});
 	}
@@ -146,6 +160,11 @@ class SocketManager {
 
 	disconnected(): boolean {
 		return this.userSocket.disconnected && this.gameSocket.disconnected;
+	}
+
+	sendMessage(message: any) {
+		console.log(message);
+		this.chatSocket.emit("newMessage", message);
 	}
 }
 

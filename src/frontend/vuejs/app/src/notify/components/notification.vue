@@ -8,7 +8,7 @@
 <template>
 	<div id="notification">
 		<div id="notification-infos">
-			<img v-if="data.icon" id="icon" :src="data.icon">
+			<img v-if="data.icon" id="notification-icon" :src="data.icon">
 			<div id="notification-content">
 				<span id="text">{{ data.message }}</span>
 				<span class="sub-text" v-if="data.by">{{ data.by }}</span>
@@ -54,7 +54,7 @@
 		justify-content: center;
 	}
 
-	#icon {
+	#notification-icon {
 		grid-row: 1;
 		width: 20px;
 		height: 20px;
