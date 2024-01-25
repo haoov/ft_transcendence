@@ -184,13 +184,15 @@ export class UserService {
 		return blockingListIds;
 	}
 
-	async addFriend(user1Id: number, user2Id: number) {
+	async addFriend(user1Id: number, user2Id: number): Promise<boolean> {
 		const user1 = await this.usersRepository.findOne({where : { id: user1Id },  relations: ['friends']});
-		const user2 = await this.usersRepository.findOne({where : { id: user2Id }});
+		const user2 = await this.usersRepository.findOne({where : { id: user2Id },  relations: ['friends']});
 		if (!user1 || !user2)
 			throw new NotFoundException("User not found in database");
 		user1.friends.push(user2);
 		await this.usersRepository.save(user1);
+		console.log("MUTUAL: " + user2.friends.some(friend => friend.id == user1Id));
+		return user2.friends.some(friend => friend.id == user1Id);
 	}
 
 	async deleteFriend(user1Id: number, user2Id: number) {

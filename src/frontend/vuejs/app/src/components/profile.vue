@@ -10,6 +10,7 @@ import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
 import { type SocketManager } from "@/SocketManager";
+import notify from "@/notify/notify";
 
 const route = useRoute();
 let username = route.params.username;
@@ -68,25 +69,32 @@ async function unblockUser() {
 // ADD TO FRIEND & REMOVE FROM FRIENDS
 async function addFriend(user: User | undefined) {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${user?.id}`)
-		.then( () => {
-			if (user != undefined && me.value != undefined) {
+		.then( (data) => {
+			console.log(data.data);
+			if (data.data == false && user != undefined && me.value != undefined) {
 				socketManager.addFriend(user.id, me.value.id);
 			}
+			else if (data.data == true) {
+				notify.newNotification("infos", {
+					message: 'New friend',
+					by: user?.username,
+				});
+			}
+			
 		})
 		.catch( (err) => {
-			console.log(err);
-			// Notification
+			notify.newNotification("error", {
+				message: "An error occured",
+			});
 		});
 }
 
 async function deleteFriend(user: User | undefined) {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${user?.id}`)
-		.then( () => {
-			// Notification
-		})
 		.catch( (err) => {
-			console.log(err);
-			// Notification
+			notify.newNotification("error", {
+				message: "An error occured",
+			});
 		});
 }
 
@@ -178,7 +186,7 @@ onMounted(async () => {
 						<div class="u-text--left">
 							<div class="c-avatar-container u-ml--24">
 								<img class="c-avatar c-avatar--lg" :src="getAvatarSrc()"/>
-								<img v-if="user && !userStats?.blocking" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
+								<img v-if="userStats?.friend == true && !userStats?.blocking" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
 							</div>
 							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ user?.username }}</div>
 							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
