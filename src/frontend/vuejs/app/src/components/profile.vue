@@ -15,7 +15,6 @@ const route = useRoute();
 let username = route.params.username;
 const me = ref<User>();
 const user = ref<User>();
-//const isBlocked = ref<boolean>(false);
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
 const $data : any = inject('$data');
@@ -37,15 +36,15 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser:
 async function fetchUser() {
 	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user?username=${username}`)
-		.then( (data) => {
+		.then( async (data) => {
 			user.value = data.data;
 			// Fetch user stats
 			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/user/${data.data.id}`;
-			axios.get(url1).then( data => {
+			await axios.get(url1).then( data => {
 				userStats.value = data.data;})
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
-			axios.get(url2).then( data => {
+			await axios.get(url2).then( data => {
 				userGames.value = data.data;})
 			});
 }
@@ -59,7 +58,6 @@ async function fetchMe() {
 
 // BLOCK & UNBLOCK FUNCTIONS
 async function blockUser() {
-
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
 }
 
@@ -184,6 +182,7 @@ onMounted(async () => {
 							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
 							<div class="u-ml--24 u-mt--4">
 								<!-- BOUTONS -->
+								<!-- Friends buttons -->
 								<a v-if="user?.id!=me?.id && userStats?.friend == false" class="u-mr--8">
 									<img src="../assets/images/friend-add.png" width='20em' height="20em" alt="friend-icon" title="Add to friends" v-on:click="addFriend(user)">
 								</a>
@@ -191,9 +190,14 @@ onMounted(async () => {
 									<img src="../assets/images/friend-remove.png" width='20em' height="20em" alt="unfriend-icon" title="Remove from friends" v-on:click="deleteFriend(user)">
 								</a>
 								<img v-if="user?.id!=me?.id && userStats?.friend == 'pending'" src="../assets/images/friend-pending.png" class="u-mr--8" width='20em' height="20em" alt="pending-icon" title="Invitation pending">
+								<!-- Invite & Message buttons -->
+								<a v-if="showActions()" class="u-mr--8" target="_blank">
+									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
+								</a>
 								<a v-if="showActions()" class="u-mr--8" @click="sendMessage(user?.id)" target="_blank">
 									<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 								</a>
+								<!-- Block & Unblock buttons -->
 								<a v-if="user?.id!=me?.id && !userStats?.blocked" @click="blockUser()" target="_blank">
 									<img src="../assets/images/status-blocked-32.png" width='20em' height="20em" alt="block-icon" title="Block">
 								</a>

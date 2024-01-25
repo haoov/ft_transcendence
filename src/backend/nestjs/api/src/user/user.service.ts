@@ -184,7 +184,7 @@ export class UserService {
 		return blockingListIds;
 	}
 
-	async	addFriend(user1Id: number, user2Id: number) {
+	async addFriend(user1Id: number, user2Id: number) {
 		const user1 = await this.usersRepository.findOne({where : { id: user1Id },  relations: ['friends']});
 		const user2 = await this.usersRepository.findOne({where : { id: user2Id }});
 		if (!user1 || !user2)
@@ -193,7 +193,7 @@ export class UserService {
 		await this.usersRepository.save(user1);
 	}
 
-	async	deleteFriend(user1Id: number, user2Id: number) {
+	async deleteFriend(user1Id: number, user2Id: number) {
 		const user1 = await this.usersRepository.findOne({where : { id: user1Id },  relations: ['friends']});
 		const user2 = await this.usersRepository.findOne({where : { id: user2Id },  relations: ['friends']});
 		if (!user1 || !user2)
@@ -203,7 +203,22 @@ export class UserService {
 		await this.usersRepository.save([user1, user2]);
 	}
 
-	async	getFriendList(idUser: number): Promise<number []> {
+	async getMutualFriendList(userId: number): Promise<User[]> {
+		const user = await this.usersRepository.findOne({where : { id: userId },  relations: ['friends']});
+		if (!user)
+			throw new NotFoundException("User not found in database");
+
+		const mutualFriends = await Promise.all(
+		  user.friends.map(async friend => {
+			const friendEntity = await this.usersRepository.findOne({where : { id: friend.id },  relations: ['friends']});
+			return friendEntity.friends.some(friendOfFriend => friendOfFriend.id == userId) ? friendEntity : null;
+		  })
+		);
+	  
+		return mutualFriends.filter(friend => friend != null);
+	}
+
+	async	getFriendAndPendingList(idUser: number): Promise<number []> {
 		const user: UserEntity = await this.usersRepository.findOne({ where : { id: idUser }, relations: ["friends"]});
 		if (!user)
 			throw new NotFoundException("User not found in database");
