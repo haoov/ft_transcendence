@@ -54,8 +54,8 @@ const openProfilModal = () => {
 }
 
 .profile-img-div {
-	width: 60px;
-	height: 60px;
+	width: 55px;
+	height: 55px;
 	border-radius: 50%;
 	overflow: hidden;
 	display: inline-flex;
@@ -93,7 +93,7 @@ const openProfilModal = () => {
 }
 
 h4 {
-  font-size: 1.25em;
+  font-size: 1em;
   color: #e9e8e8;
   text-transform: none;
   margin-top: 0;
@@ -103,7 +103,7 @@ h4 {
 }
 
 h5 {
-    font-size: 0.5em;
+    font-size: 0.6em;
     color: #c5c5c5;
     margin: 3px 0 0 5px;
 }

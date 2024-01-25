@@ -38,6 +38,7 @@ export class ChatGateway implements OnGatewayConnection {
 	handleConnection(socket: Socket) {
 		let lastActiveChannel : string;
 		socket.on('userConnected', async (user: any) => {
+			console.log("chat connection: " + user.username);
 			this.usersSocketList.set(user.id, socket);
 			const listChannel = await this.chatService.getCurrentUserChannels(user.id);
 			for (const channel of listChannel) {
@@ -52,6 +53,7 @@ export class ChatGateway implements OnGatewayConnection {
 	handleDisconnect(socket: Socket) {
 		this.usersSocketList.forEach((value: Socket, key: number) => {
 			if (value === socket) {
+				console.log("chat deconnection:");
 				this.usersSocketList.delete(key);
 			}
 		});
@@ -61,11 +63,14 @@ export class ChatGateway implements OnGatewayConnection {
 	async onJoinCurrentChannel(@MessageBody() data: any) {
 		const channelid = data.channelId;
 		const userId = data.currentUserId;
+		if (channelid == "0")
+			this.listActiveChannel.delete(userId);
 		this.listActiveChannel.set(userId, channelid);
 	}
 
 	@SubscribeMessage('newMessage')
 	async onNewMessage(@MessageBody() message: any) {
+		console.log('[NEW MESSAGE RECEIVED]')
 		const sender = await this.userService.getUserById(message.senderId);
 		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
 			sender,

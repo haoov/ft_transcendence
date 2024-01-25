@@ -61,6 +61,7 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, watch } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router';
 
 interface Channel {
   creatorId: string;
@@ -125,7 +126,7 @@ const submitForm = () => {
 	});
 };
 
-socket.on('channelJoined', (ret : boolean) => {
+function channelJoinedHandler(ret: boolean) {
 	if (ret) {
 		$data.closeModalForm();
 		passwordError.value = false;
@@ -133,7 +134,10 @@ socket.on('channelJoined', (ret : boolean) => {
 		passwordError.value = true;
 		errorMessagePassword.value = 'Wrong password';
 	}
-});
+}
+
+socket.on('channelJoined', channelJoinedHandler);
+onBeforeRouteLeave(socket.off('channelJoined', channelJoinedHandler));
 
 watch(() => password.value, () => {
 	if (password.value.length > 0) {

@@ -47,7 +47,7 @@ const $data: any = inject('$data');
 const store = $data.getStore();
 const socket : Socket = store.socket; 
 
-store.socket.on('lastActiveChannel', async (id : string) => {
+async function setInBackLastActiveChannel(id: string) {
 	const user = await $data.getCurrentUser();
 	$data.loadChannels(user.id);
 	const channel = store.channels.find((channel : any) => channel.id === parseInt(id));
@@ -56,11 +56,10 @@ store.socket.on('lastActiveChannel', async (id : string) => {
 	} else {
 		$data.setActiveChannel(null);
 	}
-});
+}
 
-onBeforeRouteLeave(() => {
-	socket.disconnect();
-});
+store.socket.on('lastActiveChannel', setInBackLastActiveChannel)
+onBeforeRouteLeave(store.socket.off('lastActiveChannel', setInBackLastActiveChannel));
 
 const closeModal = () => {
 	$data.closeModalForm()
@@ -81,6 +80,7 @@ const closeLeaveConfirmation = () => {
 const closeProfilModal = () => {
 	$data.closeProfileModal()
 }
+
 
 </script>
 
