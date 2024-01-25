@@ -39,10 +39,16 @@ const routes = [
 		component: SettingView,
 	},
 	{
-		path: "/:pathMatch(.*)",
-		name: "Page not found",
+		path: "/error",
+		name: "error",
 		component: PageNotFoundView,
-	}
+	},
+
+	{
+		path: "/:pathMatch(.*)*",
+		name: "errorPath",
+		component: PageNotFoundView,
+	},
 ];
 
 export default routes;
