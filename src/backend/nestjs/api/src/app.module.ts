@@ -9,17 +9,19 @@ import { HealthModule } from './health/health.module';
 import { ChatModule } from './chat/chat.modules';
 import { GameModule } from './game/game.module';
 import { HomeModule } from './home/home.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-							TypeOrmModule.forRoot(databaseConfig),
-							UserModule,
-							AuthModule,
-							ChatModule,
-							HealthModule,
-							GameModule,
-							HomeModule
-						],
+	TypeOrmModule.forRoot(databaseConfig),
+	UserModule,
+	AuthModule,
+	ChatModule,
+	HealthModule,
+	GameModule,
+	HomeModule,
+	ConfigModule.forRoot(),
+],
   controllers: [AppController],
   providers: [AppService],
 })

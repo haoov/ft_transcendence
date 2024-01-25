@@ -4,14 +4,17 @@ import { GameParams } from "../interfaces/gameParams";
 import { User } from "src/user/user.interface";
 import { Game } from "../interfaces/game.interface";
 
-const computer: User = {
-	id: 0,
-	username: "computer",
+const computer = {
+	id: 0, 
+	username: "computer", 
 	status: "undefined",
 	avatar: "",
 	email: "",
 	games_won: [],
-	games_lost: []
+	games_lost: [],
+	twofa_enabled: false,
+	twofa_auth: false,
+	twofa_secret: ""
 };
 
 export class Room {
