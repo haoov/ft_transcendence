@@ -37,7 +37,6 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(socket: Socket) {
 		let lastActiveChannel : string;
-		//socket.emit('NewConnection');
 		socket.on('userConnected', async (user: any) => {
 			this.usersSocketList.set(user.id, socket);
 			const listChannel = await this.chatService.getCurrentUserChannels(user.id);
@@ -141,7 +140,7 @@ export class ChatGateway implements OnGatewayConnection {
 			await this.chatService.addUserToChannel(channelToUpdate.id, userId);
 			const socket = this.usersSocketList.get(userId);
 			socket?.emit('channelJoined', true);
-			socket?.emit('channelUpdated', channelId);
+			socket?.emit('userAdded', channelToUpdate);
 		}
 	}
 
@@ -167,4 +166,38 @@ export class ChatGateway implements OnGatewayConnection {
 		}
 	}
 
+	@SubscribeMessage('setAdmin')
+	async onSetAdmin(@MessageBody() data: Object) {
+		const userId = data['userId'];
+		const channelId = data['channelId'];
+		try {
+			await this.chatService.addAdminToChannel(channelId, userId);
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	@SubscribeMessage('kickUser')
+	async onKickUser(@MessageBody() data: Object) {
+		const userId = data['userId'];
+		const channelId = data['channelId'];
+		try {
+			await this.chatService.removeUserFromChannel(channelId, userId);
+			this.usersSocketList.get(userId)?.emit('kicked', channelId);
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	@SubscribeMessage('banUser')
+	async onBanUser(@MessageBody() data: Object) {
+		const userId = data['userId'];
+		const channelId = data['channelId'];
+		try {
+			await this.chatService.banUserFromChannel(channelId, userId);
+			this.usersSocketList.get(userId)?.emit('banned', channelId);
+		} catch (err) {
+			throw err;
+		}
+	}
 }
