@@ -173,11 +173,10 @@ export class ChatService {
 			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
 			let channelUsers = channel.users;
 			const index = channelUsers.findIndex((user: User) => user.id == userId);
-			if (index >= 0) {
-				channelUsers.splice(index, 1);
-			} else {
-				throw new Error('UserId not find in users of channel');
+			if (index < 0) {
+				return ;
 			}
+			channelUsers.splice(index, 1);
 			channel.users = channelUsers;
 			await this.channelRepository.save(channel);
 			return true;
