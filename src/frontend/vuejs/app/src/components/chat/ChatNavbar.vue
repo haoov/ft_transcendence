@@ -43,12 +43,17 @@ const setActiveChannel = (channel : any, currentUserId: number) => {
 	$data.setActiveChannel(channel);
 };
 
+socket.on('userAdded', (channelJoinned : any) => {
+	console.log(channelJoinned);
+	$data.addChannel(channelJoinned);
+})
+
 socket.on('newChannelCreated', (newChannelCreated : any) => {
 	$data.addChannel(newChannelCreated);
 	socket.emit('setActiveChannel', {
 		'channelId':newChannelCreated.id,
 		'currentUserId':currentUser.id
-		});
+	});
 	$data.setActiveChannel(newChannelCreated);
 });
 
@@ -67,8 +72,12 @@ socket.on('channelUpdated', (channelUpdated : any) => {
 
 socket.on('kicked', (channelId : number) => {
 	$data.deleteChannel(channelId);
-	if (store.channels.length > 0) {
+	if (store.channels?.length > 0) {
 		store.activeChannel = store.channels[store.channels.length - 1];
+		socket.emit('setActiveChannel', {
+		'channelId': store.activeChannel.id,
+		'currentUserId': currentUser.id
+		});
 	} else {
 		store.activeChannel = null;
 		store.messages = [];
@@ -81,8 +90,12 @@ socket.on('kicked', (channelId : number) => {
 
 socket.on('banned', (channelId : number) => {
 	$data.deleteChannel(channelId);
-	if (store.channels.length > 0) {
+	if (store?.channels.length > 0) {
 		store.activeChannel = store.channels[store.channels.length - 1];
+		socket.emit('setActiveChannel', {
+		'channelId': store.activeChannel.id,
+		'currentUserId': currentUser.id
+		});
 	} else {
 		store.activeChannel = null;
 		store.messages = [];
