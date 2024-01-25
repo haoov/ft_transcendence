@@ -186,7 +186,7 @@ onMounted(async () => {
 						<div class="u-text--left">
 							<div class="c-avatar-container u-ml--24">
 								<img class="c-avatar c-avatar--lg" :src="getAvatarSrc()"/>
-								<img v-if="userStats?.friend == true && !userStats?.blocking" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
+								<img v-if="userStats?.id == me?.id || (userStats?.friend == true && !userStats?.blocking)" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
 							</div>
 							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ user?.username }}</div>
 							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
