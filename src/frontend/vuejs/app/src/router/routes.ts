@@ -46,8 +46,7 @@ const routes = [
 
 	{
 		path: "/:pathMatch(.*)*",
-		name: "errorPath",
-		component: PageNotFoundView,
+		redirect: () => { return { path: '/error' }}
 	},
 ];
 
