@@ -15,11 +15,14 @@ export class UserController {
 				private readonly userGateway: UserGateway) {}
 
 	@Get()
-	getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
+	async getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
+		let user: User;
 		if (id)
-			return this.userService.getUserById(id);
+			user = await this.userService.getUserById(id);
 		else if (username)
-			return this.userService.getUserByUsername(username);
+			user = await this.userService.getUserByUsername(username);
+		if (user)
+			return user;
 		throw new NotFoundException("User not found");
 	}
 
