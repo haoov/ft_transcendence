@@ -37,17 +37,17 @@ const $store = $data.getStore();
 const activeChannel = computed(() => $store.activeChannel);
 
 const inputClass = computed(() => {
-	if (input.value.length > 1024) return "input-bar-div error";
+	if (input.value.length > 512) return "input-bar-div error";
 	else return "input-bar-div";
 });
 const inputErrorLenght = computed(() => {
-	if (input.value.length > 1024) return true;
+	if (input.value.length > 512) return true;
 	else return false;
 });
 
 const sendMessage = () => {
 	if (input.value === "") return;
-	else if (input.value.length > 1024) {
+	else if (input.value.length > 512) {
 		return;
 	}
 	const DateRawStamp : string = new Date().toISOString();
