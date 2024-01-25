@@ -45,8 +45,8 @@
 				</label>
 			</div>
 			<img v-if="!me.twofa_enabled && selectedOption == 'Enabled'" id="qrCode" :src="qrCode">
-			<div v-if="twoFaChanged" class="codeTitle">Enter code:</div>
-			<div v-if="twoFaChanged" class="formField codeField">
+			<div v-if="twoFaChangedToEnabled" class="codeTitle">Enter code:</div>
+			<div v-if="twoFaChangedToEnabled" class="formField codeField">
 				<input 
 				v-model="twoFaCode"
 				name="twoFaCode"
@@ -69,16 +69,24 @@ import type { User } from "@/utils";
 import { computed, onMounted, ref } from "vue";
 import { toast, type ToastType } from 'vue3-toastify';
 import "vue3-toastify/dist/index.css"
-import qr from "../assets/images/qrcode.png";
 
+// CSS
 const dynamicHeight = computed(() => {
-	if (selectedOption.value == "Enabled" && !me.value.twofa_enabled)
-		return "height: 670px";
-	else if (selectedOption.value == "Disabled" && me.value.twofa_enabled)
-		return "height: 520px";
+	if (twoFaChangedToEnabled.value)
+		return "height: 720px";
 	else
-		return "height: 450px";
+		return "height: 470px";
 });
+const disableSave = computed(() => {
+	if ((twoFaChangedToEnabled.value && !twoFaCode.value))
+		return true;
+	else
+		return ((!usernameSet.value || usernameSet.value == me.value.username || usernameSet.value.length > 15)
+			&& !avatarSet.value)
+			&& !twoFaChanged.value;
+});
+
+// DATA
 const me = ref<User>(({
 	id: 0,
 	username: "",
@@ -89,7 +97,11 @@ const me = ref<User>(({
 	games_won: [],
 	games_lost: []
 }));
+
+// Username
 const usernameSet = ref<string>("");
+
+// Avatar
 const avatarSet = ref<File | null>(null);
 const avatarSrc = computed(() => {
 	const timestamp = Date.now();
@@ -101,15 +113,16 @@ const avatarSrc = computed(() => {
 		return me.value.avatar;
 });
 const fileInput = ref<HTMLElement | null>(null);
-const disableSave = computed(() => {
-	return (!usernameSet.value || usernameSet.value === me.value.username || usernameSet.value.length > 15) 
-		&& (!avatarSet.value) && ((twoFaChanged.value && !twoFaCode.value) || !twoFaChanged.value);
-});
+
+// 2FA
 const options = ['Disabled', 'Enabled'];
 const selectedOption = ref("");
+const twoFaChangedToEnabled = computed(() => {
+	return (selectedOption.value == "Enabled" && !me.value.twofa_enabled);
+});
 const twoFaChanged = computed(() => {
-	return (selectedOption.value == "Enabled" && !me.value.twofa_enabled)
-		|| (selectedOption.value == "Disabled" && me.value.twofa_enabled);
+	return twoFaChangedToEnabled.value
+	|| (selectedOption.value == "Disabled" && me.value.twofa_enabled);
 });
 const twoFaCode = ref<string>("");
 const qrCode = ref<string>("");
@@ -120,8 +133,6 @@ async function fetchMe() {
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
 		.then( (data) => { 
 			me.value = data.data;
-			// LIGNE A COMMENTER ARES MERGE
-			me.value.twofa_enabled = false;
 			usernameSet.value = data.data.username;
 			selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
 		});
@@ -130,12 +141,14 @@ async function fetchMe() {
 
 // UTIL FUNCTIONS
 function updateProfile() {
-	if (usernameSet.value && usernameSet.value !== me.value.username)
+	if (usernameSet.value && usernameSet.value != me.value.username)
 		updateUsername();
 	if (avatarSet.value)
 		updateAvatar();
-	if (twoFaCode.value)
-		update2FA();
+	if (twoFaChangedToEnabled.value)
+		update2FA("Enabled");
+	else if (twoFaChanged.value)
+		update2FA("Disabled");
 }
 
 async function	updateUsername() {
@@ -143,7 +156,7 @@ async function	updateUsername() {
 		.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/update/username`, {
 			username: usernameSet.value
 		})
-		.then( (data) => { 
+		.then( (data) => {
 			me.value = data.data;
 			usernameSet.value = data.data.username;
 			sendToast("success", "Username has been updated!");
@@ -172,31 +185,41 @@ async function	updateAvatar() {
 		});
 }
 
-async function	update2FA() {
-	// await axios
-	// 	.post(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/turn-on`, {
-	// 		twofaCode: twoFaCode.value,
-	// 	})
-	// 	.then( async () => { 
-	// 		await fetchMe();
-	// 		// RETURN THE NEW USER OR NEW 2FA ENABLED
-	// 		twoFaCode.value = "";
-	// 		qrCode.value = "";
-	// 		if (me.value.twofa_enabled)
-	// 			sendToast("success", "2FA has been enabled!");
-	// 		else
-	// 			sendToast("success", "2FA has been disabled!");
-	// 	})
-	// 	.catch( (err) => {
-	// 		twoFaCode.value = "";
-	// 		qrCode.value = "";
-	// 		selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
-	// 		sendToast("error", "Invalid code!");
-	// 	});
-	twoFaCode.value = "";
-	qrCode.value = "";
-	me.value.twofa_enabled = !me.value.twofa_enabled;
-	sendToast("success", "2FA notif!");
+async function	update2FA(to: string) {
+	if (to == "Enabled") {
+		await axios
+			.post(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/turn-on`, {
+				twofaCode: twoFaCode.value,
+			})
+			.then( async () => { 
+				me.value.twofa_enabled = true;
+				twoFaCode.value = "";
+				qrCode.value = "";
+				sendToast("success", "2FA has been enabled!");
+			})
+			.catch( (err) => {
+				twoFaCode.value = "";
+				qrCode.value = "";
+				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
+				sendToast("error", "Invalid code!");
+			});
+	}
+	else if (to == "Disabled") {
+		await axios
+			.post(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/turn-off`)
+			.then( async () => { 
+				me.value.twofa_enabled = false;
+				twoFaCode.value = "";
+				qrCode.value = "";
+				sendToast("success", "2FA has been disabled!");
+			})
+			.catch( (err) => {
+				twoFaCode.value = "";
+				qrCode.value = "";
+				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
+				sendToast("error", "An error occured!");
+			});
+	}
 }
 
 function uploadFile() {
@@ -225,17 +248,15 @@ function sendToast(type: ToastType, message: string) {
 async function getQRcode(option: string) {
 	selectedOption.value = option;
 	if (selectedOption.value === "Enabled" && !me.value.twofa_enabled) {
-		// await axios
-		// 	.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/generate`)
-		// 	.then( (data) => { 
-		// 		qrCode.value = data.data;
-		// 	})
-		// 	.catch( (err) => {
-		// 		sendToast("error", "An error occured !");
-		// 		selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
-		// 	});
-		console.log("QR code generated");
-		qrCode.value = qr;
+		await axios
+			.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/generate`)
+			.then( (data) => { 
+				qrCode.value = data.data;
+			})
+			.catch( (err) => {
+				sendToast("error", "An error occured!");
+				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
+			});
 	}
 }
 
@@ -374,7 +395,7 @@ onMounted(async () => {
     box-shadow: 0 0 0 1px #0000000f;
     padding: 0.25rem;
     font-size: small;
-    width: 14rem;
+    width: 18.8rem;
     margin-left: 6rem;
 	margin-top: 0.5rem;
 }
@@ -406,8 +427,8 @@ onMounted(async () => {
 
 
 #qrCode {
-	width: 13rem;
-    height: 13rem;
+	width: 16rem;
+    height: 16rem;
     margin-left: 7rem;
     margin-top: 1.5rem;
 }
@@ -419,7 +440,7 @@ onMounted(async () => {
 }
 
 .codeField input {
-	width: 30%;
+	width: 14rem;
 	margin-left: 7rem;
 }
 
