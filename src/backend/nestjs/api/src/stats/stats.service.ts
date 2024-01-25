@@ -26,7 +26,7 @@ export class StatsService {
 		// Get all blocking users
 		const blockingList = await this.userSerivce.getBlockingList(userId);
 		const blockedList = (await this.userSerivce.getBlockedUsers(userId)).map((user) => user.id);
-		const friendList = await this.userSerivce.getFriendList(userId);
+		const friendList = await this.userSerivce.getFriendAndPendingList(userId);
 			
 		// Map as UserStat type
 		const userStats = usersWithGames.map((user) => {
