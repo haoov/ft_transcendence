@@ -1,6 +1,9 @@
 <template>
 	<div class="l-wrapper">
 		<div class="l-grid" :style="dynamicHeight">
+			<div style="display: flex; width: 370px; position: absolute; justify-content: flex-end;">
+				<img id="logout_button" @click="logout()" :src="logoutIcon" title="logout"/>
+			</div>
 			<div class ="u-justify--center u-display--flex">
 				<div class="c-avatar-container" @click="uploadFile">
 					<img class="c-avatar" :src="avatarSrc"/>
@@ -67,8 +70,8 @@
 import axios from "axios";
 import type { User } from "@/utils";
 import { computed, onMounted, ref } from "vue";
-import { toast, type ToastType } from 'vue3-toastify';
-import "vue3-toastify/dist/index.css"
+import notify from "@/notify/notify";
+import logoutIcon from "@/assets/images/logout.png";
 
 // CSS
 const dynamicHeight = computed(() => {
@@ -157,12 +160,12 @@ async function	updateUsername() {
 		.then( (data) => {
 			me.value = data.data;
 			usernameSet.value = data.data.username;
-			sendToast("success", "Username has been updated!");
+			notify.newNotification("success", {message: "Username has been updated!"})
 		})
 		.catch( (err) => {
 			if (err.response.status == 409) {
 				usernameSet.value = me.value.username;
-				sendToast("error", "Username is already in use!");
+				notify.newNotification("error", {message: "Username is already in use!"})
 			}
 		});
 }
@@ -175,11 +178,11 @@ async function	updateAvatar() {
 		.then( async (data) => { 
 			avatarSet.value = null;
 			me.value.avatar = data.data.avatar;
-			sendToast("success", "Avatar has been updated!");
+			notify.newNotification("success", {message: "Avatar has been updated!"})
 		})
 		.catch( (err) => {
 			avatarSet.value = null;
-			sendToast("error", "Invalid format avatar!");
+			notify.newNotification("error", {message: "Invalid format avatar!"})
 		});
 }
 
@@ -193,13 +196,13 @@ async function	update2FA(to: string) {
 				me.value.twofa_enabled = true;
 				twoFaCode.value = "";
 				qrCode.value = "";
-				sendToast("success", "2FA has been enabled!");
+				notify.newNotification("success", {message: "2FA has been enabled!"})
 			})
 			.catch( (err) => {
 				twoFaCode.value = "";
 				qrCode.value = "";
 				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
-				sendToast("error", "Invalid code!");
+				notify.newNotification("error", {message: "Invalid code!"})
 			});
 	}
 	else if (to == "Disabled") {
@@ -209,13 +212,13 @@ async function	update2FA(to: string) {
 				me.value.twofa_enabled = false;
 				twoFaCode.value = "";
 				qrCode.value = "";
-				sendToast("success", "2FA has been disabled!");
+				notify.newNotification("success", {message: "2FA has been disabled!"})
 			})
 			.catch( (err) => {
 				twoFaCode.value = "";
 				qrCode.value = "";
 				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
-				sendToast("error", "An error occured!");
+				notify.newNotification("error", {message: "An error occured!"})
 			});
 	}
 }
@@ -232,17 +235,6 @@ function selectFile(event: Event) {
 	avatarSet.value = target.files ? target.files[0] : null;
 };
 
-function sendToast(type: ToastType, message: string) {
-	toast(message, {
-		"theme": "dark",
-		"type": type,
-		"position": "bottom-center",
-		"hideProgressBar": true,
-		"transition": "slide",
-		"dangerouslyHTMLString": true,
-	})
-}
-
 async function getQRcode(option: string) {
 	selectedOption.value = option;
 	if (selectedOption.value === "Enabled" && !me.value.twofa_enabled && !qrCode.value) {
@@ -252,10 +244,17 @@ async function getQRcode(option: string) {
 				qrCode.value = data.data;
 			})
 			.catch( (err) => {
-				sendToast("error", "An error occured!");
+				notify.newNotification("error", {message: "An error occured!"})
 				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
 			});
 	}
+}
+
+function logout() {
+	axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/logout`)
+		.then(() => {
+			window.location.href = "/";
+		})
 }
 
 onMounted(async () => {
@@ -484,4 +483,14 @@ onMounted(async () => {
 	justify-content: center;
 }
 
+#logout_button {
+	height: 20px;
+	width: 20px;
+	cursor: pointer;
+	transition: scale 0.1s ease-in-out;
+}
+
+#logout_button:hover {
+	scale: 1.1;
+}
 </style>

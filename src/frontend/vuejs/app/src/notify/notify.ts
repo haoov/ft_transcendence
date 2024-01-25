@@ -1,6 +1,6 @@
 import { reactive } from "vue";
 import type { Notification, NotificationParams, NotificationType } from "./interfaces";
-import { success, error } from "../assets/images/notifyIcons";
+import { success, error, infos } from "../assets/images/notifyIcons";
 
 const notifications: Notification[] = reactive<Notification[]>([]);
 
@@ -21,7 +21,7 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 	};
 	switch (type) {
 		case "gameInvite":
-			notification.message = params?.message || "game invite";
+			notification.message = params?.message || "Game invite";
 			notification.type = "gameInvite";
 			notification.by = params?.by;
 			notification.buttons = [
@@ -42,7 +42,7 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 			];
 			break;
 		case "gameReady":
-			notification.message = params?.message || "ready to play!";
+			notification.message = params?.message || "Ready to play!";
 			notification.type = "gameReady";
 			notification.by = params?.by;
 			notification.autoClose = (params?.autoClose !== undefined ? params.autoClose : true);
@@ -59,7 +59,7 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 			];
 			break;
 		case "error":
-			notification.message = params?.message || "";
+			notification.message = params?.message || "Error";
 			notification.type = "error";
 			notification.by = params?.by;
 			notification.autoClose = (params?.autoClose !== undefined ? params.autoClose : true);
@@ -68,12 +68,20 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 			notification.icon = error;
 			break;
 		case "success":
-			notification.message = params?.message || "";
+			notification.message = params?.message || "Success";
 			notification.type = "success";
 			notification.autoClose = (params?.autoClose !== undefined ? params.autoClose : true);
 			notification.timeout = params?.timeout || 3000;
 			notification.timeOutBar = params?.timeOutBar || false;
 			notification.icon = success;
+			break;
+		case "infos":
+			notification.message = params?.message || "Infos";
+			notification.type = "infos";
+			notification.autoClose = (params?.autoClose !== undefined ? params.autoClose : true);
+			notification.timeout = params?.timeout || 3000;
+			notification.timeOutBar = params?.timeOutBar || false;
+			notification.icon = infos;
 			break;
 		default: break;
 	}

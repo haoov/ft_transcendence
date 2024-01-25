@@ -4,7 +4,6 @@
 </script>
 
 <template>
-	<button v-on:click="notify.newNotification('gameReady', {by: 'rsabbah'})">Add notif</button>
 	<TransitionGroup
 		appear
 		tag="div"

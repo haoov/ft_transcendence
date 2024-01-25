@@ -59,7 +59,7 @@ export class GameGateway
 				if (room.isFull()) {
 					room.removeSocket(client);
 					if (!room.checkSockets(client.data.user) && room.getParams().type == "multiplayer") {
-						room.quitGame(client);
+						room.quitGame(client.data.user);
 						this.endGame(room);
 						this.deleteRoom(room);
 					}
@@ -68,6 +68,17 @@ export class GameGateway
 					room.removeSocket(client);
 				}
 			}
+		}
+	}
+
+	@SubscribeMessage(clientEvents.checkGame)
+	checkGame(client: Socket) {
+		console.log("checking game: " + client.data.user.username);
+		//check if user is already in a room
+		const room: Room = this.findRoom(client);
+		if (room) {
+			//if user is already in a room manage socket
+			this.manageSocket(client, room);
 		}
 	}
 
@@ -95,7 +106,7 @@ export class GameGateway
 				//wait for opponent to be ready
 				setTimeout(() => {
 					if (openRoom.isOpen()) {
-						openRoom.quitGame(openRoom.getSockets()[0]);
+						openRoom.quitGame(openRoom.getUsers()[0]);
 						this.endGame(openRoom);
 						this.deleteRoom(openRoom);
 					}
@@ -151,7 +162,7 @@ export class GameGateway
 		const room = this.findRoom(client);
 		if (room) {
 			if (room.isClosed()) {
-				room.quitGame(client);
+				room.quitGame(client.data.user);
 				this.endGame(room);
 			}
 			this.deleteRoom(room);
@@ -169,7 +180,7 @@ export class GameGateway
 	gameForfeit(client: Socket) {
 		const room: Room = this.findRoom(client);
 		if (room) {
-			room.quitGame(client);
+			room.quitGame(client.data.user);
 			this.endGame(room);
 			this.deleteRoom(room);
 		}
@@ -178,8 +189,19 @@ export class GameGateway
 	@SubscribeMessage(clientEvents.gameResponse)
 	gameResponse(client: Socket, response: {accepted: boolean, opponent: User}) {
 		if (response.accepted) {
+			const waintingRoom = this.findRoom(client);
+			if (waintingRoom) {
+				this.deleteRoom(waintingRoom);
+			}
 			const room: Room = this.createPrivateRoom(client.data.user, response.opponent);
 			this.userGateway.gameReady(room, client.data.user);
+			setTimeout(() => {
+				if (room.isOpen()) {
+					room.quitGame(room.getUsers()[0]);
+					this.endGame(room);
+					this.deleteRoom(room);
+				}
+			}, 10000);
 		}
 	}
 
@@ -249,7 +271,10 @@ export class GameGateway
 			type: "multiplayer",
 			map: "random",
 		};
-		const newRoom = new Room(this.roomId.toString(), {gameParams: params, setPrivate: true});
+		const newRoom = new Room(this.roomId.toString(), {
+			gameParams: params,
+			setPrivate: true
+		});
 		++this.roomId;
 		newRoom.addUser(opponent);
 		newRoom.addUser(user);
@@ -276,9 +301,10 @@ export class GameGateway
 				//if room is full start game
 				this.closeRoom(room);
 			}
-			else {
+			else if (room.isPublic()){
 				//else wait for opponent
-				client.emit(serverEvents.updateStatus, "waiting");
+				client.data.user = await this.userService.updateUserStatus(client.data.user, userStatus.waiting);
+				this.userGateway.dataChanged(client.data.user);
 			}
 		}
 	}
@@ -303,12 +329,12 @@ export class GameGateway
 	 */
 	deleteRoom(room: Room) {
 		console.log("deleting room: " + room.getName());
+		this.rooms.splice(this.rooms.indexOf(room), 1);
 		room.getSockets().forEach(async (socket) => {
 			socket.data.user = await this.userService.updateUserStatus(socket.data.user, userStatus.online);
 			this.userGateway.dataChanged(socket.data.user);
 			room.removeSocket(socket);
 		});
-		this.rooms.splice(this.rooms.indexOf(room), 1);
 		room.close();
 	}
 }

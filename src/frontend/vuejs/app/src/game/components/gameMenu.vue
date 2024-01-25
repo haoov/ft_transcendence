@@ -40,6 +40,8 @@
 				return (gameData.getGameState().value == "finished");
 			case "readyMenu":
 				return (gameData.getGameState().value == "ready");
+			case "playMenu":
+				return (gameData.getGameState().value == "play");
 			default:
 				return false;
 		}
@@ -61,6 +63,19 @@
 	function stopWaiting() {
 		socketManager.stopWaiting();
 		newGame();
+	}
+
+	function leaveGame() {
+		socketManager.forfeit();
+		newGame();
+	}
+
+	function getWinner(): string {
+		const winner: string = gameData.getWinner();
+		if (winner == socketManager.getUser().username)
+			return "You";
+		else
+			return winner;
 	}
 
 </script>
@@ -104,14 +119,14 @@
 		<!--Menu waiting for opponent-->
 		<div v-if="display('waitingMenu')" class="menu-box">
 			<loader :text="socketManager.getUser().status"></loader>
-			<CustumButton id="stopWaiting" v-on:click="stopWaiting">
+			<CustumButton id="stopWaiting" v-on:click="stopWaiting()">
 				Stop waiting
 			</CustumButton>
 		</div>
 
 		<!--Menu game finished-->
 		<div v-if="display('finishedMenu')" class="menu-box">
-			<span>{{ gameData.getWinner() }} won!</span>
+			<span>{{ getWinner() }} won!</span>
 			<CustumButton id="reset" v-on:click="newGame()">
 				New game
 			</CustumButton>
@@ -119,13 +134,25 @@
 
 		<!--Menu game ready-->
 		<div v-if="display('readyMenu')" class="menu-box">
-			<span>Game Ready</span>
-			<CustumButton v-on:click="socketManager.play()">
-				Play
+			<span>Game ready !</span>
+			<loader :text="`Waiting for ${gameData.getOpponent()} response`"></loader>
+			<span class="warning">If you chose to leave now, you will forfeit the game</span>
+			<CustumButton id="stopWaiting" v-on:click="leaveGame()">
+				Leave
 			</CustumButton>
-			<CustumButton v-on:click="socketManager.forfeit()">
-				Forfeit
-			</CustumButton>
+		</div>
+
+		<!--Menu play-->
+		<div v-if="display('playMenu')" class="menu-box">
+			<span>Opponent found !</span>
+			<div class="button-container">
+				<CustumButton class="v-button" v-on:click="socketManager.play()">
+					Play
+				</CustumButton>
+				<CustumButton class="v-button" v-on:click="socketManager.forfeit()">
+					Forfeit
+				</CustumButton>
+			</div>
 		</div>
 	</div>
 
@@ -169,6 +196,14 @@
 		}
 	}
 
+	.button-container {
+		display: flex;
+	}
+
+	.v-button {
+		margin: 10px 5px 0px 5px;
+	}
+
 	#play {
 		margin-top: 50px;
 		background-color: var(--c-grey);
@@ -188,6 +223,11 @@
 		width: auto;
 		margin-top: 20px;
 		background-color: var(--c-pink);
+	}
+
+	.warning {
+		color: rgb(238, 1, 1);
+		font-size: small;
 	}
 
 </style>
