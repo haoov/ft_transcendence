@@ -78,7 +78,9 @@ socket.on("newMessage", async (message : any) => {
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
 	currentUser.value = await $data.getCurrentUser();
-	$data.loadMessagesByChannel(activeChannel.value.id);
+	if (activeChannel.value) {
+		$data.loadMessagesByChannel(activeChannel.value.id);
+	}
 });
 
 </script>
