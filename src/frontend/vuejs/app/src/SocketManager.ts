@@ -64,7 +64,8 @@ class SocketManager {
 			const decline = () => {
 				this.userSocket.emit(ClientEvents.gameResponse, {accepted: false, opponent: data});
 			}
-			notify.newNotification("gameInvite", {
+			notify.newNotification("invite", {
+				message: 'Game invite',
 				by: data.username,
 				buttons: [
 					{action: accept},
@@ -76,6 +77,36 @@ class SocketManager {
 			if (!response.accepted) {
 				notify.newNotification("error", {
 					message: 'Invitation declined',
+					by: response.opponent.username,
+				});
+			}
+		});
+
+		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
+			const accept = async () => {
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${from.id}`);
+				this.userSocket.emit(ClientEvents.friendResponse, {accepted: true, opponent: from});
+			};
+			const decline = async () => {
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${from.id}`);
+			};
+			notify.newNotification("invite", {
+				message: 'Friend request',
+				by: from.username,
+				autoClose: true,
+				timeout: 4000,
+				timeOutBar: true,
+				buttons: [
+					{action: accept},
+					{action: decline}
+				]
+			});
+		});
+
+		this.userSocket.on(ServerEvents.friendResponse, (response: {accepted: boolean, opponent: User}) => {
+			if (response.accepted) {
+				notify.newNotification("infos", {
+					message: 'Friend request accepted',
 					by: response.opponent.username,
 				});
 			}
@@ -134,6 +165,10 @@ class SocketManager {
 	
 	invite(opponentId: number) {
 		this.userSocket.emit(ClientEvents.gameInvite, opponentId);
+	}
+
+	addFriend(friendId: number, id: number) {
+		this.userSocket.emit(ClientEvents.addFriend, friendId);
 	}
 
 	useSpell(spell: string) {

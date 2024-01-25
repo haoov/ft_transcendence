@@ -12,6 +12,8 @@ export enum clientEvents {
 	gameInvite = "gameInvite",
 	gameResponse = "gameResponse",
 	checkGame = "checkGame",
+	addFriend = "addFriend",
+	friendResponse = "friendResponse",
 };
 
 export enum serverEvents {
@@ -25,4 +27,6 @@ export enum serverEvents {
 	updateStatus = "updateStatus",
 	dataChanged = "dataChanged",
 	gameResponse = "gameResponse",
+	addFriend = "addFriend",
+	friendResponse = "friendResponse",
 };
