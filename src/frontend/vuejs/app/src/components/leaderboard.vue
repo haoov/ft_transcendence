@@ -285,7 +285,7 @@ onMounted(async () => {
 									<div class="c-media">
 										<div v-if="imagesLoaded" class="c-avatar-container">
 											<img class="c-avatar c-media__img" :src="getAvatarSrc(player.id)" @click="goToProfile(player.username)" title="Go to profile"/>
-											<img v-if="!player.blocking" class="c-avatar-icon" :src="getStatusIcon(player)"/>
+											<img v-if="player.friend == true && !player.blocking" class="c-avatar-icon" :src="getStatusIcon(player)"/>
 										</div>
 										<div class="c-media__content">
 											<div>

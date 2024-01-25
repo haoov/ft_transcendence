@@ -64,10 +64,11 @@ export class UserController {
 	}
 
 	@Put('friend/add')
-	async addFriend(@Req() req: Request, @Query("id") friendId: number) {
+	async addFriend(@Req() req: Request, @Query("id") friendId: number): Promise <boolean> {
 		const user = req.user as User;
-		await this.userService.addFriend(user.id, friendId);
+		const areMutualFriends = await this.userService.addFriend(user.id, friendId);
 		this.userGateway.dataChanged(user);
+		return areMutualFriends;
 	}
 	
 	@Put('friend/delete')

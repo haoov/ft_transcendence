@@ -81,6 +81,7 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 		case "infos":
 			notification.message = params?.message || "Infos";
 			notification.type = "infos";
+			notification.by = params?.by;
 			notification.autoClose = (params?.autoClose !== undefined ? params.autoClose : true);
 			notification.timeout = params?.timeout || 3000;
 			notification.timeOutBar = params?.timeOutBar || false;
