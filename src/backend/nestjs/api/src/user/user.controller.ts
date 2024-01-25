@@ -63,6 +63,20 @@ export class UserController {
 		return user;
 	}
 
+	@Put('friend/add')
+	async addFriend(@Req() req: Request, @Query("id") friendId: number) {
+		const user = req.user as User;
+		await this.userService.addFriend(user.id, friendId);
+		this.userGateway.dataChanged(user);
+	}
+	
+	@Put('friend/delete')
+	async deleteFriend(@Req() req: Request, @Query("id") friendId: number) {
+		const user = req.user as User;
+		await this.userService.deleteFriend(user.id, friendId);
+		this.userGateway.dataChanged(user);
+	}
+
 	@Get('avatar/:id')
 	getAvatar(@Param('id') id: number, @Res() res: Response) {
 		return this.userService.getAvatar(id, res);
