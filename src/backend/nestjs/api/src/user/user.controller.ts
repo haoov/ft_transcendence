@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { Request, Response } from "express";
@@ -7,6 +7,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { UserGateway } from "./user.gateway";
 import Jwt2faGuard from "src/auth/jwt-2fa/jwt-2fa.guard";
 import { UserEntity } from "src/postgreSQL/entities";
+import { updateUsernameDto } from "./dto/updateUsername.dto";
 
 @Controller("user")
 @UseGuards(Jwt2faGuard)
@@ -48,10 +49,11 @@ export class UserController {
 	}
 
 	@Put('update/username')
-	async updateUsername(@Req() req: Request): Promise<User> {
+	async updateUsername(@Req() req: Request, @Body() body: updateUsernameDto): Promise<User> {
 		const user = await this.userService.updateUsername(req);
 		this.userGateway.dataChanged(user);
-		return user;
+		const { twofa_secret, ...user_ret } = user;
+		return user_ret as User;
 	}
 
 	@Put('update/avatar')
@@ -60,7 +62,8 @@ export class UserController {
 		let user = req.user as User;
 		user = await this.userService.uptadeAvatar(user.id);
 		this.userGateway.dataChanged(user);
-		return user;
+		const { twofa_secret, ...user_ret } = user;
+		return user_ret as User;
 	}
 
 	@Put('friend/add')
