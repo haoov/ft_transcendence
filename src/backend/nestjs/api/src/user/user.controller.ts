@@ -21,27 +21,44 @@ export class UserController {
 			user = await this.userService.getUserById(id);
 		else if (username)
 			user = await this.userService.getUserByUsername(username);
-		if (user)
-			return user;
+		if (user) {
+			const { twofa_secret, ...user_ret } = user;
+			return user_ret as User;
+		}
 		throw new NotFoundException("User not found");
 	}
 
 	@Get("all")
-	getAllUsers(): Promise<User[]> {
-		return this.userService.getAllUsers();
+	async getAllUsers(): Promise<User[]> {
+		const users: User[] = await this.userService.getAllUsers();
+		
+		const ret_users = users.map(user => {
+			const { twofa_secret, ...user_ret } = user;
+			return user_ret as User;
+		  });
+		  
+		  return ret_users;
 	}
 
 	@Get("me")
 	async getCurrentUser(@Req() req: Request): Promise<User> {
 		const user: UserEntity = await this.userService.getCurrentUser(req) as UserEntity;
+		
 		const { twofa_secret, ...user_ret } = user;
 		return user_ret as User;
 	}
 	
 	@Get("block")
-	getBlockedUsers(@Req() req: Request): Promise<User[]> {
+	async getBlockedUsers(@Req() req: Request): Promise<User[]> {
 		const user = req.user as User;
-		return this.userService.getBlockedUsers(user.id);
+		const users = await this.userService.getBlockedUsers(user.id);
+
+		const ret_users = users.map(user => {
+			const { twofa_secret, ...user_ret } = user;
+			return user_ret as User;
+		});
+		
+		return ret_users;
 	}
 
 	@Get("blockedBy")
@@ -54,7 +71,10 @@ export class UserController {
 	async updateUsername(@Req() req: Request): Promise<User> {
 		const user = await this.userService.updateUsername(req);
 		this.userGateway.dataChanged(user);
-		return user;
+		
+		const { twofa_secret, ...user_ret } = user;
+		return user_ret as User;
+
 	}
 
 	@Put('update/avatar')
@@ -63,7 +83,9 @@ export class UserController {
 		let user = req.user as User;
 		user = await this.userService.uptadeAvatar(user.id);
 		this.userGateway.dataChanged(user);
-		return user;
+		
+		const { twofa_secret, ...user_ret } = user;
+		return user_ret as User;
 	}
 
 	@Get('avatar/:id')
