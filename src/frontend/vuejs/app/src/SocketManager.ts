@@ -7,7 +7,7 @@ import { reactive } from "vue";
 import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
 import chat from "./chat/chat";
-import { Message } from "./chat/classes";
+import { Channel, Message } from "./chat/classes";
 
 class SocketManager {
 	private readonly userSocket: Socket;
@@ -28,6 +28,7 @@ class SocketManager {
 			this.userSocket.emit(ClientEvents.connected, response.data);
 			this.gameSocket.emit(ClientEvents.connected, response.data);
 			this.chatSocket.emit('userConnected', response.data);
+			console.log(this.gameSocket.id)
 		});
 
 		this.userSocket.on(ServerEvents.dataChanged, (data: User) => {
@@ -87,12 +88,12 @@ class SocketManager {
 		});
 
 		this.chatSocket.on("newMessage", (data: any) => {
-			const channel = chat.getChannelById(data.message.channelId);
-			if (channel) {
-				const newMessage = new Message(	data.id, data.sender, data.message.text, data.message.time);
-				console.log(newMessage);
-				channel.addMessage(newMessage);
-			}
+			chat.newMessage(data);
+		});
+
+		this.chatSocket.on("newChannelCreated", (data: any) => {
+			const newChannel = new Channel(data.id, data.name, data.mode, data.creatorId, data.users);
+			chat.addChannel(newChannel);
 		});
 	}
 
