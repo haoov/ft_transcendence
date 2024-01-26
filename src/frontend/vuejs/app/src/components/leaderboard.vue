@@ -311,7 +311,7 @@ onMounted(async () => {
 					</div>
 				</div>
 				<div class="c-card__body">
-					<ul class="c-list">
+					<ul :key="playersDisplayed.length" class="c-list">
 						<li class="c-list__item">
 							<div class="c-list__grid">
 								<div class="u-text--left u-text--small u-text--overpass">Rank</div>
@@ -321,7 +321,7 @@ onMounted(async () => {
 							</div>
 						</li>
 						<div v-if="playersDisplayed.length" id="leaderboardContent" class="scroll"> 
-							<li v-for="(player, index) in playersDisplayed" :key="player.id" class="c-list__item">
+							<li v-for="(player, index) in playersDisplayed" :key="player.id" class="c-list__item c-list__content">
 								<div class="c-list__grid">
 									<div :class="getRankClass(player.rank)">{{ player.rank }}</div>
 									<div class="c-media">
@@ -482,6 +482,7 @@ button, select {
 #leaderboardContent {
 	height: 470px;
 	overflow-y: auto;
+	overflow-x: hidden;
 }
 @media screen and (max-width: 750px) {
 	#leaderboardContent {
@@ -665,10 +666,47 @@ button, select {
 		margin-top: 0.4rem;
 	}
 }
+
+@keyframes slideIn {
+  0% {
+    transform: translateX(+100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.c-list__content {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+.c-list__content:nth-child(n+2) {
+  animation-delay: 0.1s;
+}
+
+.c-list__content:nth-child(n+3) {
+  animation-delay: 0.2s;
+}
+
+.c-list__content:nth-child(n+4) {
+  animation-delay: 0.3s;
+}
+
+.c-list__content:nth-child(n+5) {
+  animation-delay: 0.4s;
+}
+
+.c-list__content:nth-child(n+6) {
+  animation-delay: 0.5s;
+}
+
 .c-list__grid {
 	display: grid;
 	grid-template-columns: 4.8rem 3fr 1fr 1fr;
 	grid-column-gap: 2.4rem;
+	overflow-x: hidden;
 }
 @media screen and (max-width: 750px) {
 	.c-list__grid {
@@ -772,6 +810,7 @@ button, select {
 .c-avatar-container {
   position: relative;
   display: inline-block;
+  padding: 2px;
 }
 .c-avatar {
 	display: inline-flex;
