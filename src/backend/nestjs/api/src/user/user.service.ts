@@ -139,6 +139,8 @@ export class UserService {
 		const avatar = userFiles[userFiles.length - 1];
 	  
 		// Return the image file
+		if (!avatar)
+			throw new NotFoundException("no custom avatar uploaded");
 		res.sendFile(path.join(directoryPath, avatar));
 	}
 
