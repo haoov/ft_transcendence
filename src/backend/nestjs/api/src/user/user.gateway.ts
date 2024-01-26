@@ -30,6 +30,19 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.dataChanged(updatedUser);
 			console.log("user connection: " + user.username);
 		});
+		// Handle ping/pong
+		let timeout: NodeJS.Timeout;
+		const interval = setInterval(() => {
+			client.emit(serverEvents.ping, {});
+			timeout = setTimeout(() => {
+			  clearInterval(interval);
+			}, 1000);
+	  
+		}, 120000);
+		client.on(clientEvents.pong, () => {
+			clearTimeout(timeout);
+		});
+
 	}
 
 	async handleDisconnect(client: Socket) {
