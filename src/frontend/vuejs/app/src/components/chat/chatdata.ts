@@ -101,7 +101,7 @@ export default {
 
 	initSocket() {
 		this.getCurrentUser().then((user) => {
-			store.socket.emit('userConnected', user);
+			//store.socket.emit('userConnected', user);
 		});
 		store.isSocketReady = true;
 	},

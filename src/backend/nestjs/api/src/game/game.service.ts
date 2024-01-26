@@ -40,7 +40,7 @@ export class GameService {
 	async createGame(game: Game): Promise<Game> {
 		try {
 			this.gameRepository.create(game as GameEntity);
-			return this.gameRepository.save(game as GameEntity) as Promise<Game>;
+			return await this.gameRepository.save(game as GameEntity);
 		}
 		catch (err) {
 			// Cas d'erreurs

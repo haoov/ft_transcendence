@@ -28,3 +28,8 @@ body {
 div {
 	display: block;
 }
+
+input {
+	outline: none;
+	background-color: transparent;
+}

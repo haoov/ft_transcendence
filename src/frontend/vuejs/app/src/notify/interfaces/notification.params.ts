@@ -1,4 +1,4 @@
-export type NotificationType = "gameInvite" | "gameReady" | "error" | "success";
+export type NotificationType = "gameInvite" | "gameReady" | "error" | "success" | "infos";
 
 export interface NotificationButton {
 	text?: string;

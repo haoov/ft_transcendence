@@ -16,6 +16,7 @@ function buildMsg(sender, message) {
 	return {
 		sender: sender as UserEntity,
 		message: {
+			id: message.id,
 			channelId : message.channelId,
 			text : message.text,
 			time: message.datestamp,
@@ -72,11 +73,12 @@ export class ChatGateway implements OnGatewayConnection {
 	async onNewMessage(@MessageBody() message: any) {
 		console.log('[NEW MESSAGE RECEIVED]')
 		const sender = await this.userService.getUserById(message.senderId);
+		const msg = await this.chatService.createMessage(message);
+		console.log(msg);
 		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
 			sender,
-			message
+			msg
 		));
-		this.chatService.createMessage(message);
 	}
 
 	@SubscribeMessage('createNewChannel')
