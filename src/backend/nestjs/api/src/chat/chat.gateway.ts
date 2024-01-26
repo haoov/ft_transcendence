@@ -70,7 +70,6 @@ export class ChatGateway implements OnGatewayConnection {
 	async onNewMessage(@MessageBody() message: any) {
 		const sender = await this.userService.getUserById(message.senderId);
 		const msg = await this.chatService.createMessage(message);
-		console.log(msg);
 		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
 			sender,
 			msg

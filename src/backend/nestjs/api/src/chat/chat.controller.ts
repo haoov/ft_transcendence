@@ -80,6 +80,12 @@ export class ChatController {
 		return messages;
 	}
 
+	@Get('/channel/users')
+	async getChannelUsers(@Query('id') channelId: number): Promise<User[]> {
+		const users = await this.chatService.getUsersByChannelId(channelId);
+		return users;
+	}
+
 	@Get('/channels')
 	async getCurrentUserChannels(@Req() req : Request): Promise<Channel []> {
 		const user = req.user as User;

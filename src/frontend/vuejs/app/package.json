@@ -10,7 +10,9 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false"
   },
   "dependencies": {
+    "@types/autosize": "^4.0.3",
     "@types/socket.io-client": "^3.0.0",
+    "autosize": "^6.0.1",
     "axios": "^1.6.2",
     "moment-timezone": "^0.5.44",
     "npm-watch": "^0.11.0",

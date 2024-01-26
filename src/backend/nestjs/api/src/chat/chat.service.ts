@@ -100,6 +100,7 @@ export class ChatService {
 			const newUser = await this.userRepository.findOneBy({ id: idUser }) as User;
 			users.push(newUser);
 		}
+		console.log(users);
 		const newChannel : ChannelEntity = createChannelObj(channel, users);
 		this.channelRepository.create(newChannel);
 		return await this.channelRepository.save(newChannel) as Channel;
