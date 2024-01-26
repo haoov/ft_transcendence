@@ -1,6 +1,4 @@
-import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
-import { ExtractJwt } from 'passport-jwt';
-import { Request } from 'express';
+import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
  
 @Injectable()
