@@ -15,7 +15,7 @@ export class Jwt2faStrategy extends PassportStrategy(
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([(request: Request) => {
-      return request?.cookies?.Authentication;
+        if(request.user) return request?.cookies?.Authentication;
     }]),
       secretOrKey: process.env.JWT_ACCESS_TOKEN,
     });
@@ -23,7 +23,7 @@ export class Jwt2faStrategy extends PassportStrategy(
  
   async validate(payload: TokenPayload) {
     const user = await this.userService.getUserById(payload.id);
-	  
+
     if (!user)
       throw new UnauthorizedException()
 
