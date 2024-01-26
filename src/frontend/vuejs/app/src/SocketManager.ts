@@ -25,6 +25,11 @@ class SocketManager {
 			this.gameSocket.emit(ClientEvents.connected, response.data);
 		});
 
+		this.userSocket.on(ServerEvents.ping, () => {
+			console.log("PONG");
+			this.userSocket.emit(ClientEvents.pong, {});
+		});
+
 		this.userSocket.on(ServerEvents.dataChanged, (data: User) => {
 			if (data.id == this.user.id) {
 				this.user = data;

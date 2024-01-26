@@ -167,6 +167,18 @@ function sendMessage(id : number | undefined) {
 	$data.sendDirectMessage(id);
 }
 
+function inviteToPlay() {
+	if (user.value?.status == "offline" || user.value?.status == "undefined")
+		notify.newNotification("error", {message: "User offline", by: user.value?.username});
+	else if (user.value?.status == "playing")
+		notify.newNotification("error", {message: "Already playing", by: user.value?.username});
+	else {
+		notify.newNotification("success", {message: "Invitation sent"});
+		if (user.value?.id)
+		socketManager.invite(user.value?.id);
+	}
+}
+
 onMounted(async () => {
 	await fetchUser();
 	await fetchMe();
@@ -201,7 +213,7 @@ onMounted(async () => {
 								</a>
 								<img v-if="user?.id!=me?.id && userStats?.friend == 'pending'" src="../assets/images/friend-pending.png" class="u-mr--8" width='20em' height="20em" alt="pending-icon" title="Invitation pending">
 								<!-- Invite & Message buttons -->
-								<a v-if="showActions()" class="u-mr--8" target="_blank">
+								<a v-if="showActions()" class="u-mr--8" @click="inviteToPlay()">
 									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 								</a>
 								<a v-if="showActions()" class="u-mr--8" @click="sendMessage(user?.id)" target="_blank">

@@ -167,7 +167,7 @@ function goToProfile(username: string) {
 }
 
 function inviteToPlay(player: UserStat) {
-	if (player.status == "offline")
+	if (player.status == "offline" || player.status == "undefined")
 		notify.newNotification("error", {message: "User offline", by: player.username});
 	else if (player.status == "playing")
 		notify.newNotification("error", {message: "Already playing", by: player.username});
