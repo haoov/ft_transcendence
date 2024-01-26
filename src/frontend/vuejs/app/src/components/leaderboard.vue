@@ -261,37 +261,37 @@ onMounted(async () => {
 		</div>
 		<div class="l-grid__item">
 			<div class="c-card">
-				<div class="c-card__bigHeader">
-					<div class="c-card__header">
-						<h3>Leaderboard</h3>
-						<div class= "searchForm">
-							<input 
-							v-model="search"
-							name="searchUser"
-							id="searchUser"
-							type="text"
-							autocomplete="off"
-							placeholder="search..."
+				<div class="c-card__header">
+					<h3>Leaderboard</h3>
+					<div class="u-justify--right u-display--flex">
+						<div class="radio-inputs" id="friends">
+							<label class="radio"
+							v-for="option in options"
 							>
+							<input
+							autocomplete="off"
+							type="radio"
+							:value="option"
+							name="friends"
+							@click="fetchLeaderboard(option)"
+							v-model="selectedOption"
+							>
+							<span class="name">{{ option }}</span>
+							</label>
 						</div>
-						<div/>
-						<div class="u-justify--right u-display--flex">
-							<div class="radio-inputs" id="friends">
-								<label class="radio"
-								v-for="option in options"
-								>
-								<input
-								autocomplete="off"
-								type="radio"
-								:value="option"
-								name="friends"
-								@click="fetchLeaderboard(option)"
-								v-model="selectedOption"
-								>
-								<span class="name">{{ option }}</span>
-								</label>
-							</div>
-						</div>
+					</div>
+					<div/>
+					<div class="u-justify--right u-display--flex">
+						<div class= "searchForm">
+						<input 
+						v-model="search"
+						name="searchUser"
+						id="searchUser"
+						type="text"
+						autocomplete="off"
+						placeholder="search..."
+						>
+					</div>
 					</div>
 				</div>
 				<div class="c-card__body">
@@ -441,11 +441,11 @@ button, select {
 	padding-bottom: 0;
 	grid-template-columns: 1fr 1fr;
 }
-@media screen and (max-width: 750px) {
+/* @media screen and (max-width: 750px) {
 	.c-card__header {
 		flex-direction: column;
 	}
-}
+} */
 
 @media screen and (max-width: 750px) {
 	.c-place {
@@ -472,7 +472,7 @@ button, select {
 
 
 #leaderboardContent {
-	height: 500px;
+	height: 470px;
 	overflow-y: auto;
 }
 
@@ -595,9 +595,9 @@ button, select {
     background-color: var(--c-black-light);
     box-shadow: 0 0 0 1px #0000000f;
     padding: 0.25rem;
-    font-size: small;
-    width: 135px;
-    margin-top: 0.5rem;
+    font-size: x-small;
+    margin-bottom: 0.5rem;
+	width: 120px;
 }
 
 .radio-inputs .radio {
@@ -615,11 +615,17 @@ button, select {
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  border-radius: 0.6rem;
+  border-radius: 0.5rem;
   border: none;
   padding: .5rem 0;
   color: #717171;
   transition: all .15s ease-in-out;
+  font-family: Overpass;
+  font-size: x-small;
+}
+
+.name {
+  font-size: xx-small;
 }
 
 .radio-inputs .radio input:checked + .name {
@@ -659,9 +665,9 @@ button, select {
 }
 
 .searchForm input {
-	width: 100px;
-	height: 10px;
-    padding: 4% 7%;
+    width: 100px;
+    height: 10px;
+    padding: 7px 10px;
     display: flex;
     justify-content: right;
     border-radius: 0.5rem;
@@ -670,6 +676,7 @@ button, select {
     background-color: var(--c-black-light);
     border: 1px solid var(--c-black-light);
     font-family: Overpass;
+	font-size: x-small;
 }
 
 .searchForm {
