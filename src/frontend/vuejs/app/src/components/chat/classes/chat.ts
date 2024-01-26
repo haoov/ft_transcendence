@@ -1,55 +1,83 @@
 import axios from "axios";
 import { Channel } from "./channel";
 import { Message } from "./message";
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
+import { socketManager } from "@/SocketManager";
 
 class Chat {
 	private readonly channels:  Channel[];
 	private readonly activeChannels: Channel[];
+	private currentChannel: Channel | undefined;
 
 	constructor() {
-		this.channels = [];
+		this.channels = reactive<any>([]);
 		this.activeChannels = reactive<any>([]);
-		this.loadChannels();
+		this.currentChannel = undefined;
+		this.loadChat();
 	}
 
-	testChannels() {
-		if (this.channels.length > 0) {
-			this.addActiveChannel(this.channels[0]);
+	logAll() {
+		console.log("===============================");
+		for (const channel of this.channels) {
+			channel.logAll();
+			console.log("===============================");
 		}
 	}
 
-	getActiveChannels(): Channel[] {
-		return this.activeChannels.slice(0, 5);
+	getChannels(): Channel[] {
+		return this.channels;
 	}
 
-	addActiveChannel(channel: Channel) {
-		this.activeChannels.splice(0, 0, channel);
+	addChannel(channel: Channel) {
+		this.channels.push(channel);
 	}
 
-	removeActiveChannel(id: number) {
+	removeChannel(id: number) {
 		const index = this.activeChannels.findIndex((channel) => channel.getId() == id);
 		if (index != -1)
-			this.activeChannels.splice(index, 1);
+			this.channels.splice(index, 1);
 	};
 
-	async loadChannels() {
+	async loadChat() {
 		const channels = await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels`)
 		.then((response) => { return response.data });
 		channels.forEach(async (channel: any) => {
-			const newChannel = new Channel(channel.id, channel.name, channel.mode, channel.creatorId);
-			const messages = await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/messages/${channel.id}`)
+			const newChannel = new Channel(channel.id, channel.name, channel.mode, channel.creatorId, channel.password);
+			if (newChannel.getId() == this.currentChannel?.getId()) {
+				const messages = await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/messages/${channel.id}`)
+				.then((response) => { return response.data });
+				messages.forEach((message: any) => {
+					const newMessage = new Message(	message.id, message.sender, message.message.text, message.message.time);
+					newChannel.addMessage(newMessage);
+				});
+			}
+			const users = await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channel/users?id=${channel.id}`)
 			.then((response) => { return response.data });
-			messages.forEach((message: any) => {
-				const newMessage = new Message(	message.id, message.sender, message.message.text, message.message.time);
-				newChannel.addMessage(newMessage);
+			users.forEach((user: any) => {
+				newChannel.addUser(user);
 			});
-			this.channels.splice(0, 0, newChannel);
+			this.channels.push(newChannel);
 		});
 	}
 
 	getChannelById(id: number): Channel | undefined {
 		return this.channels.find((channel) => channel.getId() == id);
+	}
+
+	getCurrentChannel(): Channel | undefined {
+		return this.currentChannel;
+	}
+	
+	setCurrentChannel(id: number) {
+		console.log('==================================');
+		console.log('[setCurrentChannel]', id);
+		console.log('[setCurrentChannel]', this.channels);
+		const currentChannel = this.channels?.find((channel)=> {
+			return channel.getId() == id;
+		});
+		this.currentChannel = currentChannel ? currentChannel : undefined;
+		console.log('[setCurrentChannel]', this.currentChannel);
+		console.log('==================================');
 	}
 }
 

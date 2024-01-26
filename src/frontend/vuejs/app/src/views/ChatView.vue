@@ -1,14 +1,13 @@
 <script setup lang="ts">
 	import Chat from '@/components/chat/Chat.vue';
 	import navigationBar from '@/components/navigationBar.vue';
-	import v_chat from '@/chat/components/chat.vue';
+	// import v_chat from '@/chat/components/chat.vue';
 </script>
 
 <template>
 	<div class="chat body">
 		<navigationBar></navigationBar>
-		<Chat></Chat>
-		<v_chat></v_chat>
+			<Chat></Chat>
 	</div>
 </template>
 

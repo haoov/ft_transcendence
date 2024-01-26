@@ -68,6 +68,8 @@
 import { socketManager } from '@/SocketManager';
 import { inject, computed, ref, watch } from 'vue';
 import { type User } from "@/utils";
+import chat from './classes/chat';
+import type { Channel } from './classes/channel';
 const $data : any = inject('$data');
 const listUsers = await $data.getUsers();
 const currentUser = await $data.getCurrentUser();
@@ -106,7 +108,9 @@ const removeUser = (user: User) => {
 }
 
 const submitForm = () => {
-	socketManager.addUserToChannel(store.activeChannel.id, listUsersToAdd.value);
+	const currentChannel : Channel | undefined = chat.getCurrentChannel();
+	if (!currentChannel || !currentChannel.getId()) return;
+	socketManager.addUserToChannel(currentChannel.getId(), listUsersToAdd.value);
 	$data.closeAddUserModalForm();
 }
 

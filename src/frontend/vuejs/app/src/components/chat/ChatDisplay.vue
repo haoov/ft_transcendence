@@ -14,10 +14,7 @@
 import InputBar from './InputBar.vue';
 import MessageDisplay from './MessagesDisplay.vue';
 import ChatHeader from './ChatHeader.vue';
-import { Suspense, inject, computed, onMounted, ref, watch } from 'vue';
-
-const data : any = inject('$data');
-const store = data.getStore();
+import { Suspense } from 'vue';
 
 </script>
 

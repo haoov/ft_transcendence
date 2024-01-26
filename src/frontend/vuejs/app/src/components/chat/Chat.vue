@@ -41,24 +41,17 @@ import ProfilModal from './ProfilModal.vue';
 import { Suspense, inject, onMounted } from 'vue';
 import { socketManager } from '@/SocketManager';
 import { ChatEvents } from '@/utils';
+import chat from '@/components/chat/classes/chat';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
 
-async function setInBackLastActiveChannel(id: string) {
-	const user = await $data.getCurrentUser();
-	$data.loadChannels(user.id);
-	const channel = store.channels.find((channel : any) => channel.id === parseInt(id));
-	if (channel) {
-		$data.setActiveChannel(channel);
-	} else {
-		$data.setActiveChannel(null);
-	}
+function setOnConnectionActiveChannel(id: number) {
+	chat.setCurrentChannel(id);
 }
-
-onMounted(() =>{
+	onMounted(() =>{
 	if(!socketManager.hasEventListener("chat", ChatEvents.lastActiveChannel))
-		socketManager.addEventListener("chat", ChatEvents.lastActiveChannel, setInBackLastActiveChannel);
+		socketManager.addEventListener("chat", ChatEvents.lastActiveChannel, setOnConnectionActiveChannel);
 });
 
 const closeModal = () => {

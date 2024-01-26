@@ -26,17 +26,17 @@
 				<ul>
 					<li
 						v-for="result in searchResults"
-						:key="result.name"
+						:key="result.getName()"
 						@click="setSelectedResult(result)"
 						id = "searchResult"
-						:class="{'is-selected': result?.id === channelToJoin?.id }"
+						:class="{'is-selected': result?.id === channelToJoin?.getId() }"
 					>
-						{{ result.name }}
+						{{ result.getName() }}
 						<span v-if="result.mode === 'Protected'"> <img src="@/assets/images/chat-svg/lock-svgrepo-com.svg" alt="Lock Icon"> #{{ result.id }}</span>
   						<span v-else>#{{ result.id }}</span>
 					</li>
 				</ul>
-				<div v-if="channelToJoin?.mode === 'Protected'">
+				<div v-if="channelToJoin?.getMode() === 'Protected'">
 					<label for="password">Password :</label>
 					<p v-if="passwordError" style="color: red;">{{ errorMessagePassword }}</p>
 					<input 
@@ -63,20 +63,9 @@
 import { socketManager } from '@/SocketManager';
 import { ChatEvents } from '@/utils';
 import { ref, computed, inject, watch, onMounted } from 'vue';
-import { onBeforeRouteLeave } from 'vue-router';
-
-interface Channel {
-  creatorId: string;
-  id: number;
-  name: string;
-  mode: string;
-  password: string;
-}
+import { Channel } from "@/components/chat/classes/channel";
 
 const $data : any = inject('$data');
-const store = $data.getStore();
-const socket = store.socket;
-const currentUser = await $data.getCurrentUser();
 const channelList = await $data.getJoinableChannels();
 const channelToJoin = ref<Channel>();
 const password = ref('');
@@ -91,20 +80,20 @@ const searchResults = computed(() => {
 		return [] as Channel [];
 	} else {
 		return channelList.filter((channel: Channel) => {
-				return channel.name.toLowerCase().includes(search.value.toLowerCase());
+				return channel.getName().toLowerCase().includes(search.value.toLowerCase());
 		});
 	}
 });
 
 const isSubmitDisabled = computed(() => {
   return !channelToJoin.value || 
-	(channelToJoin?.value.mode === 'Protected' && !password) || 
+	(channelToJoin?.value.getMode() === 'Protected' && !password) || 
 	passwordError.value;
 });
 
 const setSelectedResult = (channel: Channel) => {
 	channelToJoin.value = channel;
-	search.value = channelToJoin.value.name;
+	search.value = channelToJoin.value.getName();
 }
 
 const resetChannelToJoin = () => {
@@ -116,12 +105,12 @@ const submitForm = () => {
 	if (!channelToJoin.value) {
 		return;
 	}
-	if (channelToJoin.value.mode === 'Protected' && password.value.length === 0) {
+	if (channelToJoin.value.getMode() === 'Protected' && password.value.length === 0) {
 		passwordError.value = true;
 		errorMessagePassword.value = 'Password is required';
 		return;
 	}
-	socketManager.joinChannel(channelToJoin.value.id, password.value);
+	socketManager.joinChannel(channelToJoin.value.getId(), password.value);
 };
 
 function channelJoinedHandler(ret: boolean) {
