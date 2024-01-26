@@ -2,18 +2,15 @@ import axios from "axios";
 import { GameRenderer, type InitParams } from "./gameRenderer";
 import type { GamePlayer, GameState } from "./interfaces";
 import {
-	defaultAvatar,
 	fireIcon,
 	iceIcon,
 	smallIcon,
 	bigIcon
 } from "@/assets/images/gameIcons";
+import raquetIcon from "@/assets/images/racket-50.png";
 import { ref, type Ref } from "vue";
-import { ServerEvents, type User } from "@/utils";
-import { socketManager } from "@/SocketManager";
+import { type User } from "@/utils";
 import type { Camera, Scene } from "three";
-
-console.log(socketManager);
 
 class GameData {
 	private displayMenu: Ref<boolean>;
@@ -21,6 +18,7 @@ class GameData {
 	private readonly player1: Ref<GamePlayer>;
 	private readonly player2: Ref<GamePlayer>;
 	private winner: string;
+	private opponent: string;
 	private initParams: InitParams | null;
 	private gameRenderer: GameRenderer | null;
 	private gameState: Ref<GameState>;
@@ -32,7 +30,7 @@ class GameData {
 		this.difficulty = ref("easy");
 		this.player1 = ref({
 			username: "Player1",
-			avatar: defaultAvatar,
+			avatar: raquetIcon,
 			score: 0,
 			spells: [
 				{ type: "fire", icon: fireIcon, on: false },
@@ -43,7 +41,7 @@ class GameData {
 		});
 		this.player2 = ref({
 			username: "Player2",
-			avatar: defaultAvatar,
+			avatar: raquetIcon,
 			score: 0,
 			spells: [
 				{ type: "fire", icon: fireIcon, on: false },
@@ -53,13 +51,8 @@ class GameData {
 			],
 		});
 		this.winner = "";
+		this.opponent = "";
 		this.gameState = ref("noGame");
-		socketManager.addEventListener("user", ServerEvents.dataChanged, (data: User) => {
-			if (data.username == socketManager.getUser().username) {
-				if (data.status == "waiting")
-					this.gameState.value = "waiting";
-			}
-		});
 	}
 
 	async createRenderer(id: string) {
@@ -82,7 +75,7 @@ class GameData {
 		}
 		else {
 			this.player2.value.username = "Computer" + ": " + this.difficulty.value;
-			this.player2.value.avatar = defaultAvatar;
+			this.player2.value.avatar = raquetIcon;
 		}
 		this.gameRenderer?.createField(
 			this.initParams!.params.FIELD_WIDTH,
@@ -93,7 +86,6 @@ class GameData {
 	};
 
 	updateGame(data: any) {
-		console.log("game updated");
 		this.gameRenderer?.update(data);
 		this.player1.value.score = data.p1Score;
 		this.player2.value.score = data.p2Score;
@@ -145,14 +137,22 @@ class GameData {
 		return this.winner;
 	}
 
+	getOpponent(): string {
+		return this.opponent;
+	}
+
+	setOpponent(opponent: string) {
+		this.opponent = opponent;
+	}
+
 	render() {
 		this.gameRenderer?.renderer?.render(
 			this.gameRenderer.scene as Scene,
 			this.gameRenderer.camera as Camera);
 	}
 
-	getCurrentPlayer(): Ref<GamePlayer> {
-		if (socketManager.getUser().username == this.player1.value.username)
+	getCurrentPlayer(username: string): Ref<GamePlayer> {
+		if (username == this.player1.value.username)
 			return this.player1;
 		else
 			return this.player2;
