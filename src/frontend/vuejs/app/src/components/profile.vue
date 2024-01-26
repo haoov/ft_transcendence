@@ -46,7 +46,8 @@ async function fetchUser() {
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			await axios.get(url2).then( data => {
-				userGames.value = data.data;})
+				userGames.value = data.data;
+				updatePieAnimation();})
 			});
 }
 
@@ -128,6 +129,22 @@ function getStatusTitle() : string {
 		return "playing";
 	else
 		return "online";
+}
+
+function updatePieAnimation() {
+  const proportions = getPieProportions();
+  const styleElement = document.createElement('style');
+  styleElement.innerHTML = `
+    @keyframes donut {
+      0% {
+        stroke-dasharray: 0, 100;
+      }
+      100% {
+        stroke-dasharray: ${proportions};
+      }
+    }
+  `;
+  document.head.appendChild(styleElement);
 }
 
 function getPieProportions() : string {
@@ -245,8 +262,7 @@ onMounted(async () => {
 							<svg width="50%" height="50%" viewBox="0 0 40 40">
 								<circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
 								<circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
-												stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"
-												:style="{ animation: 'donut 1s', '--end-dash': getPieProportions()}"></circle>
+									stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"/>
 								<text y="50%" transform="translate(0, 2)">
 									<tspan x="50%" text-anchor="middle" class="donut-percent">{{ userStats?.win_rate}}%</tspan>	 
 								</text>
@@ -379,8 +395,8 @@ button, select {
 }
 
 #gameContent {
-		height: 165px;
-		overflow-y: auto;
+	height: 165px;
+	overflow-y: auto;
 }
 
 
@@ -433,15 +449,6 @@ button, select {
 		}
 		100% {
 				opacity: 1;
-		}
-}
-
-@keyframes donut {
-		0% {
-				stroke-dasharray: 0, 100;
-		}
-		100% {
-				stroke-dasharray: var(--end-dash);
 		}
 }
 
