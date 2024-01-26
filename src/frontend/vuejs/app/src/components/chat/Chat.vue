@@ -58,9 +58,9 @@ store.socket.on('lastActiveChannel', async (id : string) => {
 	}
 });
 
-onBeforeRouteLeave(() => {
-	socket.disconnect();
-});
+// onBeforeRouteLeave(() => {
+// 	socket.disconnect();
+// });
 
 const closeModal = () => {
 	$data.closeModalForm()
