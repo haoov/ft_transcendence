@@ -48,21 +48,20 @@ const inputErrorLenght = computed(() => {
 	else return false;
 });
 
-const sendMessage = () => {
+function sendMessage() {
 	if (input.value === "") return;
 	else if (input.value.length > 512) {
 		return;
 	}
 	const DateRawStamp : string = new Date().toISOString();
-	console.log(myUser.value.id);
 	const newMessage: Message = {
 		senderId: myUser.value.id,
 		channelId: activeChannel.value.id,
 		text: input.value,
 		datestamp: DateRawStamp
 	};
+	socketManager.sendMessage(newMessage);
 	input.value = "";
-	socket.emit('newMessage', newMessage);
 };
 
 watch(activeChannel, () => {

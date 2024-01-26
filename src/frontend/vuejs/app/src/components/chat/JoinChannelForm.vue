@@ -60,12 +60,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, watch } from 'vue';
+import { socketManager } from '@/SocketManager';
+import { ChatEvents } from '@/utils';
+import { ref, computed, inject, watch, onMounted } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 
 interface Channel {
   creatorId: string;
-  id: string;
+  id: number;
   name: string;
   mode: string;
   password: string;
@@ -119,11 +121,7 @@ const submitForm = () => {
 		errorMessagePassword.value = 'Password is required';
 		return;
 	}
-	socket.emit('joinChannel', {
-		channelId: channelToJoin.value.id,
-		password: password.value,
-		userId: currentUser.id,
-	});
+	socketManager.joinChannel(channelToJoin.value.id, password.value);
 };
 
 function channelJoinedHandler(ret: boolean) {
@@ -134,10 +132,12 @@ function channelJoinedHandler(ret: boolean) {
 		passwordError.value = true;
 		errorMessagePassword.value = 'Wrong password';
 	}
-}
+};
 
-socket.on('channelJoined', channelJoinedHandler);
-onBeforeRouteLeave(socket.off('channelJoined', channelJoinedHandler));
+onMounted(() =>{
+	if(!socketManager.hasEventListener("chat", ChatEvents.channelJoined))
+		socketManager.addEventListener("chat", ChatEvents.channelJoined, channelJoinedHandler);
+});
 
 watch(() => password.value, () => {
 	if (password.value.length > 0) {
