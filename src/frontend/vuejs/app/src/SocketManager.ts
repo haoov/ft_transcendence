@@ -1,4 +1,4 @@
-import { ClientEvents, ServerEvents, type User } from "@/utils";
+import { ChatEvents, ClientEvents, ServerEvents, type User } from "@/utils";
 import axios from "axios";
 import { Socket, io } from "socket.io-client";
 import notify from "./notify/notify";
@@ -7,7 +7,7 @@ import { reactive } from "vue";
 import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
 import chat from "./chat/chat";
-import { Message } from "./chat/classes";
+import { Channel, Message } from "./chat/classes";
 
 class SocketManager {
 	private readonly userSocket: Socket;
@@ -27,7 +27,7 @@ class SocketManager {
 			this.user = reactive(response.data);
 			this.userSocket.emit(ClientEvents.connected, response.data);
 			this.gameSocket.emit(ClientEvents.connected, response.data);
-			this.chatSocket.emit('userConnected', response.data);
+			this.chatSocket.emit(ClientEvents.connected, response.data);
 		});
 
 		this.userSocket.on(ServerEvents.dataChanged, (data: User) => {
@@ -86,11 +86,10 @@ class SocketManager {
 			}
 		});
 
-		this.chatSocket.on("newMessage", (data: any) => {
+		this.chatSocket.on(ChatEvents.receivedMessage, (data: any) => {
 			const channel = chat.getChannelById(data.message.channelId);
 			if (channel) {
 				const newMessage = new Message(	data.id, data.sender, data.message.text, data.message.time);
-				console.log(newMessage);
 				channel.addMessage(newMessage);
 			}
 		});
@@ -100,25 +99,31 @@ class SocketManager {
 		this.gameSocket.emit(ClientEvents.checkGame);
 	}
 
-	addEventListener(socket: "user" | "game", event: string, callback: (...args: any[]) => void) {
+	addEventListener(socket: "user" | "game" | "chat", event: string, callback: (...args: any[]) => void) {
 		if (socket == "user")
 			this.userSocket.on(event, callback);
 		else if (socket == "game")
 			this.gameSocket.on(event, callback);
+		else if (socket == "chat")
+			this.chatSocket.on(event, callback);
 	}
 
-	removeEventListener(socket: "user" | "game", event: string, callback: (...args: any[]) => void) {
+	removeEventListener(socket: "user" | "game" | "chat", event: string, callback: (...args: any[]) => void) {
 		if (socket == "user")
 			this.userSocket.off(event, callback);
 		else if (socket == "game")
-			this.gameSocket.off(event, callback);
+		this.gameSocket.off(event, callback);
+		else if (socket == "chat")
+			this.chatSocket.off(event, callback);
 	}
 
-	hasEventListener(socket: "user" | "game", event: string): boolean {
+	hasEventListener(socket: "user" | "game" | "chat", event: string): boolean {
 		if (socket == "user")
 			return this.userSocket.hasListeners(event);
 		else if (socket == "game")
 			return this.gameSocket.hasListeners(event);
+		else if (socket == "chat")
+			return this.chatSocket.hasListeners(event);
 		return false;
 	}
 
@@ -162,9 +167,62 @@ class SocketManager {
 		return this.userSocket.disconnected && this.gameSocket.disconnected;
 	}
 
+	/*CHAT*/
 	sendMessage(message: any) {
-		console.log(message);
-		this.chatSocket.emit("newMessage", message);
+		// console.log(message);
+		this.chatSocket.emit(ChatEvents.sendMessage, message);
+	}
+
+	addUserToChannel(channelId : number, users : User []) {
+		this.chatSocket.emit(ChatEvents.addUserToChannel, {channelId, users} );
+	}
+
+	setActiveChannel(channel : Channel) {
+		this.chatSocket.emit(ChatEvents.setActiveChannel, {
+			"channelId": channel.getId(), 
+			"currentUserId": this.user.id,
+		});
+	}
+
+	resetActiveChannel() {
+		this.chatSocket.emit(ChatEvents.resetActiveChannel, this.user.id);
+	}
+
+	createChannel(channel: Object) {
+			this.chatSocket.emit(ChatEvents.createChannel, channel);
+	}
+	
+	deleteChannel(id :number) {
+		this.chatSocket.emit(ChatEvents.deleteChannel, id);
+	}
+
+	leaveChannel(id : number) {
+		this.chatSocket.emit(ChatEvents.leaveChannel, {
+			id,
+			userId: this.user.id,
+		});
+	}
+
+	updateChannel(channel: Channel) {
+		this.chatSocket.emit(ChatEvents.updateChannel, channel);
+	}
+
+	joinChannel(id: number, password: string) {
+		this.chatSocket.emit(ChatEvents.joinChannel, {
+			channelId: id,
+			password: password,
+			userId: this.user.id,
+		});
+	}
+
+	actionsHandler(action: string, targetId: number, channelId: number) {
+		if (action == "setAdmin") {
+			this.chatSocket.emit(ChatEvents.setAdmin, {userId: targetId, channelId: channelId});
+		} else if (action == "kickUser") {
+			this.chatSocket.emit(ChatEvents.kickUser, {userId: targetId, channelId: channelId});
+		} else if (action == "banUser") {
+			this.chatSocket.emit(ChatEvents.banUser, {userId: targetId, channelId: channelId});
+		}
 	}
 }
 
