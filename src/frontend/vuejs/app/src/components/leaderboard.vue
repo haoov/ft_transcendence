@@ -67,7 +67,8 @@ async function fetchMe() {
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
-				myGames.value = data.data;})
+				myGames.value = data.data;
+				updatePieAnimation();})
 			});
 }
 
@@ -138,6 +139,22 @@ function getPieProportions() : string {
 	if (myStats.value)
 		loses = 100 - myStats.value.win_rate; 
 	return myStats.value?.win_rate.toString() + " " + loses.toString();
+}
+
+function updatePieAnimation() {
+  const proportions = getPieProportions();
+  const styleElement = document.createElement('style');
+  styleElement.innerHTML = `
+    @keyframes donut {
+      0% {
+        stroke-dasharray: 0, 100;
+      }
+      100% {
+        stroke-dasharray: ${proportions};
+      }
+    }
+  `;
+  document.head.appendChild(styleElement);
 }
 
 function getDateStr(dt: Date) : string {
@@ -216,8 +233,7 @@ onMounted(async () => {
 							<svg width="50%" height="50%" viewBox="0 0 40 40">
 								<circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
 								<circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
-												stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"
-												:style="{ animation: 'donut 1s', '--end-dash': getPieProportions()}"></circle>
+									stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"/>
 								<text y="50%" transform="translate(0, 2)">
 									<tspan x="50%" text-anchor="middle" class="donut-percent">{{ myStats?.win_rate}}%</tspan>	 
 								</text>
@@ -432,20 +448,12 @@ button, select {
 	}
 }
 
-/* .c-card__bigHeader {
-	align-self: flex-end;
-} */
 .c-card__header {
 	display: grid;
 	align-items: center;
 	padding-bottom: 0;
 	grid-template-columns: 1fr 1fr;
 }
-/* @media screen and (max-width: 750px) {
-	.c-card__header {
-		flex-direction: column;
-	}
-} */
 
 @media screen and (max-width: 750px) {
 	.c-place {
@@ -474,6 +482,11 @@ button, select {
 #leaderboardContent {
 	height: 470px;
 	overflow-y: auto;
+}
+@media screen and (max-width: 750px) {
+	#leaderboardContent {
+		height: 500px;
+	}
 }
 
 .svg-pie {
@@ -534,14 +547,14 @@ button, select {
 		}
 }
 
-@keyframes donut {
+/* @keyframes donut {
 		0% {
 				stroke-dasharray: 0, 100;
 		}
 		100% {
-				stroke-dasharray: var(--end-dash);
+				stroke-dasharray: 
 		}
-}
+} */
 
 .donut-data {
 		font-size: 0.2em;
