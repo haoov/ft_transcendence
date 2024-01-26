@@ -18,18 +18,20 @@
 <script setup lang="ts">
 import moment from 'moment-timezone';
 import { inject, computed } from 'vue';
+import { Message } from './classes/message';
 
 const props : any = defineProps({
-	data: Object,
+	data: Message,
 	currentUser: Object,
 	id: Number
 });
 const $data : any = inject('$data');
-const username : string = props.data.sender.username;
-const profilePic : string = props.data.sender.avatar;
-const userId : number = props.data.sender.id;
-const message : string = props.data.message.text;
-const DateRawStamp : string = props.data.message.time;
+const messageReceived = props.data;
+const username : string = messageReceived.getSender().username;
+const profilePic : string = messageReceived.getSender().avatar;
+const userId : number = messageReceived.getSender().id;
+const message : string = messageReceived.getText();
+const DateRawStamp : string = messageReceived.getTime();
 const timeFr = moment.tz(DateRawStamp, 'Europe/Paris');
 const timestamp : string = timeFr.format('HH:mm:ss');
 const id : string = props.id.toString();

@@ -1,27 +1,8 @@
-import { socketManager } from "@/SocketManager";
 import axios from "axios";
+import { socketManager } from "@/SocketManager";
 import { reactive } from "vue";
-
-interface Channel {
-	id: number;
-	name: string;
-	mode: string;
-	creatorId: any;
-	admins: User [];
-	bannedUsers: User [];
-};
-
-interface Message {
-	id: number;
-	sender: {
-		name: string;
-		avatar: string;
-	};
-	message: {
-		text: string;
-		time: string;
-	};
-};
+import { Channel } from "@/components/chat/classes/channel";
+import { Message } from "@/components/chat/classes/message";
 
 interface User {
 	id : number,
@@ -144,8 +125,8 @@ export default {
 	},
 
 	findChannelById(id : number) : Channel {
-		const index = store.channels.findIndex((channel) => channel.id === id);
-		return store.channels[index];
+		const index = store.channels.findIndex((channel) => channel.getId() === id);
+		return store.channels[index] as any;
 	},
 
 	addChannel(channel: Channel) {
@@ -153,13 +134,13 @@ export default {
 	},
 
 	deleteChannel(channelId: number) {
-		const index = store.channels.findIndex((channel) => channel.id === channelId);
+		const index = store.channels.findIndex((channel) => channel.getId() === channelId);
 		store.channels.splice(index, 1);
 	},
 
-	updateChannel(channel: Channel) {
-		const index = store.channels.findIndex((channel) => channel.id === channel.id);
-		store.channels[index] = channel;
+	updateChannel(channelToUpdate: Channel) {
+		const index = store.channels.findIndex((channel) => channel.getId() === channelToUpdate.getId());
+		store.channels[index] = channelToUpdate;
 	},
 
 	setActiveChannel(channel: Channel) {
@@ -183,7 +164,7 @@ export default {
 		const currentPrivateChannels = store.channels.filter((channel: any) => channel.mode === 'Private');
 		const name = '#' + userIds.sort((a,b) => a -b).join('#');
 		if (currentPrivateChannels.some((channel: any) => channel.name === name)) {
-			const newActiveChannel = currentPrivateChannels.find((channel: any) => channel.name === name);
+			const newActiveChannel : any = currentPrivateChannels.find((channel: any) => channel.name === name);
 			if (newActiveChannel) {
 				this.setActiveChannel(newActiveChannel);
 			}

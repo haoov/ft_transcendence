@@ -12,7 +12,6 @@ import { inject } from 'vue';
 
 const $data: any = inject('$data');
 
-const emit = defineEmits();
 const openNewChannelForm = () => {
 	$data.openModalForm();
 };

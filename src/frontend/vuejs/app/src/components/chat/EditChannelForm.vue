@@ -87,18 +87,18 @@
 
 <script setup lang="ts">
 
-import SeachBar from './SearchBar.vue';
 import Modal from './Modal.vue';
 import { ref, computed, inject } from 'vue';
 import { socketManager } from '@/SocketManager';
-import { Channel } from '@/chat/classes';
+import { Channel } from "@/components/chat/classes/channel";
 import { ChatEvents } from '@/utils';
+import chat from './classes/chat';
 
 const $data : any = inject('$data');
 const store = $data.getStore();
-const activeChannel = computed(() => store.activeChannel);
-const channelName = ref(activeChannel.value.name);
-const selectedOption = ref(activeChannel.value.mode);
+const activeChannel = computed(() => chat.getCurrentChannel());
+const channelName = ref(activeChannel.value?.getName());
+const selectedOption = ref(activeChannel.value?.getMode());
 const password = ref('');
 const nameError = ref(false);
 const passwordError = ref(false);
@@ -117,9 +117,9 @@ const resetChannelName = () => {
 };
 
 const submitForm = () => {
-	const channelUpdated = new Channel(activeChannel.value.id, channelName.value, selectedOption.value, activeChannel.value.creatorId, password.value)
+	if (!activeChannel.value || !channelName.value || !selectedOption.value ) return;
+	const channelUpdated = new Channel(activeChannel.value.getId(), channelName.value, selectedOption.value, activeChannel.value.getCreatorId(), password.value)
 	socketManager.updateChannel(channelUpdated);
-	activeChannel.value.name = channelName.value;
 	$data.closeEditModalForm();
 };
 
@@ -132,7 +132,8 @@ const closeDeleteConfirmation = () => {
 };
 
 const deleteChannel = () => {
-	socketManager.deleteChannel(activeChannel.value.id);
+	if (!activeChannel.value) return ;
+	socketManager.deleteChannel(activeChannel.value.getId());
 	toggleDeleteConfirmation.value = false;
 	$data.closeEditModalForm();
 };
