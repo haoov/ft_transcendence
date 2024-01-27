@@ -40,8 +40,8 @@ class Chat {
 			const messages = await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/messages/${channel.id}`)
 			.then((response) => { return response.data });
 			messages.forEach((message: any) => {
-				const newMessage = new Message(	message.id, message.sender, message.message.text, message.message.time);
-				newChannel.addMessage(newMessage);
+				const newMessageSend = new Message(	message.id, message.sender, message.message.text, message.message.time);
+				newChannel.addMessage(newMessageSend);
 			});
 			this.channels.splice(0, 0, newChannel);
 		});

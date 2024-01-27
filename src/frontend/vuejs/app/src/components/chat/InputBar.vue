@@ -35,7 +35,6 @@ const input = ref<string>("");
 const $data : any = inject('$data');
 const store = $data.getStore();
 const myUser = ref<User>(await $data.getCurrentUser());
-const socket : Socket = store.socket;
 const $store = $data.getStore();
 const activeChannel = computed(() => $store.activeChannel);
 
@@ -54,15 +53,15 @@ const sendMessage = () => {
 		return;
 	}
 	const DateRawStamp : string = new Date().toISOString();
-	console.log(myUser.value.id);
-	const newMessage: Message = {
+	// console.log(myUser.value.id);
+	const newMessageSend: Message = {
 		senderId: myUser.value.id,
 		channelId: activeChannel.value.id,
 		text: input.value,
 		datestamp: DateRawStamp
 	};
 	input.value = "";
-	socketManager.sendMessage(newMessage);
+	socketManager.sendMessage(newMessageSend);
 };
 
 watch(activeChannel, () => {

@@ -1,10 +1,10 @@
 <template>
 	<div class="channel-navbar">
-		<ul v-for="channel in channels">
+		<ul v-for="channel in store.channels">
 			<ChannelWidget
 			:channel="channel"
 			:key="channel.id"
-			@click="setActiveChannel(channel, currentUser.id)"
+			@click="setActiveChannel(channel)"
 			></ChannelWidget>
 		</ul>
 		<NewChannelWidget title="Add/Join Channel"></NewChannelWidget>
@@ -23,7 +23,6 @@ const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const $data : any = inject('$data');
 const store = $data.getStore();
 const currentUser = await $data.getCurrentUser();
-const channels = computed (() => store.channels);
 
 onMounted(() => {
 	$data.loadChannels(currentUser.id);
@@ -33,7 +32,7 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
 	$data.loadChannels(currentUser.id);
 });
 
-const setActiveChannel = (channel : any, currentUserId: number) => {
+const setActiveChannel = (channel : any) => {
 	socketManager.setActiveChannel(channel.id);
 	$data.setActiveChannel(channel);
 };
@@ -43,6 +42,7 @@ function userAddedHandler(channelJoined: any) {
 }
 
 function newChannelCreatedHandler(newChannelCreated : any) {
+	console.log(newChannelCreated);
 	$data.addChannel(newChannelCreated);
 	if (newChannelCreated.creatorId == currentUser.id) {
 		socketManager.setActiveChannel(newChannelCreated.id);
@@ -111,26 +111,33 @@ function adminNomination(channelId: number) {
 }
 
 onMounted(() => {
-	if (socketManager.hasEventListener("chat", ChatEvents.userAdded)) {
-		socketManager.removeEventListener("chat", ChatEvents.userAdded, userAddedHandler);
+	if (!socketManager.hasEventListener("chat", ChatEvents.newChannelCreated)) {
+		// console.log('[ChatEvents.newChannelCreated]');
+		socketManager.addEventListener("chat", ChatEvents.newChannelCreated, newChannelCreatedHandler);
 	}
-	if (socketManager.hasEventListener("chat", ChatEvents.newChannelCreated)) {
-		socketManager.removeEventListener("chat", ChatEvents.newChannelCreated, newChannelCreatedHandler);
+	if (!socketManager.hasEventListener("chat", ChatEvents.userAdded)) {
+		// console.log('[ChatEvents.userAdded]');
+		socketManager.addEventListener("chat", ChatEvents.userAdded, userAddedHandler);
 	}
-	if (socketManager.hasEventListener("chat", ChatEvents.channelDeleted)) {
-		socketManager.removeEventListener("chat", ChatEvents.channelDeleted, channelIdDeletedHandler);
+	if (!socketManager.hasEventListener("chat", ChatEvents.channelDeleted)) {
+		// console.log('[ChatEvents.channelDeleted]');
+		socketManager.addEventListener("chat", ChatEvents.channelDeleted, channelIdDeletedHandler);
 	}
-	if (socketManager.hasEventListener("chat", ChatEvents.channelUpdated)) {
-		socketManager.removeEventListener("chat", ChatEvents.channelUpdated, channelUpdatedHandler);
+	if (!socketManager.hasEventListener("chat", ChatEvents.channelUpdated)) {
+		// console.log('[ChatEvents.channelUpdated]');
+		socketManager.addEventListener("chat", ChatEvents.channelUpdated, channelUpdatedHandler);
 	}
-	if (socketManager.hasEventListener("chat", ChatEvents.kicked)) {
-		socketManager.removeEventListener("chat", ChatEvents.kicked, KickedHandler);
+	if (!socketManager.hasEventListener("chat", ChatEvents.kicked)) {
+		// console.log('[ChatEvents.kicked]');
+		socketManager.addEventListener("chat", ChatEvents.kicked, KickedHandler);
 	}
-	if (socketManager.hasEventListener("chat", ChatEvents.banned)) {
-		socketManager.removeEventListener("chat", ChatEvents.banned, bannedHandler);
+	if (!socketManager.hasEventListener("chat", ChatEvents.banned)) {
+		// console.log('[ChatEvents.banned]');
+		socketManager.addEventListener("chat", ChatEvents.banned, bannedHandler);
 	}
-	if (socketManager.hasEventListener("chat", ChatEvents.namedAdmin)) {
-		socketManager.removeEventListener("chat", ChatEvents.namedAdmin, adminNomination);
+	if (!socketManager.hasEventListener("chat", ChatEvents.namedAdmin)) {
+		// console.log('[ChatEvents.namedAdmin]');
+		socketManager.addEventListener("chat", ChatEvents.namedAdmin, adminNomination);
 	}
 });
 
