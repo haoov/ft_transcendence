@@ -45,51 +45,52 @@
 </template>
 
 <script setup lang="ts">
-import { inject, computed, ref, watch } from 'vue';
+import { inject, computed, ref, watch, mergeProps } from 'vue';
 import { type SocketManager } from "@/SocketManager";
 import {ServerEvents, type User} from '@/utils'
 
 const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const $data : any = inject('$data');
 const store = $data.getStore();
+const props = defineProps<{channel : any}>();
 const currentUser =ref<User>(await $data.getCurrentUser());
 const listUsers =ref<User []>(await $data.getUsers());
 const activeChannel = computed(() => store.activeChannel);
 const isPrivate = computed(() => {
-	if (activeChannel.value?.mode === 'Private') {
+	if (props.channel?.mode === 'Private') {
 		return true;
 	}
 	return false;
 });
 const isAdmin = computed(async () => {
-	if (!activeChannel.value) {
+	if (!props.channel) {
 		return false;
 	}
-	const admins = await $data.getAdmins(activeChannel.value.id);
-	if (activeChannel.value.creatorId === currentUser.value.id
+	const admins = await $data.getAdmins(props.channel.id);
+	if (props.channel.creatorId === currentUser.value.id
 		|| admins.find((admin: any) => admin.id === currentUser.value.id)) {
 		return true;
 	}
 	return false;
 });
 const channelName = computed(() => {
-	if (!activeChannel.value) {
+	if (!props.channel) {
 		return '';
-	} else if (activeChannel.value?.mode === 'Private') {
-		const id1 = activeChannel.value.name.split('#')[1];
-		const id2 = activeChannel.value.name.split('#')[2];
+	} else if (props.channel?.mode === 'Private') {
+		const id1 = props.channel.name.split('#')[1];
+		const id2 = props.channel.name.split('#')[2];
 		if (parseInt(id1)  === currentUser.value.id) {
 			return listUsers.value.find((user: any) => user.id === parseInt(id2))?.username;
 		}
 		return listUsers.value.find((user: any) => user.id === parseInt(id1))?.username;
 	}
-	return activeChannel.value.name;
+	return props.channel.name;
 });
 
 const channelImage = computed(() => {
-	if (activeChannel.value?.mode === 'Private') {
-		const id1 = activeChannel.value.name.split('#')[1];
-		const id2 = activeChannel.value.name.split('#')[2];
+	if (props.channel?.mode === 'Private') {
+		const id1 = props.channel.name.split('#')[1];
+		const id2 = props.channel.name.split('#')[2];
 		let avatar : string | undefined = '';
 		if (parseInt(id1) === currentUser.value.id) {
 			avatar = listUsers.value.find((user: any) => user.id === parseInt(id2))?.avatar;

@@ -45,7 +45,6 @@ import { onBeforeRouteLeave } from 'vue-router';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
-const socket : Socket = store.socket; 
 
 async function setInBackLastActiveChannel(id: string) {
 	const user = await $data.getCurrentUser();

@@ -1,6 +1,6 @@
 <template>
 	<div class="chat-display-div">
-		<ChatHeader></ChatHeader>
+		<ChatHeader :channel="store.activeChannel"></ChatHeader>
 		<Suspense>
 			<MessageDisplay></MessageDisplay>
 		</Suspense>
