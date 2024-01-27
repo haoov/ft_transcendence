@@ -38,7 +38,7 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(socket: Socket) {
 		let lastActiveChannel : string;
-		socket.on('userConnected', async (user: any) => {
+		socket.on('connected', async (user: any) => {
 			console.log("chat connection: " + user.username);
 			this.usersSocketList.set(user.id, socket);
 			const listChannel = await this.chatService.getCurrentUserChannels(user.id);
@@ -179,6 +179,7 @@ export class ChatGateway implements OnGatewayConnection {
 		const channelId = data['channelId'];
 		try {
 			await this.chatService.addAdminToChannel(channelId, userId);
+			this.usersSocketList.get(userId)?.emit('namedAdmin', channelId);
 		} catch (err) {
 			throw err;
 		}

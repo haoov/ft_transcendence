@@ -28,3 +28,29 @@ export enum ServerEvents {
 	dataChanged = "dataChanged",
 	gameResponse = "gameResponse",
 };
+export enum ChatEvents {
+	// Events On
+	lastActiveChannel = "lastActiveChannel",
+	userAdded = "userAdded",
+	newChannelCreated ="newChannelCreated",
+	channelDeleted ="channelDeleted",
+	channelUpdated = "channelUpdated",
+	kicked = "kicked",
+	banned = "banned",
+	namedAdmin = "namedAdmin",
+	channelJoined = "channelJoined",
+	newMessageReceived = "newMessageReceived",
+
+	// Events Emit
+	newMessage = "newMessage",
+	createNewChannel = "createNewChannel",
+	addUserToChannel = "addUserToChannel",
+	setActiveChannel = "setActiveChannel",
+	deleteChannel = "deleteChannel",
+	updateChannel = "updateChannel",
+	joinChannel = "joinChannel",
+	leaveChannel = "leaveChannel",
+	kickUser = "kickUser",
+	banUser = "banUser",
+	setAdmin = "setAdmin",
+};

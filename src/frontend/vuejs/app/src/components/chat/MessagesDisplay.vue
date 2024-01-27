@@ -20,8 +20,7 @@ import { onUpdated, onMounted, computed, watch} from 'vue';
 import { inject, ref } from 'vue';
 import { Socket } from 'socket.io-client';
 import { type SocketManager } from "@/SocketManager";
-import { ServerEvents, type User} from '@/utils'
-import { onBeforeRouteLeave } from 'vue-router';
+import { ChatEvents, ServerEvents, type User} from '@/utils'
 
 type Message = {
 	sender: User;
@@ -67,7 +66,6 @@ onUpdated(() => {
 });
 
 async function recievedMessage(message : any) {
-	console.log('[MESSAGE RECEIVED]');
 	const blockedUsers = await $data.getBlockedUsers();
 	if (activeChannel.value.id !== message.message.channelId) {
 		return;
@@ -77,9 +75,10 @@ async function recievedMessage(message : any) {
 	}
 };
 
-socket.on("newMessage", recievedMessage);
-onBeforeRouteLeave(() => {
-	socket.off('newMessage', recievedMessage)
+onMounted(() => {
+	if( socketManager.hasEventListener("chat", ChatEvents.newMessageReceived)) {
+		socketManager.removeEventListener("chat", ChatEvents.newMessageReceived, recievedMessage);
+	}
 });
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {

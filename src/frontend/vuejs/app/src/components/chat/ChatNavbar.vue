@@ -14,17 +14,14 @@
 <script setup lang="ts">
 import ChannelWidget from './ChannelWidget.vue';
 import NewChannelWidget from './NewChannelWidget.vue';
-import { Socket } from "socket.io-client";
 import { inject, onMounted, computed } from 'vue';
-import {ServerEvents, type User} from '@/utils';
+import {ChatEvents, ServerEvents, type User} from '@/utils';
 import { type SocketManager } from "@/SocketManager";
 import notify from '@/notify/notify';
-import { onBeforeRouteLeave } from 'vue-router';
 
 const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const $data : any = inject('$data');
 const store = $data.getStore();
-const socket : Socket = store.socket;
 const currentUser = await $data.getCurrentUser();
 const channels = computed (() => store.channels);
 
@@ -37,10 +34,7 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
 });
 
 const setActiveChannel = (channel : any, currentUserId: number) => {
-	socket.emit('setActiveChannel', {
-		'channelId':channel.id,
-		'currentUserId':currentUserId
-		});
+	socketManager.setActiveChannel(channel.id);
 	$data.setActiveChannel(channel);
 };
 
@@ -51,10 +45,7 @@ function userAddedHandler(channelJoined: any) {
 function newChannelCreatedHandler(newChannelCreated : any) {
 	$data.addChannel(newChannelCreated);
 	if (newChannelCreated.creatorId == currentUser.id) {
-		socket.emit('setActiveChannel', {
-			'channelId':newChannelCreated.id,
-			'currentUserId':currentUser.id
-		});
+		socketManager.setActiveChannel(newChannelCreated.id);
 		$data.setActiveChannel(newChannelCreated);
 	}
 }
@@ -63,20 +54,19 @@ function channelIdDeletedHandler(channelIdDeleted : number) {
 	$data.deleteChannel(channelIdDeleted);
 	if (store.channels.length > 0) {
 		store.activeChannel = store.channels[store.channels.length - 1];
+		socketManager.setActiveChannel(store.activeChannel.id);
 	} else {
 		store.activeChannel = null;
+		store.messages = [];
+		socketManager.setActiveChannel(0);
 	}
-	socket.emit('setActiveChannel', {
-			'channelId': 0,
-			'currentUserId':currentUser.id
-		});
 }
 
 function channelUpdatedHandler(channelUpdated : any) {
 	$data.updateChannel(channelUpdated);
 }
 
-async function KickedHandler(channelId : number) {
+function KickedHandler(channelId : number) {
 	const channel = $data.findChannelById(channelId);
 	notify.newNotification("error", {
 		message: "Kicked from channel",
@@ -85,49 +75,63 @@ async function KickedHandler(channelId : number) {
 	$data.deleteChannel(channelId);
 	if (store.channels?.length > 0) {
 		store.activeChannel = store.channels[store.channels.length - 1];
-		socket.emit('setActiveChannel', {
-			'channelId': store.activeChannel.id,
-			'currentUserId': currentUser.id
-		});
+		store.activeChannel = store.channels[store.channels.length - 1];
+		socketManager.setActiveChannel(store.activeChannel.id);
 	} else {
 		store.activeChannel = null;
 		store.messages = [];
+		socketManager.setActiveChannel(0);
 	}
 }
 
-async function bannedHandler(channelId : number) {
+function bannedHandler(channelId : number) {
 	const channel = $data.findChannelById(channelId);
 	notify.newNotification("error", {
 		message: "Banned from channel",
 		by: channel.name,
 	})
 	$data.deleteChannel(channelId);
-	if (store?.channels.length > 0) {
+	if (store.channels?.length > 0) {
 		store.activeChannel = store.channels[store.channels.length - 1];
-		socket.emit('setActiveChannel', {
-			'channelId': store.activeChannel.id,
-			'currentUserId': currentUser.id
-		});
+		store.activeChannel = store.channels[store.channels.length - 1];
+		socketManager.setActiveChannel(store.activeChannel.id);
 	} else {
 		store.activeChannel = null;
 		store.messages = [];
+		socketManager.setActiveChannel(0);
 	}
 }
 
-socket.on('userAdded', userAddedHandler);
-socket.on('newChannelCreated', newChannelCreatedHandler);
-socket.on('channelDeleted', channelIdDeletedHandler);
-socket.on('channelUpdated', channelUpdatedHandler);
-socket.on('kicked', KickedHandler);
-socket.on('banned', bannedHandler);
+function adminNomination(channelId: number) {
+	const channel = $data.findChannelById(channelId);
+	notify.newNotification("error", {
+		message: "You have been named administrator of",
+		by: channel.name,
+	})
+}
 
-onBeforeRouteLeave(() => {
-	socket.off('userAdded', userAddedHandler);
-	socket.off('newChannelCreated', newChannelCreatedHandler);
-	socket.off('channelDeleted', channelIdDeletedHandler);
-	socket.off('channelUpdated', channelUpdatedHandler);
-	socket.off('kicked', KickedHandler);
-	socket.off('banned', bannedHandler);
+onMounted(() => {
+	if (socketManager.hasEventListener("chat", ChatEvents.userAdded)) {
+		socketManager.removeEventListener("chat", ChatEvents.userAdded, userAddedHandler);
+	}
+	if (socketManager.hasEventListener("chat", ChatEvents.newChannelCreated)) {
+		socketManager.removeEventListener("chat", ChatEvents.newChannelCreated, newChannelCreatedHandler);
+	}
+	if (socketManager.hasEventListener("chat", ChatEvents.channelDeleted)) {
+		socketManager.removeEventListener("chat", ChatEvents.channelDeleted, channelIdDeletedHandler);
+	}
+	if (socketManager.hasEventListener("chat", ChatEvents.channelUpdated)) {
+		socketManager.removeEventListener("chat", ChatEvents.channelUpdated, channelUpdatedHandler);
+	}
+	if (socketManager.hasEventListener("chat", ChatEvents.kicked)) {
+		socketManager.removeEventListener("chat", ChatEvents.kicked, KickedHandler);
+	}
+	if (socketManager.hasEventListener("chat", ChatEvents.banned)) {
+		socketManager.removeEventListener("chat", ChatEvents.banned, bannedHandler);
+	}
+	if (socketManager.hasEventListener("chat", ChatEvents.namedAdmin)) {
+		socketManager.removeEventListener("chat", ChatEvents.namedAdmin, adminNomination);
+	}
 });
 
 </script>center

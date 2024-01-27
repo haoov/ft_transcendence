@@ -39,12 +39,13 @@ import EditChannelForm from './EditChannelForm.vue';
 import AddUserForm from './AddUserForm.vue';
 import ConfirmationLeaveChannel from './ConfirmationLeaveChannel.vue';
 import ProfilModal from './ProfilModal.vue';
-import { Suspense, inject } from 'vue';
-import { io, Socket } from 'socket.io-client';
-import { onBeforeRouteLeave } from 'vue-router';
+import { Suspense, inject, onMounted } from 'vue';
+import { SocketManager } from '@/SocketManager';
+import { ChatEvents } from '@/utils';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
+const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 async function setInBackLastActiveChannel(id: string) {
 	const user = await $data.getCurrentUser();
@@ -57,8 +58,11 @@ async function setInBackLastActiveChannel(id: string) {
 	}
 }
 
-store.socket.on('lastActiveChannel', setInBackLastActiveChannel)
-onBeforeRouteLeave(store.socket.off('lastActiveChannel', setInBackLastActiveChannel));
+onMounted(() => {
+	if (!socketManager.hasEventListener("chat", ChatEvents.lastActiveChannel)) {
+		socketManager.addEventListener("chat", ChatEvents.lastActiveChannel, setInBackLastActiveChannel);
+	}
+});
 
 const closeModal = () => {
 	$data.closeModalForm()

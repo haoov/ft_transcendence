@@ -65,14 +65,10 @@
 
 
 <script setup lang="ts">
+import { socketManager } from '@/SocketManager';
 import { inject, computed, ref, watch } from 'vue';
-
-interface User {
-	id: number;
-	username: string;
-	email: string;
-	avatar: string;
-}
+import { type SocketManager } from "@/SocketManager";
+import { type User } from '@/utils';
 
 const $data : any = inject('$data');
 const listUsers = await $data.getUsers();
@@ -112,10 +108,7 @@ const removeUser = (user: User) => {
 }
 
 const submitForm = () => {
-	store.socket.emit('addUserToChannel', {
-		channelId: store.activeChannel.id,
-		users: listUsersToAdd.value
-	});
+	socketManager.addUserToChannel(store.activeChannel.id, listUsersToAdd.value)
 	$data.closeAddUserModalForm();
 }
 
