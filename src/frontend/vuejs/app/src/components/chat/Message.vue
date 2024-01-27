@@ -16,14 +16,16 @@
 </template>
 
 <script setup lang="ts">
+import type { User } from '@/utils';
 import moment from 'moment-timezone';
 import { inject, computed } from 'vue';
 
-const props : any = defineProps({
-	data: Object,
-	currentUser: Object,
+const props = defineProps<{
+	data: any,
+	currentUser: User,
 	id: Number
-});
+}>();
+
 const $data : any = inject('$data');
 const username : string = props.data.sender.username;
 const profilePic : string = props.data.sender.avatar;
