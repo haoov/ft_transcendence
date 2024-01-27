@@ -20,7 +20,8 @@ import { onUpdated, onMounted, computed, watch} from 'vue';
 import { inject, ref } from 'vue';
 import { Socket } from 'socket.io-client';
 import { type SocketManager } from "@/SocketManager";
-import { ChatEvents, ServerEvents, type User} from '@/utils'
+import { ServerEvents, type User} from '@/utils'
+import { onBeforeRouteLeave } from 'vue-router';
 
 type Message = {
 	sender: User;
@@ -57,8 +58,16 @@ watch(activeChannel, () => {
 	return;
 });
 
+onMounted(() => {
+	scrollToBottomOnMounted();
+});
+
+onUpdated(() => {
+	scrollToBottomSmooth();
+});
+
 async function recievedMessage(message : any) {
-	console.log('[MessagesDisplay]: message received ->', message);
+	console.log('[MESSAGE RECEIVED]');
 	const blockedUsers = await $data.getBlockedUsers();
 	if (activeChannel.value.id !== message.message.channelId) {
 		return;
@@ -68,15 +77,9 @@ async function recievedMessage(message : any) {
 	}
 };
 
-onMounted(() => {
-	if(!socketManager.hasEventListener("chat", ChatEvents.receivedMessage)) {
-		socketManager.addEventListener("chat", ChatEvents.receivedMessage, recievedMessage);
-	}
-	scrollToBottomOnMounted();
-});
-
-onUpdated(() => {
-	scrollToBottomSmooth();
+socket.on("newMessage", recievedMessage);
+onBeforeRouteLeave(() => {
+	socket.off('newMessage', recievedMessage)
 });
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
@@ -85,6 +88,7 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
 		$data.loadMessagesByChannel(activeChannel.value.id);
 	}
 });
+
 
 </script>
 

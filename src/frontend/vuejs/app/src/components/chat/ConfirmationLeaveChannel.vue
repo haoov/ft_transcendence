@@ -20,7 +20,6 @@
 </template>
 
 <script setup lang="ts">
-import { socketManager } from '@/SocketManager';
 import { inject, computed } from 'vue';
 
 const $data : any = inject('$data');
@@ -38,9 +37,12 @@ const message = computed(() => {
 
 const leaveChannel = (channelId: number) => {
 	if (isCreator.value) {
-		socketManager.deleteChannel(channelId);
+		store.socket.emit('deleteChannel', channelId);
 	} else {
-		socketManager.leaveChannel(channelId);
+		store.socket.emit('leaveChannel', {
+			channelId,
+			userId: currentUser.id,
+		});
 	}
 	$data.closeConfirmationLeavingModal();
 };
