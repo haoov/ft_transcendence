@@ -31,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+
 import ChatCard from './ChatCard.vue';
 import Modal from './Modal.vue';
 import ChannelModal from './ChannelModal.vue';
@@ -38,12 +39,13 @@ import EditChannelForm from './EditChannelForm.vue';
 import AddUserForm from './AddUserForm.vue';
 import ConfirmationLeaveChannel from './ConfirmationLeaveChannel.vue';
 import ProfilModal from './ProfilModal.vue';
-import { Suspense, inject, onMounted } from 'vue';
-import { socketManager } from '@/SocketManager';
-import { ChatEvents } from '@/utils';
+import { Suspense, inject } from 'vue';
+import { io, Socket } from 'socket.io-client';
+import { onBeforeRouteLeave } from 'vue-router';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
+const socket : Socket = store.socket; 
 
 async function setInBackLastActiveChannel(id: string) {
 	const user = await $data.getCurrentUser();
@@ -56,10 +58,8 @@ async function setInBackLastActiveChannel(id: string) {
 	}
 }
 
-onMounted(() =>{
-	if(!socketManager.hasEventListener("chat", ChatEvents.lastActiveChannel))
-		socketManager.addEventListener("chat", ChatEvents.lastActiveChannel, setInBackLastActiveChannel);
-});
+store.socket.on('lastActiveChannel', setInBackLastActiveChannel)
+onBeforeRouteLeave(store.socket.off('lastActiveChannel', setInBackLastActiveChannel));
 
 const closeModal = () => {
 	$data.closeModalForm()
@@ -80,6 +80,7 @@ const closeLeaveConfirmation = () => {
 const closeProfilModal = () => {
 	$data.closeProfileModal()
 }
+
 
 </script>
 

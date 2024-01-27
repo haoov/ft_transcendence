@@ -38,7 +38,7 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(socket: Socket) {
 		let lastActiveChannel : string;
-		socket.on('connected', async (user: any) => {
+		socket.on('userConnected', async (user: any) => {
 			console.log("chat connection: " + user.username);
 			this.usersSocketList.set(user.id, socket);
 			const listChannel = await this.chatService.getCurrentUserChannels(user.id);
@@ -60,11 +60,6 @@ export class ChatGateway implements OnGatewayConnection {
 		});
 	}
 
-	@SubscribeMessage('resetActiveChannel')
-	async onResetActiveChannel(@MessageBody() id : number) {
-		this.usersSocketList.delete(id);
-	}
-
 	@SubscribeMessage('setActiveChannel')
 	async onJoinCurrentChannel(@MessageBody() data: any) {
 		const channelid = data.channelId;
@@ -74,19 +69,19 @@ export class ChatGateway implements OnGatewayConnection {
 		this.listActiveChannel.set(userId, channelid);
 	}
 
-	@SubscribeMessage('sendMessage')
+	@SubscribeMessage('newMessage')
 	async onNewMessage(@MessageBody() message: any) {
 		console.log('[NEW MESSAGE RECEIVED]')
 		const sender = await this.userService.getUserById(message.senderId);
 		const msg = await this.chatService.createMessage(message);
 		console.log(msg);
-		this.server.to(message.channelId.toString()).emit('receivedMessage', buildMsg(
+		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
 			sender,
 			msg
 		));
 	}
 
-	@SubscribeMessage('createChannel')
+	@SubscribeMessage('createNewChannel')
 	async onNewChannel(@MessageBody() channel: any) {
 		const newChannelCreated = await this.chatService.createChannel(channel);
 		for (const userId of channel.users) {

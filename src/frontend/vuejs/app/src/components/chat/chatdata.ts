@@ -1,5 +1,6 @@
-import { socketManager } from "@/SocketManager";
 import axios from "axios";
+import io from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { reactive } from "vue";
 
 interface Channel {
@@ -79,6 +80,7 @@ async function blockUser(id: number) {
 }
 
 const store = reactive({
+	isSocketReady: false,
 	channels: [] as Channel[],
 	messages: [] as Message [],
 	userIdClicked: null as number | null,
@@ -89,9 +91,20 @@ const store = reactive({
 	isconfirmationLeavingModalOpen: false,
 	isProfileModalOpen: false,
 	activeChannel: null as Channel | null,
+	socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`),
 });
 
 export default {
+	isSocketReady() : boolean {
+		return store.isSocketReady;
+	},
+
+	initSocket() {
+		this.getCurrentUser().then((user) => {
+			//store.socket.emit('userConnected', user);
+		});
+		store.isSocketReady = true;
+	},
 	
 	getUsers() : Promise<User []> {
 		return fetchUsers();
@@ -196,7 +209,7 @@ export default {
 				password: "",
 				users: userIds,
 			};
-			socketManager.createChannel(newChannel);
+			store.socket.emit('createNewChannel', newChannel);
 		}
 		this.closeModalForm();
 	},
