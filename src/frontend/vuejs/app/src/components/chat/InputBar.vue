@@ -18,16 +18,26 @@
 </template>
 
 <script setup lang="ts">
+import { Socket } from "socket.io-client";
 import { ref, inject, computed, watch } from "vue";
 import { type SocketManager } from "@/SocketManager";
 import {ServerEvents, type User} from '@/utils'
-import chat from "./classes/chat";
+
+type Message = {
+	senderId: number;
+	channelId: number;
+	text: string;
+	datestamp: string;
+};
 
 const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const input = ref<string>("");
 const $data : any = inject('$data');
+const store = $data.getStore();
 const myUser = ref<User>(await $data.getCurrentUser());
-const activeChannel = computed(() => chat.getCurrentChannel());
+const socket : Socket = store.socket;
+const $store = $data.getStore();
+const activeChannel = computed(() => $store.activeChannel);
 
 const inputClass = computed(() => {
 	if (input.value.length > 512) return "input-bar-div error";
@@ -39,19 +49,17 @@ const inputErrorLenght = computed(() => {
 });
 
 function sendMessage() {
-	if (!activeChannel.value) return;
 	if (input.value === "") return;
 	else if (input.value.length > 512) {
 		return;
 	}
 	const DateRawStamp : string = new Date().toISOString();
-	const newMessage : Object = {
+	const newMessage: Message = {
 		senderId: myUser.value.id,
-		channelId: activeChannel.value?.getId(),
+		channelId: activeChannel.value.id,
 		text: input.value,
 		datestamp: DateRawStamp
 	};
-	console.log(`[MESSAGE SEND FROM INPUTBAR] ->`, newMessage);
 	socketManager.sendMessage(newMessage);
 	input.value = "";
 };

@@ -11,14 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import ChatDisplay from './ChatDisplay.vue';
-import ChatNavbar from './ChatNavbar.vue';
-import { Suspense, onMounted } from 'vue';
-import chat from "@/components/chat/classes/chat";
+	import ChatDisplay from './ChatDisplay.vue';
+	import ChatNavbar from './ChatNavbar.vue';
+	import { Suspense } from 'vue';
 
-// onMounted(() =>{
-// 	chat.logAll();
-// })
 </script>
 
 <style scoped>

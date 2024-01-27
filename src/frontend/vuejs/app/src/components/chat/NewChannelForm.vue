@@ -82,6 +82,7 @@ const options = ['Public', 'Private', 'Protected', 'Secret'];
 const $data : any = inject('$data');
 const store = $data.getStore();
 const currentPrivateChannels = store.channels.filter((channel: any) => channel.mode === 'Private');
+const socket = store.socket;
 const currentUser = await $data.getCurrentUser();
 const channelName = ref('');
 const password = ref('');
