@@ -23,9 +23,6 @@ router.beforeEach((to) => {
 					console.log("checking auth");
 					socketManager.initSocket();
 				}
-				if (!$data.isSocketReady()) {
-					$data.initSocket();
-				}
 			},
 			() => {
 				router.push("/login");

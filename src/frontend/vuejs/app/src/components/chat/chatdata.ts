@@ -1,7 +1,5 @@
 import { socketManager } from "@/SocketManager";
 import axios from "axios";
-import io from "socket.io-client";
-import { Socket } from "socket.io-client";
 import { reactive } from "vue";
 
 interface Channel {
@@ -81,9 +79,9 @@ async function blockUser(id: number) {
 }
 
 const store = reactive({
-	isSocketReady: false,
 	channels: [] as Channel[],
 	messages: [] as Message [],
+	activeChannel: null as Channel | null,
 	userIdClicked: null as number | null,
 	currentUser: null as User | null,
 	isModalOpen: false,
@@ -91,7 +89,6 @@ const store = reactive({
 	isAddUserModalOpen: false,
 	isconfirmationLeavingModalOpen: false,
 	isProfileModalOpen: false,
-	activeChannel: null as Channel | null,
 });
 
 export default {
@@ -167,6 +164,7 @@ export default {
 
 	setActiveChannel(channel: Channel) {
 		store.activeChannel = channel;
+		this.loadMessagesByChannel(store.activeChannel.id);
 	},
 
 	loadMessagesByChannel(idChannel: number) {
