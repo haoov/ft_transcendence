@@ -13,13 +13,13 @@
 		if (input.value === "" || input.value.length > 512)
 			return;
 		const DateRawStamp : string = new Date().toISOString();
-		const newMessage = {
+		const newMessageSend = {
 		senderId: socketManager.getUser().id,
 		channelId: props.channel.getId(),
 		text: input.value,
 		datestamp: DateRawStamp
 		};
-		socketManager.sendMessage(newMessage);
+		socketManager.sendMessage(newMessageSend);
 		input.value = "";
 	}
 

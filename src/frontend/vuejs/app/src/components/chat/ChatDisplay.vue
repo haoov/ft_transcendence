@@ -19,33 +19,35 @@
 import InputBar from './InputBar.vue';
 import MessageDisplay from './MessagesDisplay.vue';
 import ChatHeader from './ChatHeader.vue';
-import { Suspense, inject, computed, onMounted, ref, watch } from 'vue';
+import { Suspense, inject, onMounted } from 'vue';
 import { socketManager } from '@/SocketManager';
 import { ChatEvents, ServerEvents } from '@/utils';
 
-const data : any = inject('$data');
-const store = data.getStore();
+const storeManager : any = inject('$data');
+const store = storeManager.getStore();
 
 async function recievedMessage(data : any) {
-	console.log(data);
-	const blockedUsers = await data.getBlockedUsers();
+	const blockedUsers = await storeManager.getBlockedUsers();
+	const blockers = await storeManager.getBlockersList();
 	if (store.activeChannel.id !== data.message.channelId) {
 		return;
 	}
-	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === data.sender.id)) {
+	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === data.sender.id)
+		&& blockers.some((blocker: any) => blocker.id === data.sender.id))
+	{
 		store.messages.push(data);
 	}
 };
 
 onMounted(() => {
-	if( socketManager.hasEventListener("chat", ChatEvents.newMessageReceived)) {
-		socketManager.removeEventListener("chat", ChatEvents.newMessageReceived, recievedMessage);
+	if(!socketManager.hasEventListener("chat", ChatEvents.newMessageReceived)) {
+		socketManager.addEventListener("chat", ChatEvents.newMessageReceived, recievedMessage);
 	}
 });
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
 	if (store.activeChannel) {
-		data.loadMessagesByChannel(store.activeChannel.id);
+		storeManager.loadMessagesByChannel(store.activeChannel.id);
 	}
 });
 

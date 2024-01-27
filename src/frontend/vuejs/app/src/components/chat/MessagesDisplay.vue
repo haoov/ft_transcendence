@@ -18,9 +18,7 @@
 import Message from './Message.vue';
 import { onUpdated, onMounted, computed, watch} from 'vue';
 import { inject, ref } from 'vue';
-import { Socket } from 'socket.io-client';
-import { type SocketManager } from "@/SocketManager";
-import { ChatEvents, ServerEvents, type User} from '@/utils'
+import { type User} from '@/utils'
 
 type Message = {
 	id: number,

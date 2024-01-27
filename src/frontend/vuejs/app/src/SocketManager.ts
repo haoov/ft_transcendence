@@ -86,12 +86,12 @@ class SocketManager {
 			}
 		});
 
-		this.chatSocket.on("newMessage", (data: any) => {
+		this.chatSocket.on(ChatEvents.miniChatMessage, (data: any) => {
 			const channel = chat.getChannelById(data.message.channelId);
 			if (channel) {
-				const newMessage = new Message(	data.id, data.sender, data.message.text, data.message.time);
-				console.log(newMessage);
-				channel.addMessage(newMessage);
+				const newMessageSend = new Message(	data.id, data.sender, data.message.text, data.message.time);
+				console.log('[SOCKET MANAGER]', newMessageSend);
+				channel.addMessage(newMessageSend);
 			}
 		});
 	}
@@ -169,8 +169,8 @@ class SocketManager {
 	}
 
 	sendMessage(message: any) {
-		console.log(message);
-		this.chatSocket.emit("newMessage", message);
+		// console.log(message);
+		this.chatSocket.emit("newMessageSend", message);
 	}
 
 	createChannel(channel: any) {

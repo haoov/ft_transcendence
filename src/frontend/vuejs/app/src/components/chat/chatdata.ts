@@ -164,7 +164,9 @@ export default {
 
 	setActiveChannel(channel: Channel) {
 		store.activeChannel = channel;
-		this.loadMessagesByChannel(store.activeChannel.id);
+		if (store.activeChannel) {
+			this.loadMessagesByChannel(store.activeChannel.id);
+		}
 	},
 
 	loadMessagesByChannel(idChannel: number) {

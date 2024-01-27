@@ -69,13 +69,17 @@ export class ChatGateway implements OnGatewayConnection {
 		this.listActiveChannel.set(userId, channelid);
 	}
 
-	@SubscribeMessage('newMessage')
+	@SubscribeMessage('newMessageSend')
 	async onNewMessage(@MessageBody() message: any) {
 		console.log('[NEW MESSAGE RECEIVED]')
 		const sender = await this.userService.getUserById(message.senderId);
 		const msg = await this.chatService.createMessage(message);
 		console.log(msg);
-		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
+		this.server.to(message.channelId.toString()).emit('newMessageReceived', buildMsg(
+			sender,
+			msg
+		));
+		this.server.to(message.channelId.toString()).emit('miniChatMessage', buildMsg(
 			sender,
 			msg
 		));
