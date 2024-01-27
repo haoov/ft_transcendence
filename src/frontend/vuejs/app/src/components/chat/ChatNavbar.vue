@@ -68,7 +68,7 @@ function channelUpdatedHandler(channelUpdated : any) {
 
 function KickedHandler(channelId : number) {
 	const channel = $data.findChannelById(channelId);
-	notify.newNotification("error", {
+	notify.newNotification("infos", {
 		message: "Kicked from channel",
 		by: channel.name,
 	})
@@ -86,7 +86,7 @@ function KickedHandler(channelId : number) {
 
 function bannedHandler(channelId : number) {
 	const channel = $data.findChannelById(channelId);
-	notify.newNotification("error", {
+	notify.newNotification("infos", {
 		message: "Banned from channel",
 		by: channel.name,
 	})
@@ -104,7 +104,7 @@ function bannedHandler(channelId : number) {
 
 function adminNomination(channelId: number) {
 	const channel = $data.findChannelById(channelId);
-	notify.newNotification("error", {
+	notify.newNotification("infos", {
 		message: "You have been named administrator of",
 		by: channel.name,
 	})

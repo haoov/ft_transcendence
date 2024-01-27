@@ -138,6 +138,8 @@ export class UserService {
 		const avatar = userFiles[userFiles.length - 1];
 	  
 		// Return the image file
+		if (!avatar)
+			throw new NotFoundException("no custom avatar uploaded");
 		res.sendFile(path.join(directoryPath, avatar));
 	}
 
@@ -183,13 +185,14 @@ export class UserService {
 		return blockingListIds;
 	}
 
-	async addFriend(user1Id: number, user2Id: number) {
+	async addFriend(user1Id: number, user2Id: number): Promise<boolean> {
 		const user1 = await this.usersRepository.findOne({where : { id: user1Id },  relations: ['friends']});
-		const user2 = await this.usersRepository.findOne({where : { id: user2Id }});
+		const user2 = await this.usersRepository.findOne({where : { id: user2Id },  relations: ['friends']});
 		if (!user1 || !user2)
 			throw new NotFoundException("User not found in database");
 		user1.friends.push(user2);
 		await this.usersRepository.save(user1);
+		return user2.friends.some(friend => friend.id == user1Id);
 	}
 
 	async deleteFriend(user1Id: number, user2Id: number) {
@@ -202,7 +205,7 @@ export class UserService {
 		await this.usersRepository.save([user1, user2]);
 	}
 
-	async getMutualFriendList(userId: number): Promise<User[]> {
+	async getMutualFriendList(userId: number): Promise<number[]> {
 		const user = await this.usersRepository.findOne({where : { id: userId },  relations: ['friends']});
 		if (!user)
 			throw new NotFoundException("User not found in database");
@@ -210,7 +213,7 @@ export class UserService {
 		const mutualFriends = await Promise.all(
 		  user.friends.map(async friend => {
 			const friendEntity = await this.usersRepository.findOne({where : { id: friend.id },  relations: ['friends']});
-			return friendEntity.friends.some(friendOfFriend => friendOfFriend.id == userId) ? friendEntity : null;
+			return friendEntity.friends.some(friendOfFriend => friendOfFriend.id == userId) ? friendEntity.id : null;
 		  })
 		);
 	  
