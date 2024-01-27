@@ -12,6 +12,9 @@ export enum ClientEvents {
 	gameInvite = "gameInvite",
 	gameResponse = "gameResponse",
 	checkGame = "checkGame",
+	addFriend = "addFriend",
+	friendResponse = "friendResponse",
+	pong = "pong",
 };
 export enum ServerEvents {
 	started = "started",
@@ -27,6 +30,9 @@ export enum ServerEvents {
 	gameInvite = "gameInvite",
 	dataChanged = "dataChanged",
 	gameResponse = "gameResponse",
+	addFriend = "addFriend",
+	friendResponse = "friendResponse",
+	ping = "ping",
 };
 export enum ChatEvents {
 	// Events On

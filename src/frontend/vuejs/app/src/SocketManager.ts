@@ -30,6 +30,11 @@ class SocketManager {
 			this.chatSocket.emit(ClientEvents.connected, response.data);
 		});
 
+		this.userSocket.on(ServerEvents.ping, () => {
+			console.log("PONG");
+			this.userSocket.emit(ClientEvents.pong, {});
+		});
+
 		this.userSocket.on(ServerEvents.dataChanged, (data: User) => {
 			if (data.id == this.user.id) {
 				this.user = data;
@@ -69,7 +74,8 @@ class SocketManager {
 			const decline = () => {
 				this.userSocket.emit(ClientEvents.gameResponse, {accepted: false, opponent: data});
 			}
-			notify.newNotification("gameInvite", {
+			notify.newNotification("invite", {
+				message: 'Game invite',
 				by: data.username,
 				buttons: [
 					{action: accept},
@@ -92,6 +98,36 @@ class SocketManager {
 				const newMessageSend = new Message(	data.id, data.sender, data.message.text, data.message.time);
 				console.log('[SOCKET MANAGER]', newMessageSend);
 				channel.addMessage(newMessageSend);
+			}
+		});
+
+		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
+			const accept = async () => {
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${from.id}`);
+				this.userSocket.emit(ClientEvents.friendResponse, {accepted: true, opponent: from});
+			};
+			const decline = async () => {
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${from.id}`);
+			};
+			notify.newNotification("invite", {
+				message: 'Friend request',
+				by: from.username,
+				autoClose: true,
+				timeout: 4000,
+				timeOutBar: true,
+				buttons: [
+					{action: accept},
+					{action: decline}
+				]
+			});
+		});
+
+		this.userSocket.on(ServerEvents.friendResponse, (response: {accepted: boolean, opponent: User}) => {
+			if (response.accepted) {
+				notify.newNotification("infos", {
+					message: 'Friend request accepted',
+					by: response.opponent.username,
+				});
 			}
 		});
 	}
@@ -154,6 +190,10 @@ class SocketManager {
 	
 	invite(opponentId: number) {
 		this.userSocket.emit(ClientEvents.gameInvite, opponentId);
+	}
+
+	addFriend(friendId: number, id: number) {
+		this.userSocket.emit(ClientEvents.addFriend, friendId);
 	}
 
 	useSpell(spell: string) {

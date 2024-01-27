@@ -30,6 +30,19 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.dataChanged(updatedUser);
 			console.log("user connection: " + user.username);
 		});
+		// Handle ping/pong
+		let timeout: NodeJS.Timeout;
+		const interval = setInterval(() => {
+			client.emit(serverEvents.ping, {});
+			timeout = setTimeout(() => {
+			  clearInterval(interval);
+			}, 1000);
+	  
+		}, 120000);
+		client.on(clientEvents.pong, () => {
+			clearTimeout(timeout);
+		});
+
 	}
 
 	async handleDisconnect(client: Socket) {
@@ -66,6 +79,28 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (!response.accepted) {
 				sockets.forEach((socket) => {
 					socket.emit(serverEvents.gameResponse, {accepted: false, opponent: client.data.user});
+				})
+			}
+		}
+	}
+
+	@SubscribeMessage(clientEvents.addFriend)
+	addFriend(client: Socket, friendID: number) {
+		const sockets: Socket[] = this.usersSockets.get(friendID);
+		if (sockets) {
+			sockets.forEach(socket => {
+				socket.emit(serverEvents.addFriend, client.data.user);
+			});
+		}
+	}
+
+	@SubscribeMessage(clientEvents.friendResponse)
+	friendResponse(client: Socket, response: {accepted: boolean, opponent: User}) {
+		const sockets: Socket[] = this.usersSockets.get(response.opponent.id);
+		if (sockets) {
+			if (response.accepted) {
+				sockets.forEach((socket) => {
+					socket.emit(serverEvents.friendResponse, {accepted: true, opponent: client.data.user});
 				})
 			}
 		}
