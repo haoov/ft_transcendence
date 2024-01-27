@@ -27,6 +27,8 @@ function isBlocked(user: UserEntity, blockedUsers: UserEntity []) : boolean {
 	return false;
 }
 
+
+
 function convertRawMessagesToMessages(
 	messagesRaw: MessageRaw [], users: UserEntity [], blockedUsers: UserEntity []
 	) : Message [] {
@@ -48,6 +50,8 @@ function convertRawMessagesToMessages(
 	}
 	return messages;
 }
+
+
 
 @UseGuards(Jwt2faGuard)
 @Controller('chat')
@@ -105,12 +109,6 @@ export class ChatController {
 	@Get('/channels/admins')
 	async getAdmins(@Query("id") id : number) : Promise<User []> {
 		return await this.chatService.getAdminsByChannelId(id);
-	}
-
-	@Get('/channel/users')
-	async getChannelUsers(@Query('id') channelId: number): Promise<User[]> {
-		const users = await this.chatService.getUsersByChannelId(channelId);
-		return users;
 	}
 
 	@Put('/block')

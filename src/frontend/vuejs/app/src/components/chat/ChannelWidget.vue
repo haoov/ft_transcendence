@@ -1,76 +1,61 @@
 <template>
     <div :class="divClass" :title="channelName">
-        <p v-if="props.channel?.getMode() !== 'Private'">{{ channelName }}</p>
-		<img v-else :src='imgSrc' alt="Profile Picture"/>
+        <p v-if="props.channel?.mode !== 'Private'">{{ channelName }}</p>
+		<img v-else :src='imgSrc'/>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, inject, computed } from 'vue';
-import { Channel } from './classes/channel';
-import { socketManager } from '@/SocketManager';
-import type { User } from '@/utils';
 
+const $data : any  = inject('$data');
+const store = $data.getStore();
+const activeChannel = computed(() => store.activeChannel);
+const currentUser = await $data.getCurrentUser();
+const listUsers = await $data.getUsers();
 const props = defineProps({
 	channel: {
-		type: Channel,
-	},
-	currentChannel:{
-		type: Channel || null, 
-	},
-});
-const currentUser = ref<User>(socketManager.getUser());
-const currentChannel = props.currentChannel;
-const channel = props.channel;
-const channelName = computed(() => {
-	if (!channel) return '';
-	if (channel.getMode() === 'Private') {
-		const id1 : number = parseInt(channel.getName().split('#')[1]);
-		const id2 : number = parseInt(channel.getName().split('#')[2]);
-		if(id1 == currentUser.value.id) {
-			const userFind = channel.getUsers().find((user: User) => user.id === id2)
-			return userFind?.username;
-		}
-		const userFind = channel.getUsers().find((user: User) => user.id === id1)
-		return userFind?.username;
-	} else if (channel.getName().length > 10) {
-		return channel.getName().slice(0, 7) + "...";
-	}
-	return channel.getName();
-});
-const imgSrc = computed(() => {
-	if (!channel) return undefined;
-	if (channel.getMode() === 'Private') {
-		const id1 : number = parseInt(channel.getName().split('#')[1]);
-		const id2 : number = parseInt(channel.getName().split('#')[2]);
-		if(id1 == currentUser.value.id) {
-			const userFind = channel.getUsers().find((user: User) => user.id === id2)
-			return userFind?.avatar;
-		}
-		const userFind = channel.getUsers().find((user: User) => user.id === id1)
-		return userFind?.avatar;
+		type: Object,
 	}
 });
-const divClass = computed(() => {
-	if (channel?.getId() === currentChannel?.getId()) {
+
+const divClass = computed( () => {
+	if (activeChannel.value && props.channel?.id === activeChannel.value.id) {
 		return 'circle-container active';
 	} else {
 		return 'circle-container';
 	}
 });
 
-// console.log('================CHANNEL WIDGET================');
-// channel?.logAll();
-// console.log(`Channel Name: ${channelName.value}`);
-// console.log(`URL img: ${imgSrc.value}`);
-// console.log(`DivClass: ${divClass.value}`);
-// console.log('================CHANNEL WIDGET================');
-// const $data : any  = inject('$data');
-// const store = $data.getStore();
-// const activeChannel = computed(() => store.activeChannel);
-// const currentUser = await $data.getCurrentUser();
-// const listUsers = await $data.getUsers();
+const channelName = computed ( () => {
+	if (props.channel?.mode === 'Private') {
+		const id1 = props.channel.name.split('#')[1];
+		const id2 = props.channel.name.split('#')[2];
+		if (parseInt(id1) === currentUser.id) {
+			return listUsers.find((user: any) => user.id === parseInt(id2)).username;
+		}
+		return listUsers.find((user: any) => user.id === parseInt(id1)).username;
+	}
+	if (props.channel) {
+		if (props.channel.name.length > 10) {
+			return props.channel.name.slice(0, 10) + '...';
+		}
+		return props.channel.name;
+	}
+	return ''
+});
 
+const imgSrc = computed(() => {
+	if (props.channel?.mode === 'Private') {
+		const id1 = props.channel.name.split('#')[1];
+		const id2 = props.channel.name.split('#')[2];
+		if (parseInt(id1) === currentUser.id) {
+			return listUsers.find((user: any) => user.id === parseInt(id2)).avatar;
+		}
+		return listUsers.find((user: any) => user.id === parseInt(id1)).avatar;
+	}
+	return null;
+});
 </script>
 
 <style scoped>

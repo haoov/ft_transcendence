@@ -1,6 +1,5 @@
 import axios from "axios";
-import { Channel } from "./channel";
-import { Message } from "./message";
+import { Channel, Message } from "./classes";
 import { reactive } from "vue";
 
 class Chat {
@@ -37,7 +36,7 @@ class Chat {
 		const channels = await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels`)
 		.then((response) => { return response.data });
 		channels.forEach(async (channel: any) => {
-			const newChannel = new Channel(channel.id, channel.name, channel.mode, channel.creatorId);
+			const newChannel = new Channel(channel.id, channel.name, channel.mode, channel.creatorId, channel.password);
 			const messages = await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/messages/${channel.id}`)
 			.then((response) => { return response.data });
 			messages.forEach((message: any) => {

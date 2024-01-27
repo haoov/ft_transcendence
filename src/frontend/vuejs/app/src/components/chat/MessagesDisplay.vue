@@ -1,87 +1,98 @@
 <template>
 	<div class="Messages-div" >
 		<ul
-			v-for="(message, index) in messages.reverse()"
-			:id="index === nbMessage - 1 ? 'last' : ''"
+			v-for="(message, index) in messages"
+			:id="index === messages.length - 1 ? 'last' : ''"
 		>
-			<V_Message
+			<Message
 				:id="index"
 				:data="message"
-				:key="message.getId()"
+				:key="message.id"
 				:currentUser="currentUser"
-			></V_Message>
+			></Message>
 		</ul>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { type SocketManager } from "@/SocketManager";
-import { ChatEvents, ServerEvents, type User} from '@/utils'
-import chat from '@/components/chat/classes/chat';
-import { Channel } from './classes/channel';
-import { Message } from './classes/message';
-import V_Message from './Message.vue';
+import Message from './Message.vue';
 import { onUpdated, onMounted, computed, watch} from 'vue';
 import { inject, ref } from 'vue';
+import { Socket } from 'socket.io-client';
+import { type SocketManager } from "@/SocketManager";
+import { ChatEvents, ServerEvents, type User} from '@/utils'
 
-const socketManager: SocketManager = inject('socketManager') as SocketManager;
-const $data : any = inject('$data');
-const currentUser = socketManager.getUser();
-const channel = computed(() => chat.getCurrentChannel());
-const messages : Message [] = channel.value ? channel.value.getMessages() : [];
-const nbMessage : number = messages.length;
+type Message = {
+	sender: User;
+	message: {
+		text: string;
+		time: string;
+	};
+};
 
-onUpdated(() => {
-		scrollToBottomSmooth();
-});
+function scrollToBottomOnMounted() {
+	const end = document.getElementById('last');
+	end?.scrollIntoView();
+};
 
 function scrollToBottomSmooth() {
 	const end = document.getElementById('last');
 	end?.scrollIntoView({ behavior: 'smooth' });
 };
 
-// async function recievedMessage(data : any) {
-	// 	const message : Message = new Message(
-		// 		data.message.id,
-		// 		data.sender,
-		// 		data.message.text,
-		// 		data.message.time
-		// 		);
-		// 	const blockedUsers = await $data.getBlockedUsers();
-		// 	if (activeChannel.value?.getId() !== data.channelId) {
-			// 		return;
-			// 	}
-			// 	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === message.getSender().id)) {
-				// 		store.messages.push(message);
-				// 	}
-				// };
-				
-				// onMounted(() => {
-					// 	if(!socketManager.hasEventListener("chat", ChatEvents.receivedMessage)) {
-// 		socketManager.addEventListener("chat", ChatEvents.receivedMessage, recievedMessage);
-// 	}
-// });
+const socketManager: SocketManager = inject('socketManager') as SocketManager;
+const $data : any = inject('$data');
+const currentUser = ref<User>(await $data.getCurrentUser());
+const store = $data.getStore();
+const socket: Socket = store.socket;
+const activeChannel = computed(() => store.activeChannel);
+const messages = computed(() => store.messages);
 
-// socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
-	// 	currentUser.value = await $data.getCurrentUser();
-	// 	if (activeChannel.value) {
-		// 		// $data.loadMessagesByChannel(activeChannel.value.getId());
-		// 		activeChannel.value.loadMessages();
-		// 	}
-		// });
-		
-	// function scrollToBottomOnMounted() {
-	// 	const end = document.getElementById('last');
-	// 	end?.scrollIntoView();
-	// };
-		
-	</script>
+watch(activeChannel, () => {
+	if (activeChannel) {
+		$data.loadMessagesByChannel(activeChannel.value.id);
+		return;
+	}
+	store.messages = [];
+	return;
+});
+
+async function recievedMessage(message : any) {
+	console.log('[MessagesDisplay]: message received ->', message);
+	const blockedUsers = await $data.getBlockedUsers();
+	if (activeChannel.value.id !== message.message.channelId) {
+		return;
+	}
+	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === message.sender.id)) {
+		store.messages.push(message);
+	}
+};
+
+onMounted(() => {
+	if(!socketManager.hasEventListener("chat", ChatEvents.receivedMessage)) {
+		socketManager.addEventListener("chat", ChatEvents.receivedMessage, recievedMessage);
+	}
+	scrollToBottomOnMounted();
+});
+
+onUpdated(() => {
+	scrollToBottomSmooth();
+});
+
+socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
+	currentUser.value = await $data.getCurrentUser();
+	if (activeChannel.value) {
+		$data.loadMessagesByChannel(activeChannel.value.id);
+	}
+});
+
+</script>
 
 <style scoped>
 
 .Messages-div {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   width: 100%;
   height: auto;
   margin-top: 2px;

@@ -6,10 +6,8 @@ import router from "./router";
 import { reactive } from "vue";
 import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
-// import chat from "./minichat/chat";
-import chat from "@/components/chat/classes/chat";
-import { Channel } from "@/components/chat/classes/channel"
-import { Message } from "@/components/chat/classes/message"
+import chat from "./chat/chat";
+import { Channel, Message } from "./chat/classes";
 
 class SocketManager {
 	private readonly userSocket: Socket;
@@ -171,7 +169,7 @@ class SocketManager {
 
 	/*CHAT*/
 	sendMessage(message: any) {
-		console.log('[SocketMangager.sendMessage]: ', message);
+		// console.log(message);
 		this.chatSocket.emit(ChatEvents.sendMessage, message);
 	}
 
