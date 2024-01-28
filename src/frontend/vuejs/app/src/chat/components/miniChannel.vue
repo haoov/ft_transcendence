@@ -2,16 +2,22 @@
 	import { onUpdated, ref, type Ref } from 'vue';
 	import v_miniMessage from './miniMessage.vue';
 	import cancelIcon from '@/assets/images/cancelIcon.png';
-	import type { Channel } from '../classes';
+	import { type Channel, type MessageParams } from '@/chat';
 	import { socketManager } from '@/SocketManager';
-	import chat from '@/chat/chat';
+	import { chat } from '@/chat';
 
 	let display: Ref<boolean> = ref(false);
 	const props = defineProps<{channel: Channel}>();
 	const input = ref<string>("");
 
 	function sendMessage() {
-		chat.sendMessage(input.value, props.channel, socketManager.getUser(), socketManager.sendMessage);
+		const messageParams: MessageParams = {
+			sender: socketManager.getUser(),
+			channelId: props.channel.getId(),
+			text: input.value,
+			datestamp: ''
+		};
+		chat.sendMessage(messageParams);
 		input.value = "";
 	}
 
@@ -77,7 +83,7 @@
 		display: flex;
 		flex-direction: column;
 		width: 230px;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		flex-direction: column;
 		background-color: var(--c-surface);
 		box-shadow: 0 0 0 1px var(--c-black-light);
@@ -85,7 +91,7 @@
 
 	#channel {
 		display: flex;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		align-items: center;
 		justify-content: space-between;
 		width: 100%;
@@ -126,7 +132,7 @@
 		max-height: 300px;
 		padding: 5px;
 		gap: 5px;
-		background-color: var(--c-surface);
+		background-color: var(--c-black-light);
 		overflow-y: scroll;
 		overflow-x: hidden;
 	}
@@ -153,9 +159,9 @@
 		height: auto;
 		width: 100%;
 		border: none;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		padding: 5px;
-		background-color: var(--c-grey-light);
+		background-color: var(--c-white);
 		font-size: medium;
 		color: var(--c-black);
 		resize: none;
@@ -173,4 +179,4 @@
 	.messages-enter-to {
 		transform: scale(1);
 	}
-</style>
+</style>@/chat/classes/chat

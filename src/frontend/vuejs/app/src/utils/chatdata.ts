@@ -82,7 +82,8 @@ const store = reactive({
 	isconfirmationLeavingModalOpen: false,
 	isProfileModalOpen: false,
 	activeChannel: null as Channel | null,
-	socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`),
+	//socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`),
+	socket: undefined
 });
 
 export default {
@@ -188,7 +189,7 @@ export default {
 				password: "",
 				users: userIds,
 			};
-			store.socket.emit('createNewChannel', newChannel);
+			//store.socket?.emit('createNewChannel', newChannel);
 		}
 		this.closeModalForm();
 	},

@@ -346,7 +346,7 @@ onMounted(async () => {
 
 .formField input {
 		width: 60%;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		padding: 0.5rem 1rem;
 		color: #fff;
 		font-family: inherit;
@@ -360,7 +360,7 @@ onMounted(async () => {
 .formField .forbidden {
 		width: 60%;
 		font-size: small;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		padding: 0.5rem 1rem;
 		color: var(--c-grey);
 		font-family: Overpass;
@@ -386,7 +386,7 @@ onMounted(async () => {
 .radio-inputs {
 	display: flex;
     flex-wrap: wrap;
-    border-radius: 0.5rem;
+    border-radius: 0.8rem;
     box-sizing: border-box;
 	background-color: var(--c-black-light);
     box-shadow: 0 0 0 1px #0000000f;

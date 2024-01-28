@@ -1,13 +1,11 @@
 <script setup lang="ts">
 	import { inject } from 'vue';
-	import { type SocketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 	import CustumButton from '@/components/custumButton.vue';
 	import gameData from '../gameData';
 
 	defineProps(["p1", "p2", "state"]);
 	const emit = defineEmits(["leaveGame"]);
-
-	const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 	function leaveGame() {
 		socketManager.forfeit();

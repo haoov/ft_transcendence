@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	import v_miniChannel from './miniChannel.vue';
-	import chat from '@/chat/chat';
+	import { chat } from '@/chat';
 </script>
 
 <template>
@@ -47,4 +47,4 @@
 	.channels-leave-from {
 		transform: translateY(0);
 	}
-</style>
+</style>@/chat/classes/chat
