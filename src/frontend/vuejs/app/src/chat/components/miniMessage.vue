@@ -1,12 +1,11 @@
 <script setup lang="ts">
-	import type { SocketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 	import { inject } from 'vue';
 	import type { Message } from '../classes';
 	import type { User } from '@/utils';
 	import moment from 'moment-timezone';
 
 	const props = defineProps<{message: Message, index: number, length: number}>();
-	const socketManager = inject('socketManager') as SocketManager;
 
 	function isCurrentUser(user: User) {
 		return user.id == socketManager.getUser().id;
@@ -44,7 +43,7 @@
 				</span>
 				<div
 					:class="`message ${affectClass(message, index)}`"
-					:title="`at ${time(message.getTime())}`">
+					:title="`at ${time(message.getDatestamp())}`">
 					{{ message.getText() }}
 				</div>
 		</div>

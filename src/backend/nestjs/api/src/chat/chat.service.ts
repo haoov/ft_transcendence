@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MessageEntity , ChannelEntity} from 'src/postgreSQL/entities/chat.entity';
 import { UserEntity } from 'src/postgreSQL/entities/user.entity';
-import { MessageRaw, Channel } from './chat.interface';
+import { Message, Channel } from './chat.interface';
 import { User } from 'src/user/user.interface';
+import { ChannelDTO, MessageDTO } from './dto/chat.dto';
 
 function createChannelObj(channel: any, users: User []) : ChannelEntity {
 	const newChannel = new ChannelEntity();
@@ -27,28 +28,28 @@ export class ChatService {
 	/* MESSAGE */
 
 	//Permet de fetch tous les messages
-	async getAllMessages(): Promise<MessageRaw []> {
-		return await this.messagesRepository.find() as MessageRaw [];
-	}
+	// async getAllMessages(): Promise<MessageRaw []> {
+	// 	return await this.messagesRepository.find() as MessageRaw [];
+	// }
 	
 	//Permet de charger les messages d'une conversation
-	async getAllMessagesByChannel(channelId: number): Promise<MessageRaw []> {
-		const messages = await this.messagesRepository.find({ where: { channelId: channelId }});
-		return messages as MessageRaw [];
-	}
+	// async getAllMessagesByChannel(channelId: number): Promise<MessageRaw []> {
+	// 	const messages = await this.messagesRepository.find({ where: { channelId: channelId }});
+	// 	return messages as MessageRaw [];
+	// }
 
 	//Permet de créer un message dans la base de données
-	async createMessage(message: MessageRaw): Promise<MessageRaw> {
-		this.messagesRepository.create(message as MessageEntity);
-		return await this.messagesRepository.save(message);
-	}
+	// async createMessage(message: MessageRaw): Promise<MessageRaw> {
+	// 	this.messagesRepository.create(message as MessageEntity);
+	// 	return await this.messagesRepository.save(message);
+	// }
 
 	// /* CHANNEL */
 
-	//Permet de fetch tous les channels
-	async getAllChannels(): Promise<Channel []> {
-		return await this.channelRepository.find() as Channel [];
-	}
+	// //Permet de fetch tous les channels
+	// async getAllChannels(): Promise<Channel []> {
+	// 	return await this.channelRepository.find() as Channel [];
+	// }
 
 	//Permet de fetch un channel par son id
 	async getCurrentUserChannels(userId: number): Promise<Channel []> {
@@ -94,28 +95,27 @@ export class ChatService {
 	}
 
 	//Permet de créer un channel dans la base de données
-	async createChannel(channel: any): Promise<Channel> {
-		const users : User [] = [];
-		for (const idUser of channel.users) {
-			const newUser = await this.userRepository.findOneBy({ id: idUser }) as User;
-			users.push(newUser);
-		}
-		console.log(users);
-		const newChannel : ChannelEntity = createChannelObj(channel, users);
-		this.channelRepository.create(newChannel);
-		return await this.channelRepository.save(newChannel) as Channel;
-	}
+	// async createChannel(channel: any): Promise<Channel> {
+	// 	const users : User [] = [];
+	// 	for (const idUser of channel.users) {
+	// 		const newUser = await this.userRepository.findOneBy({ id: idUser }) as User;
+	// 		users.push(newUser);
+	// 	}
+	// 	const newChannel : ChannelEntity = createChannelObj(channel, users);
+	// 	this.channelRepository.create(newChannel);
+	// 	return await this.channelRepository.save(newChannel) as Channel;
+	// }
 
 	//Permet de mettre à jour un channel
-	async updateChannel(channel: Channel): Promise<Channel> {
-		const newChannel = await this.channelRepository.findOne({ where: { id: channel.id }, relations: ["users"]});
-		newChannel.name = channel.name;
-		newChannel.creatorId = channel.creatorId;
-		newChannel.mode = channel.mode;
-		newChannel.password = channel.password;
-		await this.channelRepository.save(newChannel);
-		return newChannel;
-	}
+	// async updateChannel(channel: Channel): Promise<Channel> {
+	// 	const newChannel = await this.channelRepository.findOne({ where: { id: channel.id }, relations: ["users"]});
+	// 	newChannel.name = channel.name;
+	// 	newChannel.creatorId = channel.creatorId;
+	// 	newChannel.mode = channel.mode;
+	// 	newChannel.password = channel.password;
+	// 	await this.channelRepository.save(newChannel);
+	// 	return newChannel;
+	// }
 
 	//Permet d'ajouter un utilisateur à un channel
 	async addUserToChannel(channelId: number, userId: number): Promise<boolean> {
@@ -142,5 +142,93 @@ export class ChatService {
 		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
 		await this.channelRepository.remove(channel);
 		return true;
+	}
+
+	/*----------------------------------------------------------------------------*/
+	/*                                      RAPH                                  */
+	/*----------------------------------------------------------------------------*/
+
+	async getChannel(channelId: number): Promise<Channel> {
+		let channel: Channel;
+		try {
+			channel = await this.channelRepository.findOneOrFail({
+				where: { id: channelId },
+				relations: ["users", "messages"]
+			});
+		}
+		catch (err) {
+			console.log(err);
+		}
+		return channel;
+	}
+
+	async createChannel(channelDTO: ChannelDTO): Promise<Channel> {
+		let newChannel: Channel;
+		try {
+			newChannel = await this.channelRepository.save(channelDTO);
+		}
+		catch (err) {
+			console.log(err);
+		}
+		return newChannel;
+	}
+
+	async updateChannel(channelId: number, channelDTO: ChannelDTO): Promise<Channel> {
+		let updatedChannel: Channel;
+		try {
+			const channel: Channel = await this.getChannel(channelId);
+			updatedChannel = await this.channelRepository.save({
+				...channel,
+				...channelDTO
+			});
+		}
+		catch (err) {
+			console.log(err);
+		}
+		return updatedChannel;
+	}
+
+	async getUserChannels(userId: number): Promise<Channel[]> {
+		let channels: Channel[];
+		try {
+			channels = await this.channelRepository.find({
+				where: {
+					users: { id: userId }
+				},
+				relations: ["users", "messages", "messages.sender"]
+			});
+			this.sortCahnnels(channels);
+		}
+		catch (err) {
+			console.log(err);
+		}
+		return channels;
+	}
+
+	async createMessage(messageDTO: MessageDTO): Promise<Message> {
+		let newMessage: Message;
+		try {
+			const channel: Channel = await this.getChannel(messageDTO.channelId);
+			newMessage = await this.messagesRepository.save(messageDTO);
+			channel.messages.push(newMessage);
+			await this.channelRepository.save(channel);
+		}
+		catch (err) {
+			throw err;
+		}
+		return newMessage;
+	}
+
+	sortCahnnels(channels: Channel[]): Channel[] {
+		return channels.sort((a, b) => {
+			const aTime = new Date(a.messages[a.messages.length - 1]?.datestamp).getTime();
+			const bTime = new Date(b.messages[b.messages.length - 1]?.datestamp).getTime();
+			if (!aTime)
+				return 1;
+			else if (!bTime)
+				return -1;
+			else
+				return bTime - aTime;
+		})
 	}
 }
