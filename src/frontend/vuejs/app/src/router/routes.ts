@@ -4,6 +4,7 @@ import GameView from "@/game/GameView.vue";
 import ChatView from "@/views/ChatView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import SettingView from "@/views/SettingView.vue";
+import PageNotFoundView from "@/views/PageNotFoundView.vue";
 
 
 const routes = [
@@ -36,7 +37,16 @@ const routes = [
 		path: "/settings",
 		name: "settings",
 		component: SettingView,
-	}
+	},
+	{
+		path: "/error",
+		name: "error",
+		component: PageNotFoundView,
+	},
+	{
+		path: "/:pathMatch(.*)*",
+		redirect: () => { return { path: '/error' }}
+	},
 ];
 
 export default routes;
