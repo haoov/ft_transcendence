@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, NotFoundException, Param, Put, Body, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User } from "./user.interface";
 import { Request, Response } from "express";
@@ -24,7 +24,7 @@ export class UserController {
 			else if (username)
 				user = await this.userService.getUserByUsername(username);
 			if (!user)
-				return null;
+				throw new NotFoundException("User not found");
 			const { twofa_secret, ...user_ret } = user;
 			return user_ret as User;
 		}
