@@ -25,7 +25,7 @@ export class AuthController {
 	@UseGuards(Intra42Guard)
 	async login(@Res() res: Response): Promise<Response> {
    		return res.status(200).send({
-			"status": "logout"
+			"status": "login"
 		});
 	}
 
@@ -37,6 +37,8 @@ export class AuthController {
 		res.setHeader('Set-Cookie', cookie);
 		if (user.twofa_enabled) 
 			return res.redirect("/login?2fa=true");
+		if ((req.user as any).first_connection)
+			return res.redirect("/settings");
 		return res.redirect("/");
 	}
 
