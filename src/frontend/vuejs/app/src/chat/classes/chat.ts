@@ -119,6 +119,9 @@ class Chat {
 			const updatedChannel = new Channel(data);
 			updatedChannel.setMessages(this.userChannels[index].getMessages());
 			this.userChannels.splice(index, 1, updatedChannel);
+		} else {
+			const newChannel = new Channel(data);
+			this.userChannels.push(newChannel);
 		}
 	}
 
