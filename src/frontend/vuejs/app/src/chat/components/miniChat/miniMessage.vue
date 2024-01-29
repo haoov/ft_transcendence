@@ -1,7 +1,7 @@
 <script setup lang="ts">
 	import { socketManager } from '@/SocketManager';
 	import { inject } from 'vue';
-	import type { Message } from '../classes';
+	import type { Message } from '@/chat';
 	import type { User } from '@/utils';
 	import moment from 'moment-timezone';
 

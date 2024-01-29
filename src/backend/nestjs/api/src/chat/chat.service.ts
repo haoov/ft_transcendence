@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { MessageEntity , ChannelEntity} from 'src/postgreSQL/entities/chat.entity';
 import { UserEntity } from 'src/postgreSQL/entities/user.entity';
 import { Message, Channel } from './chat.interface';
@@ -71,28 +71,28 @@ export class ChatService {
 	}
 
 	//Permet de recuperer les channels qui ne sont ni prives ni secret et qui ne sont pas deja dans la liste des channels de l'utilisateur
-	async getJoinableChannels(userId: number): Promise<Channel []> {
-		let channels: Channel [] = [];
-		const alreadyJoinedChannels = await this.channelRepository
-		.createQueryBuilder("channel")
-		.innerJoin("channel.users", "user", "user.id = :userId", { userId })
-		.getMany();
-		if (alreadyJoinedChannels.length === 0) {
-			channels = await this.channelRepository
-			.createQueryBuilder("channel")
-			.leftJoin("channel.users", "user")
-			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
-			.andWhere("user.id != :userId", { userId })
-			.getMany();
-		} else {
-			channels = await this.channelRepository
-			.createQueryBuilder("channel")
-			.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
-			.andWhere("channel.id NOT IN (:...alreadyJoinedChannelIds)", { alreadyJoinedChannelIds: alreadyJoinedChannels.map(channel => channel.id) })
-			.getMany();
-		}
-		return channels;
-	}
+	// async getJoinableChannels(userId: number): Promise<Channel []> {
+	// 	let channels: Channel [] = [];
+	// 	const alreadyJoinedChannels = await this.channelRepository
+	// 	.createQueryBuilder("channel")
+	// 	.innerJoin("channel.users", "user", "user.id = :userId", { userId })
+	// 	.getMany();
+	// 	if (alreadyJoinedChannels.length === 0) {
+	// 		channels = await this.channelRepository
+	// 		.createQueryBuilder("channel")
+	// 		.leftJoin("channel.users", "user")
+	// 		.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
+	// 		.andWhere("user.id != :userId", { userId })
+	// 		.getMany();
+	// 	} else {
+	// 		channels = await this.channelRepository
+	// 		.createQueryBuilder("channel")
+	// 		.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
+	// 		.andWhere("channel.id NOT IN (:...alreadyJoinedChannelIds)", { alreadyJoinedChannelIds: alreadyJoinedChannels.map(channel => channel.id) })
+	// 		.getMany();
+	// 	}
+	// 	return channels;
+	// }
 
 	//Permet de créer un channel dans la base de données
 	// async createChannel(channel: any): Promise<Channel> {
@@ -160,6 +160,69 @@ export class ChatService {
 			console.log(err);
 		}
 		return channel;
+	}
+
+	async getJoinableChannels(userId: number): Promise<Channel[]> {
+		let channels: Channel[];
+		try {
+			channels = await this.channelRepository.find({
+				where: {mode: "Public"},
+				relations: ["users", "bannedUsers"],
+			});
+			channels = channels.filter((c) => {
+				if (c.users.find((user) => user.id == userId)
+						|| c.bannedUsers.find((user) => user.id == userId))
+							return false;
+				else
+					return true;
+			});
+		}
+		catch (err) {
+			console.log(err);
+		}
+		return channels;
+	}
+
+	async getAddableUsers(channelId: number, userId: number): Promise<User[]> {
+		let users: User[] = await this.userRepository.find();
+		try {
+			const user: User = await this.userRepository.findOneOrFail({
+				where: { id: userId },
+				relations: [
+					"users_blocked",
+					"users_blocked.users_blocked",
+				]
+			});
+			if (channelId) {
+				const channel: Channel = await this.channelRepository.findOneOrFail({
+					where: {id: channelId },
+					relations: ["users", "bannedUsers"]
+				});
+				users = users.filter((u) => {
+					if (	channel.bannedUsers.find((user) => user.id == u.id)
+								|| user.users_blocked.find((user) => user.id == u.id)
+								|| channel.users.find((user) => user.id == u.id)
+								|| u.id == userId) 
+									return false;
+					else
+						return true;
+				});
+			}
+			else {
+				users = users.filter((u) => {
+					if (	user.users_blocked.find((b_user) => b_user.id == u.id)
+								|| u.id == userId) {
+									return false;
+					}
+					else
+						return true;
+				});
+			}
+		}
+		catch (err) {
+			console.log(err);
+		}
+		return users;
 	}
 
 	async createChannel(channelDTO: ChannelDTO): Promise<Channel> {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 	import v_sideBar from './sideBar.vue';
 	import v_channel from './channel.vue';
-	import v_chatMenu from './chatMenu.vue';
+	import v_chatMenu from './menu/chatMenu.vue';
 	import { ref, watch, type Ref } from 'vue';
 	import { chat, type Channel } from '@/chat';
 
@@ -33,6 +33,8 @@
 		align-items: flex-start;
 		height: 90%;
 		width: 90%;
+		max-height: 1000px;
+		max-width: 1000px;
 		margin-top: 20px;
 		margin-bottom: 5px;
 		border-radius: 0.8rem;

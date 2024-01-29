@@ -22,10 +22,14 @@ class SocketManager {
 	}
 
 	async initSocket() {
+		this.userSocket.connect();
 		this.chatSocket.connect();
+		this.gameSocket.connect();
 		await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((response) => {
 			this.user = response.data;
+			this.userSocket.emit("userConnected", this.user);
 			this.chatSocket.emit("userConnected", this.user);
+			this.gameSocket.emit("userConnected", this.user);
 			chat.loadChannels(this.user.id);
 		});
 

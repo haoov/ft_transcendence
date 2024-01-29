@@ -57,11 +57,11 @@ async function fetchMe() {
 
 // BLOCK & UNBLOCK FUNCTIONS
 async function blockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block?id=${user.value?.id}`)
 }
 
 async function unblockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/unblock?id=${user.value?.id}`)
 }
 
 // ADD TO FRIEND & REMOVE FROM FRIENDS

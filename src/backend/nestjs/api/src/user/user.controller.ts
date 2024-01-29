@@ -11,8 +11,10 @@ import { UserEntity } from "src/postgreSQL/entities";
 @Controller("user")
 @UseGuards(Jwt2faGuard)
 export class UserController {
-	constructor(private readonly userService: UserService,
-				private readonly userGateway: UserGateway) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly userGateway: UserGateway
+	) {}
 
 	@Get()
 	getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
@@ -33,6 +35,20 @@ export class UserController {
 		const user: UserEntity = await this.userService.getCurrentUser(req) as UserEntity;
 		const { twofa_secret, ...user_ret } = user;
 		return user_ret as User;
+	}
+
+	@Put("block")
+	async blockUser(@Req() req: Request, @Query("id") id: number) {
+		const user = req.user as User;
+		await this.userService.blockUser(user.id, id);
+		this.userGateway.dataChanged(user);
+	}
+
+	@Put("unblock")
+	async unblockUser(@Req() req: Request, @Query("id") id: number) {
+		const user = req.user as User;
+		await this.userService.unblockUser(user.id, id);
+		this.userGateway.dataChanged(user);
 	}
 	
 	@Get("block")
@@ -85,5 +101,12 @@ export class UserController {
 	@Delete(":username")
 	deleteUser(@Param("username") username: string) {
 		this.userService.deleteUser(username);
+	}
+
+	@Put('/update/status')
+	async updateStatus(@Query('id') userId: number, @Query("status") status: string) {
+		const user = await this.userService.getUserById(userId);
+		await this.userService.updateUserStatus(user, status);
+		this.userGateway.dataChanged(user);
 	}
 }
