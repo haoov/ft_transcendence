@@ -20,10 +20,13 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 		type: "",
 	};
 	switch (type) {
-		case "gameInvite":
-			notification.message = params?.message || "Game invite";
-			notification.type = "gameInvite";
+		case "invite":
+			notification.message = params?.message || "Invite";
+			notification.type = "invite";
 			notification.by = params?.by;
+			notification.autoClose = (params?.autoClose !== undefined ? params.autoClose : false);
+			notification.timeout = params?.timeout || 5000;
+			notification.timeOutBar = (params?.timeOutBar !== undefined ? params.timeOutBar : false)
 			notification.buttons = [
 				{
 					text: "accept",
@@ -78,6 +81,7 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 		case "infos":
 			notification.message = params?.message || "Infos";
 			notification.type = "infos";
+			notification.by = params?.by;
 			notification.autoClose = (params?.autoClose !== undefined ? params.autoClose : true);
 			notification.timeout = params?.timeout || 3000;
 			notification.timeOutBar = params?.timeOutBar || false;

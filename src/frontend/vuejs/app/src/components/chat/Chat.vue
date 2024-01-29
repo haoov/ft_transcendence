@@ -39,15 +39,16 @@ import EditChannelForm from './EditChannelForm.vue';
 import AddUserForm from './AddUserForm.vue';
 import ConfirmationLeaveChannel from './ConfirmationLeaveChannel.vue';
 import ProfilModal from './ProfilModal.vue';
-import { Suspense, inject } from 'vue';
-import { io, Socket } from 'socket.io-client';
-import { onBeforeRouteLeave } from 'vue-router';
+import { Suspense, inject, onMounted } from 'vue';
+import { SocketManager } from '@/SocketManager';
+import { ChatEvents } from '@/utils';
+import notify from '@/notify/notify';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
-const socket : Socket = store.socket; 
+const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
-store.socket.on('lastActiveChannel', async (id : string) => {
+async function setInBackLastActiveChannel(id: string) {
 	const user = await $data.getCurrentUser();
 	$data.loadChannels(user.id);
 	const channel = store.channels.find((channel : any) => channel.id === parseInt(id));
@@ -56,11 +57,22 @@ store.socket.on('lastActiveChannel', async (id : string) => {
 	} else {
 		$data.setActiveChannel(null);
 	}
-});
+}
 
-// onBeforeRouteLeave(() => {
-// 	socket.disconnect();
-// });
+function handleError(error: string) {
+	notify.newNotification("error", {
+		message: error,
+	})
+}
+
+onMounted(() => {
+	if (!socketManager.hasEventListener("chat", ChatEvents.lastActiveChannel)) {
+		socketManager.addEventListener("chat", ChatEvents.lastActiveChannel, setInBackLastActiveChannel);
+	}
+	if (!socketManager.hasEventListener("chat", ChatEvents.errorManager)) {
+		socketManager.addEventListener("chat", ChatEvents.errorManager, handleError);
+	}
+});
 
 const closeModal = () => {
 	$data.closeModalForm()
@@ -81,6 +93,7 @@ const closeLeaveConfirmation = () => {
 const closeProfilModal = () => {
 	$data.closeProfileModal()
 }
+
 
 </script>
 

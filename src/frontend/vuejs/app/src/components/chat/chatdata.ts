@@ -1,6 +1,5 @@
+import { socketManager } from "@/SocketManager";
 import axios from "axios";
-import io from "socket.io-client";
-import { Socket } from "socket.io-client";
 import { reactive } from "vue";
 
 interface Channel {
@@ -8,15 +7,17 @@ interface Channel {
 	name: string;
 	mode: string;
 	creatorId: any;
+	admins: User [];
+	bannedUsers: User [];
 };
 
 interface Message {
-	id: number;
 	sender: {
 		name: string;
 		avatar: string;
 	};
 	message: {
+		id: number;
 		text: string;
 		time: string;
 	};
@@ -65,15 +66,22 @@ async function fetchBlockersList() : Promise<number []> {
 	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/blockedBy`).then((res) => { return res.data });
 }
 
+async function getBanlist(channelId: number ) : Promise<User[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/banned?id=${channelId}`).then((res) => { return res.data });
+}
+
+async function getAdmins(channelId: number ) : Promise<User[]> {
+	return axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/channels/admins?id=${channelId}`).then((res) => { return res.data });
+}
+
 async function blockUser(id: number) {
-	axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${id}`)
+	axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${id}`);
 }
 
 const store = reactive({
-	isSocketReady: false,
 	channels: [] as Channel[],
 	messages: [] as Message [],
-	users: [] as User [],
+	activeChannel: null as Channel | null,
 	userIdClicked: null as number | null,
 	currentUser: null as User | null,
 	isModalOpen: false,
@@ -81,22 +89,9 @@ const store = reactive({
 	isAddUserModalOpen: false,
 	isconfirmationLeavingModalOpen: false,
 	isProfileModalOpen: false,
-	activeChannel: null as Channel | null,
-	//socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`),
-	socket: undefined
 });
 
 export default {
-	isSocketReady() : boolean {
-		return store.isSocketReady;
-	},
-
-	initSocket() {
-		this.getCurrentUser().then((user) => {
-			//store.socket.emit('userConnected', user);
-		});
-		store.isSocketReady = true;
-	},
 	
 	getUsers() : Promise<User []> {
 		return fetchUsers();
@@ -126,7 +121,7 @@ export default {
 		return fetchChannels();
 	},
 
-	getJoinableChannels(id: number) : Object {
+	getJoinableChannels() : Object {
 		return fetchJoinableChannels();
 	},
 
@@ -134,11 +129,23 @@ export default {
 		return store;
 	},
 
-
 	loadChannels() {
 		fetchCurrentUserChannels().then((channels) => {
 			store.channels = channels.slice().reverse();
 		});
+	},
+
+	getAdmins(channelId: number) : Promise<User []> {
+		return getAdmins(channelId);
+	},
+
+	getBanlist(channelId: number) : Promise<User []> {
+		return getBanlist(channelId);
+	},
+
+	findChannelById(id : number) : Channel {
+		const index = store.channels.findIndex((channel) => channel.id === id);
+		return store.channels[index];
 	},
 
 	addChannel(channel: Channel) {
@@ -146,17 +153,20 @@ export default {
 	},
 
 	deleteChannel(channelId: number) {
-		const index = store.channels.findIndex((c) => c.id === channelId);
+		const index = store.channels.findIndex((channel) => channel.id === channelId);
 		store.channels.splice(index, 1);
 	},
 
 	updateChannel(channel: Channel) {
-		const index = store.channels.findIndex((c) => c.id === channel.id);
+		const index = store.channels.findIndex((channel) => channel.id === channel.id);
 		store.channels[index] = channel;
 	},
 
 	setActiveChannel(channel: Channel) {
 		store.activeChannel = channel;
+		if (store.activeChannel) {
+			this.loadMessagesByChannel(store.activeChannel.id);
+		}
 	},
 
 	loadMessagesByChannel(idChannel: number) {
@@ -189,15 +199,9 @@ export default {
 				password: "",
 				users: userIds,
 			};
-			//store.socket?.emit('createNewChannel', newChannel);
+			socketManager.createChannel(newChannel);
 		}
 		this.closeModalForm();
-	},
-
-	loadUsers() {
-		fetchUsers().then((users) => {
-			store.users = users;
-		});
 	},
 
 	openModalForm() {

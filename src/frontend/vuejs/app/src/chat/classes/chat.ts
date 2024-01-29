@@ -56,6 +56,7 @@ class Chat {
 	async loadChannels(userId: number) {
 		const channels = await axios.get(`${apiChat}/channels`)
 		.then((response) => { return response.data });
+		console.log("[channels]", channels);
 		channels.forEach((channel: ChannelData) => {
 			const newChannel = new Channel(channel);
 			this.userChannels.push(newChannel);
@@ -108,6 +109,7 @@ class Chat {
 		updatedParams.creatorId = channel.getCreatorId();
 		updatedParams.messages = channel.getMessages();
 		updatedParams.users.push(...channel.getUsers());
+		console.log("[updating channel]", updatedParams);
 		axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams);
 	}
 

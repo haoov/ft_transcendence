@@ -38,13 +38,12 @@ const channelName = computed ( () => {
 	}
 	if (props.channel) {
 		if (props.channel.name.length > 10) {
-			return props.channel.name.slice(0, 15) + '...';
+			return props.channel.name.slice(0, 10) + '...';
 		}
 		return props.channel.name;
 	}
 	return ''
-})
-ref(props.channel?.name);
+});
 
 const imgSrc = computed(() => {
 	if (props.channel?.mode === 'Private') {
@@ -56,7 +55,7 @@ const imgSrc = computed(() => {
 		return listUsers.find((user: any) => user.id === parseInt(id1)).avatar;
 	}
 	return null;
-})
+});
 </script>
 
 <style scoped>
