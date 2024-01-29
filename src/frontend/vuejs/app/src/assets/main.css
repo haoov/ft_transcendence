@@ -15,6 +15,7 @@
 
 html, body, #app {
 	height: 100%;
+	overflow: overlay;
 }
 
 html {
@@ -27,4 +28,9 @@ body {
 
 div {
 	display: block;
+}
+
+input {
+	outline: none;
+	background-color: transparent;
 }

@@ -10,20 +10,20 @@ import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
 import { type SocketManager } from "@/SocketManager";
+import notify from "@/notify/notify";
 
 const route = useRoute();
 let username = route.params.username;
 const me = ref<User>();
 const user = ref<User>();
-const isBlocked = ref<boolean>(false);
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
 const $data : any = inject('$data');
 const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser: User) => {
-	if (user.value?.id == newUser.id) {
-		if (newUser.username != username) {
+	if (user.value?.id == newUser.id || me.value?.id == newUser.id) {
+		if (user.value?.id == newUser.id && newUser.username != username) {
 			username = newUser.username;
 			await fetchUser();  
 			router.replace(`/${newUser.username}`);
@@ -35,55 +35,76 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser:
 
 // FETCHING DATA
 async function fetchUser() {
-	axios
+	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user?username=${username}`)
-		.then( (data) => {
+		.then( async (data) => {
 			user.value = data.data;
 			// Fetch user stats
-			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/stats/${data.data.id}`;
-			axios.get(url1).then( data => {
+			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/user/${data.data.id}`;
+			await axios.get(url1).then( data => {
 				userStats.value = data.data;})
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
-				userGames.value = data.data;})
-			})
+				userGames.value = data.data;
+				updatePieAnimation();
+			});
+		})
 		.catch((err) => {
 			router.replace("/error");
-		})
+		});
 }
 
 async function fetchMe() {
-	axios
+	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
 		.then( (data) => {
-			me.value = data.data;
-			// Fetch blocked users
-			const url: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block`;
-			axios.get(url).then( (data) => {
-				const blockedUsers: User[] = data.data;
-				blockedUsers.forEach( (blockedUser) => {
-					if (blockedUser.id == user.value?.id)
-						isBlocked.value = true;
-				});
-			});
+			me.value = data.data; })
+		.catch( (err) => {
+			console.log(err);
 		});
 }
 
 // BLOCK & UNBLOCK FUNCTIONS
-function blockUser() {
-	axios
-		.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
-		.then( () => {
-			isBlocked.value = true;
+async function blockUser() {
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
+			.catch( (err) => { console.log(err) });
+}
+
+async function unblockUser() {
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
+			.catch( (err) => { console.log(err) });
+}
+
+// ADD TO FRIEND & REMOVE FROM FRIENDS
+async function addFriend(user: User | undefined) {
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${user?.id}`)
+		.then( (data) => {
+			console.log(data.data);
+			if (data.data == false && user != undefined && me.value != undefined) {
+				socketManager.addFriend(user.id, me.value.id);
+			}
+			else if (data.data == true) {
+				notify.newNotification("infos", {
+					message: 'New friend',
+					by: user?.username,
+				});
+			}
+			
+		})
+		.catch( (err) => {
+			notify.newNotification("error", {
+				message: "An error occured",
+			});
 		});
 }
 
-function unblockUser() {
-	axios
-		.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
-		.then( () => {
-			isBlocked.value = false;
+async function deleteFriend(user: User | undefined) {
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${user?.id}`)
+		.catch( (err) => {
+			notify.newNotification("error", {
+				message: "An error occured",
+			});
 		});
 }
 
@@ -98,8 +119,7 @@ function	getAvatarSrc() : string | undefined {
 }
 
 function getStatusIcon() : string {
-	// Faire option forbidden
-	if (isBlocked.value)
+	if (userStats.value?.blocked)
 		return blocked;
 	else if (user.value?.status == "undefined" || user.value?.status == "offline")
 		return offline;
@@ -110,8 +130,7 @@ function getStatusIcon() : string {
 }
 
 function getStatusTitle() : string {
-	// Faire option forbidden
-	if (isBlocked.value)
+	if (userStats.value?.blocked)
 		return "blocked";
 	else if (user.value?.status == "undefined" || user.value?.status == "offline")
 		return "offline";
@@ -119,6 +138,22 @@ function getStatusTitle() : string {
 		return "playing";
 	else
 		return "online";
+}
+
+function updatePieAnimation() {
+  const proportions = getPieProportions();
+  const styleElement = document.createElement('style');
+  styleElement.innerHTML = `
+    @keyframes donut {
+      0% {
+        stroke-dasharray: 0, 100;
+      }
+      100% {
+        stroke-dasharray: ${proportions};
+      }
+    }
+  `;
+  document.head.appendChild(styleElement);
 }
 
 function getPieProportions() : string {
@@ -149,9 +184,25 @@ function getScoreColor(winFlag: boolean): string {
 		return "var(--c-grey)"
 }
 
+function showActions() : boolean {
+	return (user.value?.id!=me.value?.id && !userStats.value?.blocked && !userStats.value?.blocking)
+}
+
 function sendMessage(id : number | undefined) {
 	router.push(`/chat`);
 	$data.sendDirectMessage(id);
+}
+
+function inviteToPlay() {
+	if (user.value?.status == "offline" || user.value?.status == "undefined")
+		notify.newNotification("error", {message: "User offline", by: user.value?.username});
+	else if (user.value?.status == "playing")
+		notify.newNotification("error", {message: "Already playing", by: user.value?.username});
+	else {
+		notify.newNotification("success", {message: "Invitation sent"});
+		if (user.value?.id)
+		socketManager.invite(user.value?.id);
+	}
 }
 
 onMounted(async () => {
@@ -168,27 +219,37 @@ onMounted(async () => {
 	<div class="l-grid">
 		<div class="l-grid__item l-grid__item--sticky">
 			<div class="c-card" id="profile">
-				<!-- <h3 class="u-p--24">PROFILE</h3> -->
 				<div class="c-card__body">
 					<div class="u-display--flex u-justify--space-between">
 						<div class="u-text--left">
 							<div class="c-avatar-container u-ml--24">
 								<img class="c-avatar c-avatar--lg" :src="getAvatarSrc()"/>
-								<img v-if="user" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
+								<img v-if="userStats?.id == me?.id || (userStats?.friend == true && !userStats?.blocking)" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
 							</div>
 							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ user?.username }}</div>
 							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
 							<div class="u-ml--24 u-mt--4">
-								<a v-if="user?.id!=me?.id && !isBlocked" class="u-mr--8" target="_blank">
+								<!-- BOUTONS -->
+								<!-- Friends buttons -->
+								<a v-if="user?.id!=me?.id && userStats?.friend == false" class="u-mr--8">
+									<img src="../assets/images/friend-add.png" width='20em' height="20em" alt="friend-icon" title="Add to friends" v-on:click="addFriend(user)">
+								</a>
+								<a v-if="user?.id!=me?.id && userStats?.friend == true" class="u-mr--8">
+									<img src="../assets/images/friend-remove.png" width='20em' height="20em" alt="unfriend-icon" title="Remove from friends" v-on:click="deleteFriend(user)">
+								</a>
+								<img v-if="user?.id!=me?.id && userStats?.friend == 'pending'" src="../assets/images/friend-pending.png" class="u-mr--8" width='20em' height="20em" alt="pending-icon" title="Invitation pending">
+								<!-- Invite & Message buttons -->
+								<a v-if="showActions()" class="u-mr--8" @click="inviteToPlay()">
 									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 								</a>
-								<a v-if="user?.id!=me?.id && !isBlocked" class="u-mr--8" @click="sendMessage(user?.id)" target="_blank">
+								<a v-if="showActions()" class="u-mr--8" @click="sendMessage(user?.id)" target="_blank">
 									<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 								</a>
-								<a v-if="user?.id!=me?.id && !isBlocked" @click="blockUser()" target="_blank">
+								<!-- Block & Unblock buttons -->
+								<a v-if="user?.id!=me?.id && !userStats?.blocked" @click="blockUser()" target="_blank">
 									<img src="../assets/images/status-blocked-32.png" width='20em' height="20em" alt="block-icon" title="Block">
 								</a>
-								<a v-if="user?.id!=me?.id && isBlocked" @click="unblockUser()" target="_blank">
+								<a v-if="user?.id!=me?.id && userStats?.blocked" @click="unblockUser()" target="_blank">
 									<img src="../assets/images/unblock-50.png" width='20em' height="20em" alt="unblock-icon" title="Unblock">
 								</a>
 							</div>
@@ -210,8 +271,7 @@ onMounted(async () => {
 							<svg width="50%" height="50%" viewBox="0 0 40 40">
 								<circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
 								<circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
-												stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"
-												:style="{ animation: 'donut 1s', '--end-dash': getPieProportions()}"></circle>
+									stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"/>
 								<text y="50%" transform="translate(0, 2)">
 									<tspan x="50%" text-anchor="middle" class="donut-percent">{{ userStats?.win_rate}}%</tspan>	 
 								</text>
@@ -344,8 +404,8 @@ button, select {
 }
 
 #gameContent {
-		height: 165px;
-		overflow-y: auto;
+	height: 165px;
+	overflow-y: auto;
 }
 
 
@@ -398,15 +458,6 @@ button, select {
 		}
 		100% {
 				opacity: 1;
-		}
-}
-
-@keyframes donut {
-		0% {
-				stroke-dasharray: 0, 100;
-		}
-		100% {
-				stroke-dasharray: var(--end-dash);
 		}
 }
 

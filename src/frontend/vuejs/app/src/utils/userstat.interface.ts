@@ -7,4 +7,7 @@ export interface UserStat {
 	win_rate: number;
 	games: number;
 	rank: number;
+	blocking: boolean;
+	blocked: boolean;
+	friend: boolean | string;
   }

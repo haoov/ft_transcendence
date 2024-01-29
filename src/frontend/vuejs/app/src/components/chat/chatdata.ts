@@ -1,6 +1,5 @@
+import { socketManager } from "@/SocketManager";
 import axios from "axios";
-import io from "socket.io-client";
-import { Socket } from "socket.io-client";
 import { reactive } from "vue";
 
 interface Channel {
@@ -80,10 +79,9 @@ async function blockUser(id: number) {
 }
 
 const store = reactive({
-	isSocketReady: false,
 	channels: [] as Channel[],
 	messages: [] as Message [],
-	users: [] as User [],
+	activeChannel: null as Channel | null,
 	userIdClicked: null as number | null,
 	currentUser: null as User | null,
 	isModalOpen: false,
@@ -91,21 +89,9 @@ const store = reactive({
 	isAddUserModalOpen: false,
 	isconfirmationLeavingModalOpen: false,
 	isProfileModalOpen: false,
-	activeChannel: null as Channel | null,
-	socket: io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`),
 });
 
 export default {
-	isSocketReady() : boolean {
-		return store.isSocketReady;
-	},
-
-	initSocket() {
-		this.getCurrentUser().then((user) => {
-			store.socket.emit('userConnected', user);
-		});
-		store.isSocketReady = true;
-	},
 	
 	getUsers() : Promise<User []> {
 		return fetchUsers();
@@ -135,7 +121,7 @@ export default {
 		return fetchChannels();
 	},
 
-	getJoinableChannels(id: number) : Object {
+	getJoinableChannels() : Object {
 		return fetchJoinableChannels();
 	},
 
@@ -157,22 +143,30 @@ export default {
 		return getBanlist(channelId);
 	},
 
+	findChannelById(id : number) : Channel {
+		const index = store.channels.findIndex((channel) => channel.id === id);
+		return store.channels[index];
+	},
+
 	addChannel(channel: Channel) {
 		store.channels.unshift(channel)
 	},
 
 	deleteChannel(channelId: number) {
-		const index = store.channels.findIndex((c) => c.id === channelId);
+		const index = store.channels.findIndex((channel) => channel.id === channelId);
 		store.channels.splice(index, 1);
 	},
 
 	updateChannel(channel: Channel) {
-		const index = store.channels.findIndex((c) => c.id === channel.id);
+		const index = store.channels.findIndex((channel) => channel.id === channel.id);
 		store.channels[index] = channel;
 	},
 
 	setActiveChannel(channel: Channel) {
 		store.activeChannel = channel;
+		if (store.activeChannel) {
+			this.loadMessagesByChannel(store.activeChannel.id);
+		}
 	},
 
 	loadMessagesByChannel(idChannel: number) {
@@ -205,15 +199,9 @@ export default {
 				password: "",
 				users: userIds,
 			};
-			store.socket.emit('createNewChannel', newChannel);
+			socketManager.createChannel(newChannel);
 		}
 		this.closeModalForm();
-	},
-
-	loadUsers() {
-		fetchUsers().then((users) => {
-			store.users = users;
-		});
 	},
 
 	openModalForm() {

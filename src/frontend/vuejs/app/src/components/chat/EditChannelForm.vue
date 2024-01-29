@@ -90,6 +90,7 @@
 import SeachBar from './SearchBar.vue';
 import Modal from './Modal.vue';
 import { ref, computed, inject } from 'vue';
+import { socketManager } from '@/SocketManager';
 
 const $data : any = inject('$data');
 const store = $data.getStore();
@@ -114,13 +115,13 @@ const resetChannelName = () => {
 };
 
 const submitForm = () => {
-	store.socket.emit('updateChannel', {
-		channelId: activeChannel.value.id,
-		name: channelName.value,
-		mode: selectedOption.value,
-		password: password.value,
-		userIds: userIds.value,
-	});
+	socketManager.updateChannel(
+		activeChannel.value.id,
+		channelName.value,
+		selectedOption.value,
+		password.value,
+		userIds.value,
+	)
 	activeChannel.value.name = channelName.value;
 	$data.closeEditModalForm();
 };
@@ -134,7 +135,7 @@ const closeDeleteConfirmation = () => {
 };
 
 const deleteChannel = () => {
-	store.socket.emit('deleteChannel', activeChannel.value.id);
+	socketManager.deleteChannel(activeChannel.value.id);
 	toggleDeleteConfirmation.value = false;
 	$data.closeEditModalForm();
 };

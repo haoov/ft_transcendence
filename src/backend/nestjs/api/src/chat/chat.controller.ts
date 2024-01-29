@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Param, Req, Put, Query } from "@nestjs/common";
+import { Controller, Get, Post, Param, Req, Put, Query, UseGuards } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
 import { MessageRaw, Channel } from "./chat.interface";
 import { User } from "src/user/user.interface";
 import { Request } from "express";
+import Jwt2faGuard from "../auth/jwt-2fa/jwt-2fa.guard";
+import { UserGateway } from "src/user/user.gateway";
 
 interface Message {
 	id: number;
@@ -24,6 +26,8 @@ function isBlocked(user: UserEntity, blockedUsers: UserEntity []) : boolean {
 	}
 	return false;
 }
+
+
 
 function convertRawMessagesToMessages(
 	messagesRaw: MessageRaw [], users: UserEntity [], blockedUsers: UserEntity []
@@ -47,11 +51,15 @@ function convertRawMessagesToMessages(
 	return messages;
 }
 
+
+
+@UseGuards(Jwt2faGuard)
 @Controller('chat')
 export class ChatController {
 	constructor(
 		private readonly chatService: ChatService,
-		private readonly userService: UserService
+		private readonly userService: UserService,
+		private readonly userGateway: UserGateway
 		) {}
 
 	@Get('/messages')
@@ -80,6 +88,7 @@ export class ChatController {
 
 	@Get('/channels')
 	async getCurrentUserChannels(@Req() req : Request): Promise<Channel []> {
+		// console.log('[chant.controller ligne 83]: req -> ', req.user);
 		const user = req.user as User;
 		const userId = user.id;
 		return await this.chatService.getCurrentUserChannels(userId);
@@ -106,12 +115,14 @@ export class ChatController {
 	async blockUser(@Query('id') idToBlock: number, @Req() req : Request): Promise<void> {
 		const user = req.user as User;
 		await this.userService.blockUser(user.id, idToBlock);
+		this.userGateway.dataChanged(user);
 	}
 
 	@Put('/unblock')
 	async unblockUser(@Query('id') idToUnblock: number, @Req() req : Request): Promise<void> {
 		const user = req.user as User;
 		await this.userService.unblockUser(user.id, idToUnblock);
+		this.userGateway.dataChanged(user);
 	}
 
 }

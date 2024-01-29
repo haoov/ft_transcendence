@@ -75,6 +75,7 @@
 import SeachBar from './SearchBar.vue';
 import NewPrivateChannelForm from './NewPrivateChannelForm.vue';
 import { ref, computed, inject, watch, onMounted } from 'vue';
+import { socketManager } from '@/SocketManager';
 
 const selectedOption = ref('Public');
 const options = ['Public', 'Private', 'Protected', 'Secret'];
@@ -136,7 +137,7 @@ const submitForm = () => {
 	nameError.value = false;
 	passwordError.value = false;
 	$data.closeModalForm();
-	socket.emit('createNewChannel', newChannel);
+	socketManager.createChannel(newChannel);
 };
 
 const resetchannelName = () => {
