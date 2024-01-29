@@ -34,3 +34,30 @@ export enum ServerEvents {
 	friendResponse = "friendResponse",
 	ping = "ping",
 };
+export enum ChatEvents {
+	// Events On
+	lastActiveChannel = "lastActiveChannel",
+	userAdded = "userAdded",
+	newChannelCreated ="newChannelCreated",
+	channelDeleted ="channelDeleted",
+	channelUpdated = "channelUpdated",
+	kicked = "kicked",
+	banned = "banned",
+	namedAdmin = "namedAdmin",
+	channelJoined = "channelJoined",
+	newMessageReceived = "newMessageReceived",
+	miniChatMessage = "miniChatMessage",
+
+	// Events Emit
+	newMessageSend = "newMessageSend",
+	createNewChannel = "createNewChannel",
+	addUserToChannel = "addUserToChannel",
+	setActiveChannel = "setActiveChannel",
+	deleteChannel = "deleteChannel",
+	updateChannel = "updateChannel",
+	joinChannel = "joinChannel",
+	leaveChannel = "leaveChannel",
+	kickUser = "kickUser",
+	banUser = "banUser",
+	setAdmin = "setAdmin",
+};

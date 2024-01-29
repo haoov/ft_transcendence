@@ -128,6 +128,7 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard)
 	logout(@Req() req: Request, @Res() res: Response) {
 		res.setHeader('Set-Cookie', this.authService.getCookieForLogout());
+		res.clearCookie("connect.sid");
    		return res.status(200).send({
 			"status": "logout"
 		});
