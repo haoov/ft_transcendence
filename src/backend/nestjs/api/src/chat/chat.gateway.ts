@@ -35,6 +35,7 @@ export class ChatGateway implements OnGatewayConnection {
 	server: Server;
 	private listActiveChannel: Map<number, string> = new Map<number, string>();
 	private usersSocketList : Map<number, Socket> = new Map<number, Socket>();
+	private listMutedUsers : Map<number, number[]> = new Map<number, number[]>();
 
 	handleConnection(socket: Socket) {
 		let lastActiveChannel : string;
@@ -72,6 +73,12 @@ export class ChatGateway implements OnGatewayConnection {
 	@SubscribeMessage('newMessageSend')
 	async onNewMessage(@MessageBody() message: any) {
 		console.log('[NEW MESSAGE RECEIVED]')
+		// Check if user is muted
+		const muted = this.listMutedUsers.get(message.channelId);
+		if (muted && muted.includes(message.senderId)) {
+			this.usersSocketList.get(message.senderId)?.emit('muted', message.channelId);
+			return;
+		}
 		const sender = await this.userService.getUserById(message.senderId);
 		const msg = await this.chatService.createMessage(message);
 		console.log(msg);
@@ -211,5 +218,34 @@ export class ChatGateway implements OnGatewayConnection {
 		} catch (err) {
 			throw err;
 		}
+	}
+
+	@SubscribeMessage('muteUser')
+	async onMuteUser(@MessageBody() data: Object) {
+		try {
+			const userId = data['userId'];
+			const channelId = data['channelId'];
+			const senderId = data['senderId'];
+		
+			let mutedUsers = this.listMutedUsers.get(channelId);
+			if (!mutedUsers) {
+			  mutedUsers = [];
+			}
+			if (!mutedUsers.includes(userId)) {
+			  mutedUsers.push(userId);
+			  this.listMutedUsers.set(channelId, mutedUsers);
+			  this.usersSocketList.get(userId)?.emit('muted', channelId);
+			  this.usersSocketList.get(senderId)?.emit('haveMuted', channelId);
+			  setTimeout(() => {
+				mutedUsers = this.listMutedUsers.get(channelId).filter(id => id != userId);
+				this.listMutedUsers.set(channelId, mutedUsers);
+			  }, 15 * 60 * 1000); // 15 minutes en millisecondes
+			}
+			else {
+				this.usersSocketList.get(senderId)?.emit('alreadyMuted', channelId);
+			}
+		  } catch (error) {
+				throw error;
+		  }
 	}
 }

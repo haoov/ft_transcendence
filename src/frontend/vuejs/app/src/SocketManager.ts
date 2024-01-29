@@ -31,7 +31,6 @@ class SocketManager {
 		});
 
 		this.userSocket.on(ServerEvents.ping, () => {
-			console.log("PONG");
 			this.userSocket.emit(ClientEvents.pong, {});
 		});
 
