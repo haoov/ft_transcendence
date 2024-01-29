@@ -26,7 +26,7 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser:
 		if (newUser.username != username) {
 			username = newUser.username;
 			await fetchUser();  
-			router.push(`/${newUser.username}`);
+			router.replace(`/${newUser.username}`);
 		}
 		else
 			await fetchUser();
@@ -49,7 +49,7 @@ async function fetchUser() {
 				userGames.value = data.data;})
 			})
 		.catch((err) => {
-			router.push("/error");
+			router.replace("/error");
 		})
 }
 
