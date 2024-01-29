@@ -3,14 +3,12 @@ import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, Profile } from "passport-42";
 import { AuthService } from "../auth.service";
 import { UserAuthDTO } from "src/user/dto/userAuth.dto";
-import { User } from "src/user/user.interface";
-import { UserService } from "src/user/user.service";
+import { UserValidate } from "../auth.interface";
 
 @Injectable()
 export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
 	constructor(
 		private readonly authService: AuthService,
-		private readonly userService: UserService
 	) {
 		super({
 			clientID: process.env.INTRA_CLIENT_ID,
@@ -19,15 +17,16 @@ export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
 			scope: "public"
 		});
 	}
+
 	async validate(accesToken: string, refreshToken: string, profile: Profile): Promise<any> {
 		const userInfos: UserAuthDTO = {
 			username: profile.username,
 			avatar: profile._json.image.link,
 			email: profile.emails[0]['value']
 		};
-		const user: User = await this.authService.validateUser(userInfos);
-		if (!user)
-			throw new UnauthorizedException();		
-		return user;
+		const userValidated: UserValidate = await this.authService.validateUser(userInfos);
+		if (!userValidated.user)
+			throw new UnauthorizedException();
+		return userValidated;
 	}
 }
