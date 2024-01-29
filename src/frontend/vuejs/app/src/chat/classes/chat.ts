@@ -29,6 +29,14 @@ class Chat {
 		this.addActiveChannel(channel);
 	}
 
+	removeChannel(id: number) {
+		const index = this.userChannels.findIndex(
+			(channel) => channel.getId() == id
+		);
+		if (index != -1)
+			this.userChannels.splice(index, 1);
+	}
+
 	getUserChannels(): Channel[] {
 		return this.userChannels;
 	}

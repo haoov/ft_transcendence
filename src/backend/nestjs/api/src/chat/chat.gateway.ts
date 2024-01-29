@@ -264,4 +264,14 @@ export class ChatGateway implements OnGatewayConnection {
 			}
 		}
 	}
+
+	@SubscribeMessage('kickUser')
+	async onKickUser(@MessageBody() data: any) {
+		const channelId = data.channelId;
+		const userId = data.userId;
+		if (await this.chatService.removeUserFromChannel(channelId, userId)) {
+			this.userSockets.get(userId).forEach((s) => {s.emit('kicked', channelId)});
+		}
+	}
+
 }

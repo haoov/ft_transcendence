@@ -1,31 +1,37 @@
 <script setup lang="ts">
-	import type { User } from '@/utils';
+	import { ChatEvents, type User } from '@/utils';
 	import profileIcon from '@/assets/images/profileIcon.png';
 	import messageIcon from '@/assets/images/message-50.png';
 	import playIcon from '@/assets/images/racket-50.png';
 	import blockIcon from '@/assets/images/status-blocked-32.png';
 	import unblockIcon from '@/assets/images/unblock-50.png';
+import { socketManager } from '@/SocketManager';
+import router from '@/router';
 
 	const props = defineProps<{user: User}>();
 
 	function setAdmin() {
-		console.log('set admin')
+		console.log('setAdmin');
+		socketManager.emit('chat', ChatEvents.setAdmin, props.user.id);
 	}
-
+	
 	function mute() {
-		console.log('mute')
+		console.log('Mute User');
+		socketManager.emit('chat', ChatEvents.muteUser, props.user.id);
 	}
 
 	function kick() {
-		console.log('kick')
+		console.log('kick user');
+		socketManager.emit('chat', ChatEvents.kickUser, props.user.id);
 	}
 
 	function ban() {
-		console.log('ban')
+		console.log('ban user');
+		socketManager.emit('chat', ChatEvents.banUser, props.user.id);
 	}
 
 	function profile() {
-		console.log('profile')
+		router.push(`/${props.user.username}`);
 	}
 
 	function play() {
