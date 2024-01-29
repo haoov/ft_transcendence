@@ -9,6 +9,7 @@
 	import gameData from '@/game/gameData';
 
 	const socketManager: SocketManager = inject('socketManager') as SocketManager;
+	let afId: number;
 
 	function moveEvents(event: KeyboardEvent) {
 		if (event.key == "w" || event.key == "W")
@@ -26,16 +27,18 @@
 	}
 
 	function animate() {
-		requestAnimationFrame(animate);
 		if (gameData.started()) {
+			console.log("animate");
 			socketManager.update();
 			gameData.render();
+			requestAnimationFrame(animate);
 		}
 	}
 
-	onMounted(() => {
-		gameData.createRenderer("game");
+	onMounted(async () => {
+		await gameData.createRenderer("game");
 		document.addEventListener("keydown", moveEvents);
+		socketManager.checkGame();
 		if (!socketManager.hasEventListener("game", ServerEvents.gameReady))
 			socketManager.addEventListener("game", ServerEvents.gameReady, () => {
 				gameData.setGameState("ready");
@@ -43,7 +46,7 @@
 		if (!socketManager.hasEventListener("game", ServerEvents.started)) {
 			socketManager.addEventListener("game", ServerEvents.started, (users: User[], data: any) => {
 				gameData.startGame(users, data);
-				animate();
+				afId = requestAnimationFrame(animate);
 			});
 		}
 		if (!socketManager.hasEventListener("game", ServerEvents.updated)) {

@@ -8,7 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { ChatModule } from './chat/chat.modules';
 import { GameModule } from './game/game.module';
-import { HomeModule } from './home/home.module';
+import { StatsModule } from './stats/stats.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -19,7 +19,7 @@ import { ConfigModule } from '@nestjs/config';
 	ChatModule,
 	HealthModule,
 	GameModule,
-	HomeModule,
+	StatsModule,
 	ConfigModule.forRoot(),
 ],
   controllers: [AppController],

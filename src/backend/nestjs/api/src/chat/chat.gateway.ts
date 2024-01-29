@@ -16,6 +16,7 @@ function buildMsg(sender, message) {
 	return {
 		sender: sender as UserEntity,
 		message: {
+			id: message.id,
 			channelId : message.channelId,
 			text : message.text,
 			time: message.datestamp,
@@ -37,7 +38,8 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(socket: Socket) {
 		let lastActiveChannel : string;
-		socket.on('userConnected', async (user: any) => {
+		socket.on('connected', async (user: any) => {
+			console.log("chat connection: " + user.username);
 			this.usersSocketList.set(user.id, socket);
 			const listChannel = await this.chatService.getCurrentUserChannels(user.id);
 			for (const channel of listChannel) {
@@ -52,6 +54,7 @@ export class ChatGateway implements OnGatewayConnection {
 	handleDisconnect(socket: Socket) {
 		this.usersSocketList.forEach((value: Socket, key: number) => {
 			if (value === socket) {
+				console.log("chat deconnection:");
 				this.usersSocketList.delete(key);
 			}
 		});
@@ -61,17 +64,25 @@ export class ChatGateway implements OnGatewayConnection {
 	async onJoinCurrentChannel(@MessageBody() data: any) {
 		const channelid = data.channelId;
 		const userId = data.currentUserId;
+		if (channelid == "0")
+			this.listActiveChannel.delete(userId);
 		this.listActiveChannel.set(userId, channelid);
 	}
 
-	@SubscribeMessage('newMessage')
+	@SubscribeMessage('newMessageSend')
 	async onNewMessage(@MessageBody() message: any) {
+		console.log('[NEW MESSAGE RECEIVED]')
 		const sender = await this.userService.getUserById(message.senderId);
-		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
+		const msg = await this.chatService.createMessage(message);
+		console.log(msg);
+		this.server.to(message.channelId.toString()).emit('newMessageReceived', buildMsg(
 			sender,
-			message
+			msg
 		));
-		this.chatService.createMessage(message);
+		this.server.to(message.channelId.toString()).emit('miniChatMessage', buildMsg(
+			sender,
+			msg
+		));
 	}
 
 	@SubscribeMessage('createNewChannel')
@@ -172,6 +183,7 @@ export class ChatGateway implements OnGatewayConnection {
 		const channelId = data['channelId'];
 		try {
 			await this.chatService.addAdminToChannel(channelId, userId);
+			this.usersSocketList.get(userId)?.emit('namedAdmin', channelId);
 		} catch (err) {
 			throw err;
 		}

@@ -1,7 +1,7 @@
 <template>
 	<div class="Messages-div" >
 		<ul
-			v-for="(message, index) in messages"
+			v-for="(message, index) in props.messages"
 			:id="index === messages.length - 1 ? 'last' : ''"
 		>
 			<Message
@@ -18,11 +18,10 @@
 import Message from './Message.vue';
 import { onUpdated, onMounted, computed, watch} from 'vue';
 import { inject, ref } from 'vue';
-import { Socket } from 'socket.io-client';
-import { type SocketManager } from "@/SocketManager";
-import {ServerEvents, type User} from '@/utils'
+import { type User} from '@/utils'
 
 type Message = {
+	id: number,
 	sender: User;
 	message: {
 		text: string;
@@ -40,22 +39,9 @@ function scrollToBottomSmooth() {
 	end?.scrollIntoView({ behavior: 'smooth' });
 };
 
-const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const $data : any = inject('$data');
 const currentUser = ref<User>(await $data.getCurrentUser());
-const store = $data.getStore();
-const socket: Socket = store.socket;
-const activeChannel = computed(() => store.activeChannel);
-const messages = computed(() => store.messages);
-
-watch(activeChannel, () => {
-	if (activeChannel) {
-		$data.loadMessagesByChannel(activeChannel.value.id);
-		return;
-	}
-	store.messages = [];
-	return;
-});
+const props = defineProps<{channel: any, messages: Message []}>();
 
 onMounted(() => {
 	scrollToBottomOnMounted();
@@ -63,24 +49,6 @@ onMounted(() => {
 
 onUpdated(() => {
 	scrollToBottomSmooth();
-});
-
-socket.on("newMessage", async (message : any) => {
-	console.log(message);
-	const blockedUsers = await $data.getBlockedUsers();
-	if (activeChannel.value.id !== message.message.channelId) {
-		return;
-	}
-	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === message.sender.id)) {
-		store.messages.push(message);
-	}
-});
-
-socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
-	currentUser.value = await $data.getCurrentUser();
-	if (activeChannel.value) {
-		$data.loadMessagesByChannel(activeChannel.value.id);
-	}
 });
 
 </script>

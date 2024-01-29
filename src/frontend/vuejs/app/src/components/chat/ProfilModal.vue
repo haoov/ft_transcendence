@@ -146,17 +146,17 @@ const options = [
 
 const setAdmin = () => {
 	if (store.activeChannel?.mode == '')
-	socket.emit('setAdmin', {userId: store.userIdClicked, channelId: store.activeChannel?.id});
+	socketManager.emitAction('admin', store.userIdClicked, store.activeChannel?.id);
 	$data.closeProfileModal();
 }
 
 const kickUser = () => {
-	socket.emit('kickUser', {userId: store.userIdClicked, channelId: store.activeChannel?.id});
+	socketManager.emitAction('kick', store.userIdClicked, store.activeChannel?.id);
 	$data.closeProfileModal();
 }
 
 const banUser = () => {
-	socket.emit('banUser', {userId: store.userIdClicked, channelId: store.activeChannel?.id});
+	socketManager.emitAction('ban', store.userIdClicked, store.activeChannel?.id);
 	$data.closeProfileModal();
 }
 
