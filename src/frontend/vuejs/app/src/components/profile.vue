@@ -9,7 +9,7 @@ import offline from '../assets/images/status-offline-32.png';
 import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
-import { type SocketManager } from "@/SocketManager";
+import { socketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
 
 const route = useRoute();
@@ -19,7 +19,6 @@ const user = ref<User>();
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
 const $data : any = inject('$data');
-const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser: User) => {
 	if (user.value?.id == newUser.id || me.value?.id == newUser.id) {
@@ -60,11 +59,11 @@ async function fetchMe() {
 
 // BLOCK & UNBLOCK FUNCTIONS
 async function blockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block?id=${user.value?.id}`)
 }
 
 async function unblockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/unblock?id=${user.value?.id}`)
 }
 
 // ADD TO FRIEND & REMOVE FROM FRIENDS

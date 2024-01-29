@@ -9,5 +9,5 @@ const app = createApp(App)
 
 app.use(router)
 app.provide('$data', $data)
-app.provide('socketManager', socketManager)
+socketManager.initSocket();
 app.mount('#app')

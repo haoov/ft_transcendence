@@ -6,8 +6,7 @@ import router from "./router";
 import { reactive } from "vue";
 import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
-import chat from "./chat/chat";
-import { Message } from "./chat/classes";
+import { chat, Channel, type ChannelParams, type MessageData, type ChannelData } from "@/chat";
 
 class SocketManager {
 	private readonly userSocket: Socket;
@@ -16,18 +15,22 @@ class SocketManager {
 	private user: User;
 
 	constructor() {
-		this.userSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/users`);
-		this.gameSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/game`);
-		this.chatSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`);
+		this.userSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/users`, {autoConnect: false});
+		this.gameSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/game`, {autoConnect: false});
+		this.chatSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`, {autoConnect: false});
 		this.user = {} as User;
 	}
 
 	async initSocket() {
+		this.userSocket.connect();
+		this.chatSocket.connect();
+		this.gameSocket.connect();
 		await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((response) => {
-			this.user = reactive(response.data);
-			this.userSocket.emit(ClientEvents.connected, response.data);
-			this.gameSocket.emit(ClientEvents.connected, response.data);
-			this.chatSocket.emit(ClientEvents.connected, response.data);
+			this.user = response.data;
+			this.userSocket.emit("userConnected", this.user);
+			this.chatSocket.emit("userConnected", this.user);
+			this.gameSocket.emit("userConnected", this.user);
+			chat.loadChannels(this.user.id);
 		});
 
 		this.userSocket.on(ServerEvents.ping, () => {
@@ -92,12 +95,17 @@ class SocketManager {
 			}
 		});
 
-		this.chatSocket.on(ChatEvents.miniChatMessage, (data: any) => {
-			const channel = chat.getChannelById(data.message.channelId);
-			if (channel) {
-				const newMessageSend = new Message(	data.id, data.sender, data.message.text, data.message.time);
-				channel.addMessage(newMessageSend);
-			}
+		this.chatSocket.on("newMessage", (message: MessageData) => {
+			chat.newMessage(message);
+		});
+
+		this.chatSocket.on("newChannelCreated", (data: ChannelData) => {
+			const newChannel = new Channel(data);
+			chat.addChannel(newChannel);
+		});
+
+		this.chatSocket.on("channelUpdated", (data: ChannelData) => {
+			chat.channelUpdate(data);
 		});
 
 		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
@@ -203,8 +211,13 @@ class SocketManager {
 		this.gameSocket.emit(ClientEvents.move, direction);
 	}
 
-	disconnected(): boolean {
-		return this.userSocket.disconnected && this.gameSocket.disconnected;
+	emit(socket: string, event: string, ...args: any[]) {
+		if (socket == "user")
+			this.userSocket.emit(event, ...args);
+		else if (socket == "game")
+			this.gameSocket.emit(event, ...args);
+		else if (socket == "chat")
+			this.chatSocket.emit(event, ...args);
 	}
 
 	sendMessage(message: any) {

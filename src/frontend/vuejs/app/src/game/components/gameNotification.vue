@@ -47,7 +47,7 @@
 	#notification {
 		position: absolute;
 		background-color: var(--c-black-light);
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		box-shadow: 0 0 0 10px var(--c-black-light);
 		margin-top: 20px;
 	}
