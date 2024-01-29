@@ -4,7 +4,7 @@ import { Not, Repository } from 'typeorm';
 import { MessageEntity , ChannelEntity} from 'src/postgreSQL/entities/chat.entity';
 import { UserEntity } from 'src/postgreSQL/entities/user.entity';
 import { Message, Channel } from './chat.interface';
-import { User } from 'src/user/user.interface';
+import { User, UserRelation } from 'src/user/user.interface';
 import { ChannelDTO, MessageDTO } from './dto/chat.dto';
 
 function createChannelObj(channel: any, users: User []) : ChannelEntity {
@@ -153,7 +153,7 @@ export class ChatService {
 		try {
 			channel = await this.channelRepository.findOneOrFail({
 				where: { id: channelId },
-				relations: ["users", "messages"]
+				relations: ["users", "messages", "admins", "bannedUsers"]
 			});
 		}
 		catch (err) {
@@ -293,5 +293,38 @@ export class ChatService {
 			else
 				return bTime - aTime;
 		})
+	}
+
+	async getChannelUsers(userId: number, channelId: number): Promise<UserRelation[]> {
+		const currentUser: User = await this.userRepository.findOneOrFail({
+			where: { id: userId },
+			relations: [
+				"friends",
+				"users_blocked",
+			]
+		})
+		const channel: Channel = await this.channelRepository.findOneOrFail({
+			where: { id: channelId },
+			relations: ["users"]
+		});
+		const userRelations: UserRelation[] = channel.users.map(
+			(user) => {
+				let friend: boolean | string = false;
+				if (currentUser.friends.includes(user))
+					friend = true;
+				else if (user.friends.includes(currentUser))
+					friend = 'pending';
+				const userRelation: UserRelation = {
+					id: user.id,
+					username: user.username,
+					avatar: user.avatar,
+					status: user.status,
+					blocking: user.users_blocked.includes(currentUser),
+					blocked: currentUser.users_blocked.includes(user),
+					friend: friend,
+				}
+				return userRelation;
+			});
+		return userRelations;
 	}
 }

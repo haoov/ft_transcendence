@@ -18,4 +18,4 @@ function on(event: string, callback: (...args: any[]) => void) {
 	});
 }
 
-export { emit, on };
+export default { emit, on };

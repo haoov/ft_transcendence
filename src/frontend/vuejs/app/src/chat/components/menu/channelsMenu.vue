@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { chat, type ChannelParams } from '@/chat'
+	import { chat, type ChannelParams, type ChannelData } from '@/chat'
 	import { socketManager } from '@/SocketManager';
 	import { ref, type Ref } from 'vue';
 	import v_selector from '@/components/selector.vue';
@@ -15,6 +15,8 @@
 		users: [socketManager.getUser()],
 	}
 
+	let channelTOJoin: ChannelData;
+
 	function createChannel() {
 		chat.createChannel(channelParams);
 		chat.setChatMenu('none');
@@ -28,6 +30,10 @@
 		const index: number = channelParams.users.indexOf(user);
 		if (index != -1)
 			channelParams.users.splice(index, 1);
+	}
+
+	function channelSelected(channel: ChannelData) {
+		channelTOJoin = channel;
 	}
 </script>
 
@@ -75,7 +81,8 @@
 		<!--JOIN CHANNEL-->
 		<Suspense>
 			<v_joinMenu
-				v-if="subMenu == 'Join'">
+				v-if="subMenu == 'Join'"
+				v-on:selectChannel="channelSelected">
 			</v_joinMenu>
 		</Suspense><!--END JOIN CHANNEL-->
 		<button id="submitButton"

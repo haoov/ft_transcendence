@@ -2,8 +2,17 @@
 	import { Channel, chat } from '@/chat'
 	import v_channelsMenu from './channelsMenu.vue'
 	import v_settingsMenu from './settingsMenu.vue'
+	import v_usersMenu from './usersMenu.vue'
+	import v_profileMenu from './profileMenu.vue'
+	import type { User } from '@/utils';
+	import { ref, type Ref } from 'vue';
 
 	const props = defineProps<{channel: Channel | undefined}>();
+	const selectedUser: Ref<User | undefined> = ref<User>();
+	function selectUser(user: User) {
+		selectedUser.value = user;
+		chat.setChatMenu('profile');
+	}
 </script>
 
 <template>
@@ -23,6 +32,17 @@
 				v-on:click.stop
 				:channel="channel">
 			</v_settingsMenu>
+			<v_usersMenu
+				v-if="chat.getChatMenu().value == 'users'"
+				v-on:click.stop
+				:channel="channel"
+				v-on:selectUser="selectUser">
+			</v_usersMenu>
+			<v_profileMenu
+				v-if="chat.getChatMenu().value == 'profile' && selectedUser"
+				v-on:click.stop
+				:user="selectedUser">
+			</v_profileMenu>
 		</div>
 	</Transition>
 </template>

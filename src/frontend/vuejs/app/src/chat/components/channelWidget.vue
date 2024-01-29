@@ -30,14 +30,16 @@
 		width: 50px;
 		height: 50px;
 		border-radius: 50%;
+		border: 1px solid var(--c-black-light);
 	}
 
 	#channelInfos {
 		display: flex;
-		flex-direction: column;
-		width: 100%;
-		margin-left: 10px;
-		border-bottom: 1px solid var(--c-black-light);
+    flex-direction: column;
+    margin-top: 5px;
+    width: 100%;
+    margin-left: 10px;
+    border-bottom: 1px solid var(--c-black-light);
 	}
 
 	#lastMessage {

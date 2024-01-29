@@ -3,6 +3,10 @@
 	import { chat, type Channel, type ChannelData } from '@/chat';
 	import { computed, ref, type Ref } from 'vue';
 
+	const emit = defineEmits({
+		selectChannel: (channel: ChannelData) => channel
+	});
+
 	const joignableChannels: ChannelData[] = await chat.getJoinableChannels(socketManager.getUser());
 
 	const search: Ref<string> = ref('');
@@ -17,6 +21,11 @@
 			});
 		}
 	});
+
+	function selectChannel(channel: ChannelData) {
+		emit('selectChannel', channel);
+		search.value = '';
+	}
 </script>
 
 <template>
@@ -37,7 +46,7 @@
 				<div
 					class="searchResult"
 					v-for="channel in searchResults"
-					v-on:click="search = channel.name">
+					v-on:click="selectChannel(channel)">
 					{{ channel.name }}
 				</div>
 			</div>
