@@ -164,6 +164,15 @@ class SocketManager {
 	move(direction: string) {
 		this.gameSocket.emit(ClientEvents.move, direction);
 	}
+
+	emit(socket: string, event: string, ...args: any[]) {
+		if (socket == "user")
+			this.userSocket.emit(event, ...args);
+		else if (socket == "game")
+			this.gameSocket.emit(event, ...args);
+		else if (socket == "chat")
+			this.chatSocket.emit(event, ...args);
+	}
 }
 
 const socketManager = new SocketManager();

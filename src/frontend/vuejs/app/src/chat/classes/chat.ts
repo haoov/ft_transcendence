@@ -54,7 +54,7 @@ class Chat {
 	};
 
 	async loadChannels(userId: number) {
-		const channels = await axios.get(`${apiChat}/channels/user?id=${userId}`)
+		const channels = await axios.get(`${apiChat}/channels`)
 		.then((response) => { return response.data });
 		channels.forEach((channel: ChannelData) => {
 			const newChannel = new Channel(channel);

@@ -1,11 +1,16 @@
 <script setup lang="ts">
-	import { chat, type Channel } from '@/chat';
+	import { chat, type Channel, type ChatMenu } from '@/chat';
 	import { socketManager } from '@/SocketManager';
 	import actionsIcon from '@/assets/images/actionsIcon.png';
 	import { ref, type Ref } from 'vue';
 
 	const props = defineProps<{channel: Channel | undefined}>();
 	const actionsMenu: Ref<boolean> = ref<boolean>(false);
+
+	function setMenu(menu: ChatMenu) {
+		chat.setChatMenu(menu);
+		actionsMenu.value = false;
+	}
 </script>
 
 <template>
@@ -22,10 +27,15 @@
 				name="showActions">
 				<div id="actionsList"
 					v-if="actionsMenu">
+					<div id="userButton"
+						v-on:click="setMenu('users')">
+						Users
+					</div>
 					<div id="editButton"
-						v-on:click="chat.setChatMenu('settings'); actionsMenu = false">
+						v-on:click="console.log('TEST'); setMenu('settings')">
 						Edit
 					</div>
+					<div>Leave</div>
 					<div>Delete</div>
 				</div>
 			</Transition>
@@ -48,6 +58,7 @@
 			width: 50px;
 			height: 50px;
 			border-radius: 50%;
+			border: 1px solid var(--c-black-light);
 		}
 
 		#channelName {

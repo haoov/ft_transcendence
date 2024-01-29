@@ -3,7 +3,7 @@ import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
 import { Message, Channel } from "./chat.interface";
-import { User } from "src/user/user.interface";
+import { User, UserRelation } from "src/user/user.interface";
 import { Request } from "express";
 import { UserGateway } from "src/user/user.gateway";
 import { ChatGateway } from "./chat.gateway";
@@ -113,9 +113,9 @@ export class ChatController {
 	/*                                    RAPH                                    */
 	/*----------------------------------------------------------------------------*/
 
-	@Get('/channels/user')
-	async getUserChannels(@Query('id') userId: number): Promise<Channel[]> {
-		return await this.chatService.getUserChannels(userId);
+	@Get('/channels')
+	async getUserChannels(@Req() request: Request): Promise<Channel[]> {
+		return await this.chatService.getUserChannels(request.user['id']);
 	}
 
 	@Get('/channel/addable')
@@ -124,8 +124,8 @@ export class ChatController {
 	}
 
 	@Get('/channels/joinable')
-	async getJoinableChannels(@Query('id') userId: number): Promise<Channel[]> {
-		return await this.chatService.getJoinableChannels(userId);
+	async getJoinableChannels(@Req() request: Request): Promise<Channel[]> {
+		return await this.chatService.getJoinableChannels(request.user['id']);
 	}
 
 	@Post('/channel')
@@ -160,5 +160,10 @@ export class ChatController {
 		catch (err) {
 			console.log(err);
 		}
+	}
+
+	@Get('/channel/users')
+	async getChannelUsers(@Req() request: Request, @Query('id') channelId: number): Promise<UserRelation[]> {
+		return await this.chatService.getChannelUsers(request.user['id'], channelId);
 	}
 }

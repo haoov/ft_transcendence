@@ -24,11 +24,13 @@
 	<!--SIDE BAR-->
 	<div id="side-bar">
 		<div id="searchChannel">
-			<input id="searchInput"
-				type="text"
-				autocomplete="off"
-				placeholder="Search..."
-				v-model="search">
+			<div id="searchContainer">
+				<input id="searchInput"
+					type="text"
+					autocomplete="off"
+					placeholder="Search..."
+					v-model="search">
+			</div>
 			<!--CHANNEL WIDGETS-->
 			<TransitionGroup
 				appear
@@ -65,26 +67,29 @@
 		gap: 10px;
 		border-right: 1px solid var(--c-black-light);
 
-		#searchInput {
-			width: 100%;
-			height: 30px;
-			border: none;
-			border-radius: 5px;
-			padding: 5px 20px;
-			margin-bottom: 10px;
-			box-sizing: border-box;
-			background-color: var(--c-black-light);
-		}
-	}
+		#searchChannel {
+			#searchInput {
+				width: 100%;
+				height: 30px;
+				border: none;
+				border-radius: 5px;
+				padding: 5px 20px;
+				margin-bottom: 10px;
+				box-sizing: border-box;
+				background-color: var(--c-black-light);
+			}
 
-	#channelWidgets {
-		display: flex;
-		flex-direction: column;
-		gap: 15px;
-		padding: 10px 0px;
-		width: 100%;
-		box-sizing: border-box;
-		overflow: scroll;
+			#channelWidgets {
+				display: flex;
+				flex-direction: column;
+				gap: 15px;
+				padding: 10px 0px;
+				width: 100%;
+				max-height: 700px;
+				box-sizing: border-box;
+				overflow: scroll;
+			}
+		}
 	}
 
 	#buttonContainer {

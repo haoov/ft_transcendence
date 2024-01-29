@@ -16,4 +16,6 @@ export type ChannelData = {
 	creatorId: number;
 	users: User[];
 	messages: MessageData[];
+	admins: User[];
+	bans: User[];
 }

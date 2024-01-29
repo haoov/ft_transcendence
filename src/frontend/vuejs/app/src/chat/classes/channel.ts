@@ -1,7 +1,7 @@
 import { reactive } from "vue";
 import { Message, type ChannelData } from "@/chat";
 import type { User } from "@/utils";
-import racketIcon from '@/assets/images/racket-50.png';
+import channeIcon from '@/assets/images/channelIcon.png';
 
 export class Channel {
 	private readonly id: number;
@@ -10,6 +10,8 @@ export class Channel {
 	private readonly creatorId: number;
 	private readonly users: User[];
 	private readonly messages: Message[];
+	private readonly admins: User[];
+	private readonly bans: User[];
 
 	constructor(data: ChannelData) {
 		this.id = data.id;
@@ -18,6 +20,8 @@ export class Channel {
 		this.name = data.name;
 		this.creatorId = data.creatorId;
 		this.messages = reactive<any>([]);
+		this.admins = data.admins;
+		this.bans = data.bans;
 		if (data.messages) {
 			for (const message of data.messages) {
 				this.messages.push(new Message(message));
@@ -69,7 +73,7 @@ export class Channel {
 			);
 			return otherUser?.avatar;
 		}
-		return racketIcon;
+		return channeIcon;
 	}
 
 	getTitle(currentUser: User) {
@@ -86,5 +90,13 @@ export class Channel {
 	setUsers(users: User[]) {
 		this.users.splice(0, this.users.length);
 		this.users.push(...users);
+	}
+
+	getAdmins(): User[] {
+		return this.admins;
+	}
+
+	getBans(): User[] {
+		return this.bans;
 	}
 }
