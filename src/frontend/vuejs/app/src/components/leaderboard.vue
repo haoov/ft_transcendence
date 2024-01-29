@@ -208,7 +208,7 @@ onMounted(async () => {
 <div class="l-wrapper">
 	<div class="l-grid">
 		<div class="l-grid__item l-grid__item--sticky">
-			<div class="c-card">
+			<div class="c-card" id="profile-card">
 				<div class="c-card__body">
 					<div class="u-display--flex u-justify--space-between">
 						<div class="u-text--left">
@@ -459,6 +459,10 @@ button, select {
 	.c-place {
 		transform: translateY(4px);
 	}
+}
+
+#profile-card {
+	min-height: 219px;
 }
 
 #gameContent {
