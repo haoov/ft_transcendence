@@ -7,7 +7,7 @@ class ChannelEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
+	@Column() 
 	name: string;
 
 	@Column()

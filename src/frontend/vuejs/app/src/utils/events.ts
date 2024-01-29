@@ -47,7 +47,7 @@ export enum ChatEvents {
 	channelJoined = "channelJoined",
 	newMessageReceived = "newMessageReceived",
 	miniChatMessage = "miniChatMessage",
-
+	errorManager = "errorManager",
 	// Events Emit
 	newMessageSend = "newMessageSend",
 	createNewChannel = "createNewChannel",
