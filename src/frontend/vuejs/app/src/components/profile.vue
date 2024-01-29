@@ -55,16 +55,21 @@ async function fetchMe() {
 	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
 		.then( (data) => {
-			me.value = data.data; });
+			me.value = data.data; })
+		.catch( (err) => {
+			console.log(err);
+		});
 }
 
 // BLOCK & UNBLOCK FUNCTIONS
 async function blockUser() {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
+			.catch( (err) => { console.log(err) });
 }
 
 async function unblockUser() {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
+			.catch( (err) => { console.log(err) });
 }
 
 // ADD TO FRIEND & REMOVE FROM FRIENDS
