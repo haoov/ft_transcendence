@@ -10,7 +10,7 @@
 	const isTwoFa = route.query['2fa'];
 
 	async function send2fa() {
-		const uri2fa: string = "http://localhost:3000/api/auth/2fa/authenticate"
+		const uri2fa: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/authenticate`
 		await axios.post(uri2fa, { "twofaCode": twofaValue })
 		.then(() => {
 			window.location.href = uri_home;
