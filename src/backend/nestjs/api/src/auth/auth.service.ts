@@ -8,6 +8,7 @@ import { toDataURL } from 'qrcode'
 import { JwtService } from "@nestjs/jwt";
 import { TokenPayload, UserValidate } from "./auth.interface";
 import { UserEntity } from "src/postgreSQL/entities";
+import { use } from "passport";
 
 @Injectable()
 export class AuthService {
@@ -22,9 +23,9 @@ export class AuthService {
 		user = await this.userService.getUserByEmail(dto.email);
 		if (!user) {
 			user = await this.userService.createUser(dto as User);
-			return { user, first_connection: true }
+			return { ...user, first_connection: true };
 		}
-		return { user, first_connection: false };
+		return { ...user, first_connection: false };
 	}
 
 	getCookieWithJwtToken(id: number) {
