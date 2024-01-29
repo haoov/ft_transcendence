@@ -20,6 +20,8 @@
 <script setup lang="ts">
 import { Socket } from "socket.io-client";
 import { ref, inject, computed, watch } from "vue";
+import { type SocketManager } from "@/SocketManager";
+import {ServerEvents, type User} from '@/utils'
 
 type Message = {
 	senderId: number;
@@ -28,41 +30,46 @@ type Message = {
 	datestamp: string;
 };
 
+const socketManager: SocketManager = inject('socketManager') as SocketManager;
 const input = ref<string>("");
 const $data : any = inject('$data');
 const store = $data.getStore();
-const myUser = await $data.getCurrentUser();
-const socket : Socket = store.socket;
+const myUser = ref<User>(await $data.getCurrentUser());
 const $store = $data.getStore();
 const activeChannel = computed(() => $store.activeChannel);
 
 const inputClass = computed(() => {
-	if (input.value.length > 1024) return "input-bar-div error";
+	if (input.value.length > 512) return "input-bar-div error";
 	else return "input-bar-div";
 });
 const inputErrorLenght = computed(() => {
-	if (input.value.length > 1024) return true;
+	if (input.value.length > 512) return true;
 	else return false;
 });
 
 const sendMessage = () => {
 	if (input.value === "") return;
-	else if (input.value.length > 1024) {
+	else if (input.value.length > 512) {
 		return;
 	}
 	const DateRawStamp : string = new Date().toISOString();
-	const newMessage: Message = {
-		senderId: myUser.id,
+	// console.log(myUser.value.id);
+	const newMessageSend: Message = {
+		senderId: myUser.value.id,
 		channelId: activeChannel.value.id,
 		text: input.value,
 		datestamp: DateRawStamp
 	};
 	input.value = "";
-	socket.emit('newMessage', newMessage);
+	socketManager.sendMessage(newMessageSend);
 };
 
 watch(activeChannel, () => {
 	input.value = "";
+});
+
+socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
+	myUser.value = await $data.getCurrentUser();
 });
 
 </script>

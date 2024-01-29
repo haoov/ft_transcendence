@@ -78,8 +78,7 @@ export class UserService {
 		this.usersRepository.remove(user as UserEntity);
 	}
 
-
-	async	updateUserStatus(user: User, newStatus: string) {
+	async updateUserStatus(user: User, newStatus: string) {
 		const updatedUser: User = await this.getUserById(user.id);
 		if (updatedUser) {
 				updatedUser.status = newStatus;

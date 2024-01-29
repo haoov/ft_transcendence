@@ -16,6 +16,8 @@ interface Channel {
 	mode: string;
 	password: string;
 	users: User [];
+	bannedUsers: User [];
+	admins: User [];
 }
 
 export { MessageRaw, Channel };

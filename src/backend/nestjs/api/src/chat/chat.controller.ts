@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Param, Req, Put, Query } from "@nestjs/common";
+import { Controller, Get, Post, Param, Req, Put, Query, UseGuards } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
 import { MessageRaw, Channel } from "./chat.interface";
 import { User } from "src/user/user.interface";
 import { Request } from "express";
+import Jwt2faGuard from "../auth/jwt-2fa/jwt-2fa.guard";
 import { UserGateway } from "src/user/user.gateway";
 
 interface Message {
@@ -25,6 +26,8 @@ function isBlocked(user: UserEntity, blockedUsers: UserEntity []) : boolean {
 	}
 	return false;
 }
+
+
 
 function convertRawMessagesToMessages(
 	messagesRaw: MessageRaw [], users: UserEntity [], blockedUsers: UserEntity []
@@ -48,6 +51,9 @@ function convertRawMessagesToMessages(
 	return messages;
 }
 
+
+
+@UseGuards(Jwt2faGuard)
 @Controller('chat')
 export class ChatController {
 	constructor(
@@ -82,6 +88,7 @@ export class ChatController {
 
 	@Get('/channels')
 	async getCurrentUserChannels(@Req() req : Request): Promise<Channel []> {
+		// console.log('[chant.controller ligne 83]: req -> ', req.user);
 		const user = req.user as User;
 		const userId = user.id;
 		return await this.chatService.getCurrentUserChannels(userId);
@@ -92,6 +99,16 @@ export class ChatController {
 		const user = req.user as User;
 		const userId = user.id;
 		return await this.chatService.getJoinableChannels(userId);
+	}
+
+	@Get('/channels/banned')
+	async getBanlist(@Query("id") id : number): Promise<User []> {
+		return await this.chatService.getBannedUsersByChannelId(id);
+	}
+
+	@Get('/channels/admins')
+	async getAdmins(@Query("id") id : number) : Promise<User []> {
+		return await this.chatService.getAdminsByChannelId(id);
 	}
 
 	@Put('/block')
@@ -107,4 +124,5 @@ export class ChatController {
 		await this.userService.unblockUser(user.id, idToUnblock);
 		this.userGateway.dataChanged(user);
 	}
+
 }
