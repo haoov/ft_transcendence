@@ -5,8 +5,8 @@
 	import { ref, watch, type Ref } from 'vue';
 	import { chat, type Channel } from '@/chat';
 
-	const currentChannel: Ref<Channel | undefined> = ref<Channel>();
-	watch(chat.getChannels(), (channels) => {
+	const currentChannel: Ref<Channel | undefined> = ref<any>(chat.getChannels()[0]);
+	watch(chat.getChannels(), () => {
 		if (currentChannel.value) {
 			const channel = chat.getChannel(currentChannel.value.getId());
 			if (channel && channel != currentChannel.value) {

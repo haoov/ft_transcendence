@@ -137,7 +137,7 @@ const submitForm = () => {
 		nameError.value = false;
 		passwordError.value = false;
 		$data.closeModalForm();
-		socketManager.createChannel(newChannel);
+	//	socketManager.createChannel(newChannel);
 };
 
 const resetchannelName = () => {

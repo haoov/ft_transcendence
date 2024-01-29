@@ -82,14 +82,6 @@ class Chat {
 		}
 	}
 
-	sendMessage(params: MessageParams): void {
-		if (params.text === "" || params.text.length > 512)
-			return;
-		const dateRawStamp : string = new Date().toISOString();
-		params.datestamp = dateRawStamp;
-		axios.post(`${apiChat}/message`, params);
-	}
-
 	getChatMenu(): Ref<ChatMenu> {
 		return this.chatMenu;
 	}
@@ -119,6 +111,9 @@ class Chat {
 			const updatedChannel = new Channel(data);
 			updatedChannel.setMessages(this.userChannels[index].getMessages());
 			this.userChannels.splice(index, 1, updatedChannel);
+		} else {
+			const newChannel = new Channel(data);
+			this.userChannels.push(newChannel);
 		}
 	}
 
@@ -126,8 +121,7 @@ class Chat {
 		let response: AxiosRequestConfig<User[]>;
 		if (channel) {
 			response = await axios.get(`${apiChat}/channel/addable?id=${channel.getId()}&userId=${user.id}`);
-		}
-		else {
+		} else {
 			response = await axios.get(`${apiChat}/channel/addable?userId=${user.id}`);
 		}
 		if (response.data)
