@@ -108,6 +108,17 @@ class SocketManager {
 			chat.channelUpdate(data);
 		});
 
+		this.chatSocket.on(ChatEvents.kicked, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("error", {
+					message: 'You have been kicked from channel',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
+			}
+		});
+
 		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
 			const accept = async () => {
 				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${from.id}`);

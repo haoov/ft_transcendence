@@ -97,7 +97,7 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
 });
 
 const goToProfile = async () => {
-	router.push(`/${user.value.username}`);
+	
 	$data.closeProfileModal();
 }
 const inviteToGame = () => {

@@ -57,7 +57,8 @@ export enum ChatEvents {
 	updateChannel = "updateChannel",
 	joinChannel = "joinChannel",
 	leaveChannel = "leaveChannel",
+	setAdmin = "setAdmin",
+	muteUser = "muteUser",
 	kickUser = "kickUser",
 	banUser = "banUser",
-	setAdmin = "setAdmin",
 };
