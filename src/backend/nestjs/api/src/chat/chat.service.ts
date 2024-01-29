@@ -298,6 +298,7 @@ export class ChatService {
 			channels = await this.channelRepository.createQueryBuilder("channel")
 			.leftJoinAndSelect("channel.users", "user")
 			.leftJoinAndSelect("channel.messages", "message")
+			.leftJoinAndSelect("message.sender", "sender")
 			.where("user.id = :userId", { userId: userId }).getMany();
 			this.sortCahnnels(channels);
 		}

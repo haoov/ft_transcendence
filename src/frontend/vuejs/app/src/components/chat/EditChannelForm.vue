@@ -135,7 +135,7 @@ const closeDeleteConfirmation = () => {
 };
 
 const deleteChannel = () => {
-	socketManager.deleteChannel(activeChannel.value.id);
+	//socketManager.deleteChannel(activeChannel.value.id);
 	toggleDeleteConfirmation.value = false;
 	$data.closeEditModalForm();
 };

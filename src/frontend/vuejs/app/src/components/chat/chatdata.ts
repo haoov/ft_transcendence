@@ -199,7 +199,7 @@ export default {
 				password: "",
 				users: userIds,
 			};
-			socketManager.createChannel(newChannel);
+		//	socketManager.createChannel(newChannel);
 		}
 		this.closeModalForm();
 	},

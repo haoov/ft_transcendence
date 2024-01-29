@@ -11,13 +11,15 @@
 	const input = ref<string>("");
 
 	function sendMessage() {
+		if (input.value == "" || input.value.length > 512)
+			return;
 		const messageParams: MessageParams = {
 			sender: socketManager.getUser(),
 			channelId: props.channel.getId(),
 			text: input.value,
-			datestamp: ''
+			datestamp: new Date().toISOString()
 		};
-		chat.sendMessage(messageParams);
+		socketManager.emit("chat", "newMessage", messageParams);
 		input.value = "";
 	}
 

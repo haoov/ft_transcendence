@@ -61,7 +61,7 @@ const sendMessage = () => {
 		datestamp: DateRawStamp
 	};
 	input.value = "";
-	socketManager.sendMessage(newMessageSend);
+	//socketManager.sendMessage(newMessageSend);
 };
 
 watch(activeChannel, () => {
