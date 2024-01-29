@@ -25,7 +25,7 @@ export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
 			email: profile.emails[0]['value']
 		};
 		const userValidated: UserValidate = await this.authService.validateUser(userInfos);
-		if (!userValidated.user)
+		if (!userValidated)
 			throw new UnauthorizedException();
 		return userValidated;
 	}

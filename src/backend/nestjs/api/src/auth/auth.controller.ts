@@ -7,6 +7,7 @@ import { Body2faDTO, User } from "src/user/user.interface";
 import JwtAuthGuard from "./jwt/jwt.guard";
 import Jwt2faGuard from "./jwt-2fa/jwt-2fa.guard";
 import { UserEntity } from "src/postgreSQL/entities";
+import { UserValidate } from "./auth.interface";
 
 @Controller("auth")
 export class AuthController {
@@ -17,7 +18,8 @@ export class AuthController {
 
 	@Get()
 	@UseGuards(Jwt2faGuard)
-	checkAuth() {
+	checkAuth(@Req() req: Request){
+		console.log(req.user);
 		return { "status": "ok" };
 	}
 
@@ -32,12 +34,13 @@ export class AuthController {
 	@Get("42-redirect")
 	@UseGuards(Intra42Guard)
 	async redirect(@Req() req: Request, @Res() res: Response) {
+		console.log(req.user);
 		const user: User = await this.userService.getUserById((req.user as User).id);
 		const cookie = this.authService.getCookieWithJwtToken(user.id);
 		res.setHeader('Set-Cookie', cookie);
 		if (user.twofa_enabled) 
 			return res.redirect("/login?2fa=true");
-		if ((req.user as any).first_connection)
+		if ((req.user as UserValidate).first_connection)
 			return res.redirect("/settings");
 		return res.redirect("/");
 	}
