@@ -23,6 +23,19 @@ import { Suspense, inject, onMounted } from 'vue';
 import { socketManager } from '@/SocketManager';
 import { ChatEvents, ServerEvents } from '@/utils';
 
+interface Message {
+	id : number;
+	sender: {
+		name: string;
+		avatar: string;
+	};
+	message: {
+		id: number;
+		text: string;
+		time: string;
+	};
+};
+
 const storeManager : any = inject('$data');
 const store = storeManager.getStore();
 
@@ -33,9 +46,20 @@ async function recievedMessage(data : any) {
 		return;
 	}
 	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === data.sender.id)
-		&& blockers.some((blocker: any) => blocker.id === data.sender.id))
-	{
-		store.messages.push(data);
+	&& !blockers.some((blocker: any) => blocker.id === data.sender.id)) {
+		console.log('[Data received] ->', data);
+		const newMsg = {
+			sender: {
+				name: data.sender.username,
+				avatar: data.sender.avatar,
+			},
+			message: {
+				id: data.message.id,
+				text: data.message.text,
+				time: data.message.time,
+			}
+		}
+		store.messages = [...store.messages, newMsg];
 	}
 };
 

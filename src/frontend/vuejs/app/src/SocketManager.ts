@@ -96,7 +96,6 @@ class SocketManager {
 			const channel = chat.getChannelById(data.message.channelId);
 			if (channel) {
 				const newMessageSend = new Message(	data.id, data.sender, data.message.text, data.message.time);
-				console.log('[SOCKET MANAGER]', newMessageSend);
 				channel.addMessage(newMessageSend);
 			}
 		});

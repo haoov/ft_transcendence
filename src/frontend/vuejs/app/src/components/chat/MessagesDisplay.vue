@@ -20,10 +20,14 @@ import { onUpdated, onMounted, computed, watch} from 'vue';
 import { inject, ref } from 'vue';
 import { type User} from '@/utils'
 
-type Message = {
-	id: number,
-	sender: User;
+interface Message {
+	id: number;
+	sender: {
+		name: string;
+		avatar: string;
+	};
 	message: {
+		id: number;
 		text: string;
 		time: string;
 	};
