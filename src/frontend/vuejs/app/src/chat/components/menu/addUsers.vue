@@ -97,10 +97,21 @@
 	}
 
 	#searchResults {
-		position: absolute;
 		display: flex;
 		flex-direction: column;
 		background-color: var(--c-grey);
+		width: 94%;
+		border-radius: 7px;
+		margin-top: 5px;
+		overflow-y: auto;
+		transition: all 0.3s ease-in-out;
+
+		&:hover {
+			scale: 1.1;
+		}
+		&:active {
+			scale:0.9;
+		}
 
 		.searchResult {
 			display: flex;
@@ -108,7 +119,6 @@
 			padding: 5px;
 			font-size: small;
 			color: var(--c-black-light);
-			width: 100px;
 			cursor: pointer;
 		}
 	}
