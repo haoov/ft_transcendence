@@ -118,6 +118,16 @@ export class ChatController {
 		return await this.chatService.getUserChannels(userId);
 	}
 
+	@Get('/channel/addable')
+	async getAddableUsers(@Query('id') channelId: number, @Query('userId') userId: number): Promise<User[]> {
+		return await this.chatService.getAddableUsers(channelId, userId);
+	}
+
+	@Get('/channels/joinable')
+	async getJoinableChannels(@Query('id') userId: number): Promise<Channel[]> {
+		return await this.chatService.getJoinableChannels(userId);
+	}
+
 	@Post('/channel')
 	async createChannel(@Body() channelDTO: ChannelDTO) {
 		try {

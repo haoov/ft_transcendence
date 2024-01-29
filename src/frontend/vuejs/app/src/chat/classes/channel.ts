@@ -77,7 +77,8 @@ export class Channel {
 			const otherUser = this.users.find(
 					user => user.username !== currentUser.username
 			);
-			return otherUser?.username;
+			if (otherUser)
+				return otherUser.username;
 		}
 		return this.name;
 	}

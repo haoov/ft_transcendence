@@ -2,11 +2,12 @@
 	import { chat, type Channel, type ChannelParams } from '@/chat';
 	import cancelIcon from '@/assets/images/cancelIcon.png';
 	import { socketManager } from '@/SocketManager';
+	import v_addUsers from '@/chat/components/menu/addUsers.vue';
 
 	const props = defineProps<{channel: Channel | undefined}>();
 
 	const updatedParams: ChannelParams = {
-		name: '',
+		name: props.channel?.getTitle(socketManager.getUser()) || '',
 		mode: 'Public',
 		creatorId: 0,
 		users: [],
@@ -40,23 +41,24 @@
 					:placeholder="channel?.getTitle(socketManager.getUser())"
 					v-model="updatedParams.name">
 			</label>
-			<label class="inputLabel">
-				Add Users :
-				<div class="inputContainer">
-					<img id="searchIcon">
-					<input id="addUsers"
-						class="channelInput"
-						type="text"
-						autocomplete="off"
-						placeholder="Search...">
-				</div>
-			</label>
+			<Suspense>
+				<v_addUsers
+					:channelParams="updatedParams"
+					:channel="channel"
+					v-on:add="(user) => {
+						updatedParams.users.push(user)
+					}"
+					v-on:remove="(user) => {
+						updatedParams.users.splice(updatedParams.users.indexOf(user), 1)
+					}">
+				</v_addUsers>
+			</Suspense>
 		</div>
 		<div id="footer">
-			<div id="saveButton"
+			<button id="saveButton"
 				v-on:click="updateChannel()">
 				Save
-			</div>
+			</button>
 		</div>
 	</div>
 </template>
@@ -115,8 +117,8 @@
 			display: flex;
 			flex-direction: column;
 			gap: 5px;
-			font-size: small;
-			color: var(--c-grey);
+			font-size: 1.4rem;
+			color: var(--c-grey-light);
 		}
 
 		.channelInput {

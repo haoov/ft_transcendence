@@ -2,7 +2,10 @@
 	import { chat, type ChannelParams } from '@/chat'
 	import { socketManager } from '@/SocketManager';
 	import { ref, type Ref } from 'vue';
-	import v_selector from '@/components/selector.vue'
+	import v_selector from '@/components/selector.vue';
+	import v_joinMenu from '@/chat/components/menu/joinMenu.vue';
+	import v_addUsers from '@/chat/components/menu/addUsers.vue';
+	import type { User } from '@/utils';
 
 	const subMenu: Ref<string> = ref('Create');
 	const channelParams: ChannelParams = {
@@ -15,6 +18,16 @@
 	function createChannel() {
 		chat.createChannel(channelParams);
 		chat.setChatMenu('none');
+	}
+
+	function addUser(user: User) {
+		channelParams.users.push(user);
+	}
+
+	function removeUser(user: User) {
+		const index: number = channelParams.users.indexOf(user);
+		if (index != -1)
+			channelParams.users.splice(index, 1);
 	}
 </script>
 
@@ -50,33 +63,21 @@
 					placeholder="Channel Name"
 					v-model="channelParams.name">
 			</label>
-			<label class="inputLabel">
-				Add Users :
-				<div class="inputContainer">
-					<img id="searchIcon">
-					<input id="addUsers"
-						class="channelInput"
-						type="text"
-						autocomplete="off"
-						placeholder="Search...">
-				</div>
-			</label>
+			<Suspense>
+				<v_addUsers
+					:channelParams="channelParams"
+					:channel="undefined"
+					v-on:add="addUser"
+					v-on:remove="removeUser">
+				</v_addUsers>
+			</Suspense>
 		</div> <!--END NEW CHANNEL-->
 		<!--JOIN CHANNEL-->
-		<div class="subMenu"
-			v-if="subMenu == 'Join'">
-			<label class="inputLabel">
-				Search channel :
-				<div class="inputContainer">
-					<img id="searchIcon">
-					<input id="addUsers"
-						class="channelInput"
-						type="text"
-						autocomplete="off"
-						placeholder="Search...">
-				</div>
-			</label>
-		</div><!--END JOIN CHANNEL-->
+		<Suspense>
+			<v_joinMenu
+				v-if="subMenu == 'Join'">
+			</v_joinMenu>
+		</Suspense><!--END JOIN CHANNEL-->
 		<button id="submitButton"
 			v-on:click="createChannel()">
 			{{ subMenu }}
@@ -138,8 +139,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
-		font-size: small;
-		color: var(--c-grey);
+		font-size: 1.4rem;
+		color: var(--c-grey-light);
 	}
 
 	.channelInput {

@@ -3,14 +3,12 @@
 	import loader from "@/components/loader.vue"
 	import selector from "@/components/selector.vue"
 	import CustumButton from "@/components/custumButton.vue";
-	import { type SocketManager } from "@/SocketManager";
+	import { socketManager } from "@/SocketManager";
 	import type { GameDifficulty, GameMap, GameMode, GameParams, GameType } from "@/game/interfaces";
 	import gameData from "../gameData";
 
-	const socketManager: SocketManager = inject("socketManager") as SocketManager;
-
 	const selectedParams: Ref<GameParams> = ref({
-		mode: undefined,
+		mode: "classic",
 		type: undefined,
 		difficulty: "easy",
 		map: "classic"
@@ -56,7 +54,7 @@
 		selectedParams.value.type = undefined
 		selectedParams.value.map = "classic";
 		selectedParams.value.difficulty = "easy";
-		selectedParams.value.mode = undefined;
+		selectedParams.value.mode = "classic";
 		gameData.setGameState("noGame");
 	}
 
@@ -82,76 +80,91 @@
 
 <template>
 	<!--Menu select params-->
-	<div class="menu">
-		<div v-if="display('selectMenu')" class="menu-box">
-			<selector
-				label="Mode"
-				:values="modes"
-				@select="(value) => {selectedParams.mode = value}"
-			></selector>
-			<selector
-				label="Type"
-				:values="types"
-				@select="(value) => {selectedParams.type = value}"
-			></selector>
-			<selector
-				v-if="display('difficulty')"
-				:label="'Difficulty'"
-				:values="difficulties"
-				preSelected="easy"
-				@select="(value) => {selectedParams.difficulty = value}"
-			></selector>
-			<selector
-				v-if="display('maps')"
-				:label="'Map'"
-				:values="maps"
-				preSelected="classic"
-				@select="(value) => {selectedParams.map = value}"
-			></selector>
-			<CustumButton
-				id="play"
-				:disabled="!isEnabled"
-				v-on:click="selectParams(selectedParams)">
-				Play
-			</CustumButton>
-		</div>
+	<div class="menuContainer">
+		<div id="menu">
+			<div id="header">
+				<div id="title">Pong</div>
+			</div>
+			<div v-if="display('selectMenu')" class="menu-box">
+				<selector
+					label="Mode"
+					:values="modes"
+					preSelected="classic"
+					@select="(value) => {selectedParams.mode = value}"
+				></selector>
+				<selector
+					label="Type"
+					:values="types"
+					@select="(value) => {selectedParams.type = value}"
+				></selector>
+				<selector
+					v-if="display('difficulty')"
+					:label="'Difficulty'"
+					:values="difficulties"
+					preSelected="easy"
+					@select="(value) => {selectedParams.difficulty = value}"
+				></selector>
+				<selector
+					v-if="display('maps')"
+					:label="'Map'"
+					:values="maps"
+					preSelected="classic"
+					@select="(value) => {selectedParams.map = value}"
+				></selector>
+				<div class="button-container">
+					<button
+						class="v-button"
+						id="play"
+						:disabled="!isEnabled"
+						v-on:click="selectParams(selectedParams)">
+						Play
+					</button>
+				</div>
+			</div>
 
-		<!--Menu waiting for opponent-->
-		<div v-if="display('waitingMenu')" class="menu-box">
-			<loader :text="socketManager.getUser().status"></loader>
-			<CustumButton id="stopWaiting" v-on:click="stopWaiting()">
-				Stop waiting
-			</CustumButton>
-		</div>
+			<!--Menu waiting for opponent-->
+			<div v-if="display('waitingMenu')" class="menu-box">
+				<loader :text="socketManager.getUser().status"></loader>
+				<div class="button-container">
+					<button class="v-button" id="stopWaiting" v-on:click="stopWaiting()">
+						Stop waiting
+					</button>
+				</div>
+			</div>
 
-		<!--Menu game finished-->
-		<div v-if="display('finishedMenu')" class="menu-box">
-			<span>{{ getWinner() }} won!</span>
-			<CustumButton id="reset" v-on:click="newGame()">
-				New game
-			</CustumButton>
-		</div>
+			<!--Menu game finished-->
+			<div v-if="display('finishedMenu')" class="menu-box">
+				<span>{{ getWinner() }} won!</span>
+				<div class="button-container">
+					<button class="v-button" id="reset" v-on:click="newGame()">
+						New game
+					</button>
+				</div>
+			</div>
 
-		<!--Menu game ready-->
-		<div v-if="display('readyMenu')" class="menu-box">
-			<span>Game ready !</span>
-			<loader :text="`Waiting for ${gameData.getOpponent()} response`"></loader>
-			<span class="warning">If you chose to leave now, you will forfeit the game</span>
-			<CustumButton id="stopWaiting" v-on:click="leaveGame()">
-				Leave
-			</CustumButton>
-		</div>
+			<!--Menu game ready-->
+			<div v-if="display('readyMenu')" class="menu-box">
+				<span>Game ready !</span>
+				<loader :text="`Waiting for ${gameData.getOpponent()} response`"></loader>
+				<span class="warning">If you chose to leave now, you will forfeit the game</span>
+				<div class="button-container">
+					<button class="v-button" id="stopWaiting" v-on:click="leaveGame()">
+						Leave
+					</button>
+				</div>
+			</div>
 
-		<!--Menu play-->
-		<div v-if="display('playMenu')" class="menu-box">
-			<span>Opponent found !</span>
-			<div class="button-container">
-				<CustumButton class="v-button" v-on:click="socketManager.play()">
-					Play
-				</CustumButton>
-				<CustumButton class="v-button" v-on:click="socketManager.forfeit()">
-					Forfeit
-				</CustumButton>
+			<!--Menu play-->
+			<div v-if="display('playMenu')" class="menu-box">
+				<span>Opponent found !</span>
+				<div class="button-container">
+					<button class="v-button" v-on:click="socketManager.play()">
+						Play
+					</button>
+					<button class="v-button" v-on:click="socketManager.forfeit()">
+						Forfeit
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -159,8 +172,7 @@
 </template>
 
 <style scoped>
-
-	.menu {
+	.menuContainer {
 		position: absolute;
 		width: 720px;
 		height: 480px;
@@ -174,17 +186,45 @@
 		align-items: center;
 	}
 
+	#menu {
+		display: flex;
+		flex-direction: column;
+		padding: 20px 30px;
+		gap: 20px;
+		border-radius: 0.8rem;
+		background-color: var(--c-surface);
+		box-shadow: 0 0 0 1px var(--c-black-light);
+	}
+
+	#header {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+
+		#title {
+			font-size: large;
+			font-weight: bold;
+			text-decoration: underline;
+			text-decoration-color: var(--c-pink);
+			text-decoration-thickness: 2px;
+			text-underline-offset: 5px;
+			animation: underline-animation 10s infinite
+		}
+	}
+
 	.menu-box {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		border-radius: 0.8rem;
-		box-shadow: 0 0 10px 1px var(--c-black-light);
-		padding: 15px;
-		background-color: var(--c-surface);
+		gap: 20px;
 		animation: open 0.3s ease-in-out forwards;
 		overflow: hidden;
+
+		.selector {
+			font-size: medium;
+		}
 	}
 
 	@keyframes open {
@@ -198,15 +238,17 @@
 
 	.button-container {
 		display: flex;
+		width: 100%;
+		justify-content: center;
 	}
 
 	.v-button {
-		margin: 10px 5px 0px 5px;
-	}
-
-	#play {
-		margin-top: 50px;
-		background-color: var(--c-grey);
+		background-color: var(--c-black-light);
+		border: 1px solid var(--c-black-light);
+		padding: 12px 16px;
+		cursor: pointer;
+		border-radius: 6px;
+		font-size: small;
 	}
 
 	#play:not(:disabled) {
@@ -215,13 +257,11 @@
 	}
 
 	#reset {
-		margin-top: 20px;
 		background-color: var(--c-pink);
 	}
 
 	#stopWaiting {
 		width: auto;
-		margin-top: 20px;
 		background-color: var(--c-pink);
 	}
 
@@ -230,4 +270,9 @@
 		font-size: small;
 	}
 
+	@keyframes underline-animation {
+		0% {text-decoration-color: var(--c-pink);}
+		50% {text-decoration-color: var(--c-teal);}
+		100% {text-decoration-color: var(--c-pink);}
+	}
 </style>

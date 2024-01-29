@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { type AxiosRequestConfig } from "axios";
 import {
 	Channel,
 	Message,
@@ -9,6 +9,7 @@ import {
 	type ChannelData
 } from "@/chat";
 import { reactive, ref, type Ref } from "vue";
+import type { User } from "@/utils";
 
 const apiChat: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat`;
 
@@ -97,10 +98,12 @@ class Chat {
 	}
 
 	createChannel(params: ChannelParams): void {
+		console.log("[creating channel]", params);
 		axios.post(`${apiChat}/channel`, params);
 	}
 
 	updateChannel(channel: Channel, updatedParams: ChannelParams): void {
+		if (updatedParams.name === "" || updatedParams.name.length > 32)
 		updatedParams.mode = channel.getMode();
 		updatedParams.creatorId = channel.getCreatorId();
 		updatedParams.messages = channel.getMessages();
@@ -115,6 +118,28 @@ class Chat {
 			updatedChannel.setMessages(this.userChannels[index].getMessages());
 			this.userChannels.splice(index, 1, updatedChannel);
 		}
+	}
+
+	async getAddableUsers(channel: Channel | undefined, user: User): Promise<User[]> {
+		let response: AxiosRequestConfig<User[]>;
+		if (channel) {
+			response = await axios.get(`${apiChat}/channel/addable?id=${channel.getId()}&userId=${user.id}`);
+		}
+		else {
+			response = await axios.get(`${apiChat}/channel/addable?userId=${user.id}`);
+		}
+		if (response.data)
+			return response.data;
+		else
+			return [];
+	}
+
+	async getJoinableChannels(user: User): Promise<ChannelData[]> {
+		const response = await axios.get(`${apiChat}/channels/joinable?id=${user.id}`);
+		if (response.data)
+			return response.data;
+		else
+			return [];
 	}
 }
 

@@ -11,6 +11,7 @@ export interface User {
 	games_won: Game[]
 	games_lost: Game[]
 	friends: User[]
+	users_blocked: User[]
 }
 
 export interface Body2faDTO {

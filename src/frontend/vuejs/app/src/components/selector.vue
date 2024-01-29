@@ -29,17 +29,24 @@
 </template>
 
 <style scoped>
+	#selection {
+		width: 100%;
+		padding-bottom: 5px;
+		padding-top: 5px;
+		border-bottom: 1px solid var(--c-black-light);
+		border-top: 1px solid var(--c-black-light);
+	}
 
 	#selectorLabel {
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
-		font-size: small;
-		color: var(--c-grey);
+		font-size: 1.4rem;
 	}
 
 	.radio-inputs {
 		display: flex;
+		gap: 10px;
 }
 
 	.radio {
@@ -57,7 +64,7 @@
 		cursor: pointer;
 		border-radius: 0.8rem;
 		border: none;
-		padding: 0.5rem 0;
+		padding: 0.5rem;
 		background-color: transparent;
 		color: var(--c-grey);
 		transition: all .10s ease-in-out;
