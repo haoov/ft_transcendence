@@ -27,6 +27,7 @@ const props = defineProps<{
 }>();
 
 const $data : any = inject('$data');
+const store = $data.getStore();
 const username : string = props.data.sender.username;
 const profilePic : string = props.data.sender.avatar;
 const userId : number = props.data.sender.id;
@@ -44,7 +45,7 @@ const classDiv = computed(() => {
 
 const openProfilModal = () => {
 	if(userId !== currentUserId)
-		$data.openProfileModal(userId);
+		$data.openProfileModal(store.userIdClicked);
 }
 
 </script>

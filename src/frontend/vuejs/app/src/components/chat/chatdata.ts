@@ -12,12 +12,12 @@ interface Channel {
 };
 
 interface Message {
-	id: number;
 	sender: {
 		name: string;
 		avatar: string;
 	};
 	message: {
+		id: number;
 		text: string;
 		time: string;
 	};
