@@ -10,6 +10,7 @@ import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
 import { socketManager } from "@/SocketManager";
+import notify from "@/notify/notify";
 
 const route = useRoute();
 let username = route.params.username;
@@ -44,7 +45,8 @@ async function fetchUser() {
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			await axios.get(url2).then( data => {
-				userGames.value = data.data;})
+				userGames.value = data.data;
+				updatePieAnimation();})
 			});
 }
 
@@ -67,23 +69,32 @@ async function unblockUser() {
 // ADD TO FRIEND & REMOVE FROM FRIENDS
 async function addFriend(user: User | undefined) {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${user?.id}`)
-		.then( () => {
-			// Notification
+		.then( (data) => {
+			console.log(data.data);
+			if (data.data == false && user != undefined && me.value != undefined) {
+				socketManager.addFriend(user.id, me.value.id);
+			}
+			else if (data.data == true) {
+				notify.newNotification("infos", {
+					message: 'New friend',
+					by: user?.username,
+				});
+			}
+			
 		})
 		.catch( (err) => {
-			console.log(err);
-			// Notification
+			notify.newNotification("error", {
+				message: "An error occured",
+			});
 		});
 }
 
 async function deleteFriend(user: User | undefined) {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${user?.id}`)
-		.then( () => {
-			// Notification
-		})
 		.catch( (err) => {
-			console.log(err);
-			// Notification
+			notify.newNotification("error", {
+				message: "An error occured",
+			});
 		});
 }
 
@@ -117,6 +128,22 @@ function getStatusTitle() : string {
 		return "playing";
 	else
 		return "online";
+}
+
+function updatePieAnimation() {
+  const proportions = getPieProportions();
+  const styleElement = document.createElement('style');
+  styleElement.innerHTML = `
+    @keyframes donut {
+      0% {
+        stroke-dasharray: 0, 100;
+      }
+      100% {
+        stroke-dasharray: ${proportions};
+      }
+    }
+  `;
+  document.head.appendChild(styleElement);
 }
 
 function getPieProportions() : string {
@@ -156,6 +183,18 @@ function sendMessage(id : number | undefined) {
 	$data.sendDirectMessage(id);
 }
 
+function inviteToPlay() {
+	if (user.value?.status == "offline" || user.value?.status == "undefined")
+		notify.newNotification("error", {message: "User offline", by: user.value?.username});
+	else if (user.value?.status == "playing")
+		notify.newNotification("error", {message: "Already playing", by: user.value?.username});
+	else {
+		notify.newNotification("success", {message: "Invitation sent"});
+		if (user.value?.id)
+		socketManager.invite(user.value?.id);
+	}
+}
+
 onMounted(async () => {
 	await fetchUser();
 	await fetchMe();
@@ -175,7 +214,7 @@ onMounted(async () => {
 						<div class="u-text--left">
 							<div class="c-avatar-container u-ml--24">
 								<img class="c-avatar c-avatar--lg" :src="getAvatarSrc()"/>
-								<img v-if="user && !userStats?.blocking" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
+								<img v-if="userStats?.id == me?.id || (userStats?.friend == true && !userStats?.blocking)" class="c-avatar-icon" :src="getStatusIcon()" :title="getStatusTitle()"/>
 							</div>
 							<div class="u-text--medium u-mt--16 u-text--overpass u-ml--24">{{ user?.username }}</div>
 							<span class="u-text--c-teal u-mt--16 u-text--small u-text--overpass u-ml--24">{{ user?.email}} </span>
@@ -190,7 +229,7 @@ onMounted(async () => {
 								</a>
 								<img v-if="user?.id!=me?.id && userStats?.friend == 'pending'" src="../assets/images/friend-pending.png" class="u-mr--8" width='20em' height="20em" alt="pending-icon" title="Invitation pending">
 								<!-- Invite & Message buttons -->
-								<a v-if="showActions()" class="u-mr--8" target="_blank">
+								<a v-if="showActions()" class="u-mr--8" @click="inviteToPlay()">
 									<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play">
 								</a>
 								<a v-if="showActions()" class="u-mr--8" @click="sendMessage(user?.id)" target="_blank">
@@ -222,8 +261,7 @@ onMounted(async () => {
 							<svg width="50%" height="50%" viewBox="0 0 40 40">
 								<circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
 								<circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
-												stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"
-												:style="{ animation: 'donut 1s', '--end-dash': getPieProportions()}"></circle>
+									stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"/>
 								<text y="50%" transform="translate(0, 2)">
 									<tspan x="50%" text-anchor="middle" class="donut-percent">{{ userStats?.win_rate}}%</tspan>	 
 								</text>
@@ -356,8 +394,8 @@ button, select {
 }
 
 #gameContent {
-		height: 165px;
-		overflow-y: auto;
+	height: 165px;
+	overflow-y: auto;
 }
 
 
@@ -410,15 +448,6 @@ button, select {
 		}
 		100% {
 				opacity: 1;
-		}
-}
-
-@keyframes donut {
-		0% {
-				stroke-dasharray: 0, 100;
-		}
-		100% {
-				stroke-dasharray: var(--end-dash);
 		}
 }
 

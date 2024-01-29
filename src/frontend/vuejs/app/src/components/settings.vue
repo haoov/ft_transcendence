@@ -60,7 +60,7 @@
 			<div class ="u-justify--center u-display--flex">
 				<button id="saveButton" :disabled="disableSave" @click="updateProfile()">Save</button>
 			</div>
-			<div class="c-warning" v-if="(usernameSet.length > 15)">Username must be 15 characters or less.</div>
+			<div class="c-warning" v-if="!isUsernameValid()">Username has invalid format.</div>
 		</div>		
 	</div>
 </template>
@@ -84,7 +84,7 @@ const disableSave = computed(() => {
 	if ((twoFaChangedToEnabled.value && !twoFaCode.value))
 		return true;
 	else
-		return ((!usernameSet.value || usernameSet.value == me.value.username || usernameSet.value.length > 15)
+		return ((!usernameSet.value || usernameSet.value == me.value.username || !isUsernameValid())
 			&& !avatarSet.value)
 			&& !twoFaChanged.value;
 });
@@ -248,6 +248,18 @@ async function getQRcode(option: string) {
 				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
 			});
 	}
+}
+
+function isUsernameValid() {
+	if (!usernameSet.value)
+		return false;
+	if (usernameSet.value.length < 3 || usernameSet.value.length > 15)
+		return false;
+	if (!usernameSet.value.match(/^[\x21-\x7D]+$/))
+		return false;
+	if (!usernameSet.value[0].match(/^[a-zA-Z]+$/))
+		return false;
+	return true;
 }
 
 function logout() {

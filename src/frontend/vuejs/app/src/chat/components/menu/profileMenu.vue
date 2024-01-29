@@ -110,7 +110,7 @@
 				<div v-for="action in userActions"
 					class="action"
 					v-on:click="action.function"
-					v-tooltip="action.title">
+					:title="action.title">
 					<img :src="action.icon">
 				</div>
 			</div>
@@ -120,7 +120,7 @@
 				<button v-for="action in channelActions"
 					class="action"
 					v-on:click="action.function"
-					v-tooltip="action.title">
+					:title="action.title">
 					{{ action.name }}
 				</button>
 			</div>

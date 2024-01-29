@@ -1,4 +1,4 @@
-import { ClientEvents, ServerEvents, type User } from "@/utils";
+import { ChatEvents, ClientEvents, ServerEvents, type User } from "@/utils";
 import axios from "axios";
 import { Socket, io } from "socket.io-client";
 import notify from "./notify/notify";
@@ -31,6 +31,11 @@ class SocketManager {
 			this.chatSocket.emit("userConnected", this.user);
 			this.gameSocket.emit("userConnected", this.user);
 			chat.loadChannels(this.user.id);
+		});
+
+		this.userSocket.on(ServerEvents.ping, () => {
+			console.log("PONG");
+			this.userSocket.emit(ClientEvents.pong, {});
 		});
 
 		this.userSocket.on(ServerEvents.dataChanged, (data: User) => {
@@ -72,7 +77,8 @@ class SocketManager {
 			const decline = () => {
 				this.userSocket.emit(ClientEvents.gameResponse, {accepted: false, opponent: data});
 			}
-			notify.newNotification("gameInvite", {
+			notify.newNotification("invite", {
+				message: 'Game invite',
 				by: data.username,
 				buttons: [
 					{action: accept},
@@ -101,31 +107,67 @@ class SocketManager {
 		this.chatSocket.on("channelUpdated", (data: ChannelData) => {
 			chat.channelUpdate(data);
 		});
+
+		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
+			const accept = async () => {
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${from.id}`);
+				this.userSocket.emit(ClientEvents.friendResponse, {accepted: true, opponent: from});
+			};
+			const decline = async () => {
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${from.id}`);
+			};
+			notify.newNotification("invite", {
+				message: 'Friend request',
+				by: from.username,
+				autoClose: true,
+				timeout: 4000,
+				timeOutBar: true,
+				buttons: [
+					{action: accept},
+					{action: decline}
+				]
+			});
+		});
+
+		this.userSocket.on(ServerEvents.friendResponse, (response: {accepted: boolean, opponent: User}) => {
+			if (response.accepted) {
+				notify.newNotification("infos", {
+					message: 'Friend request accepted',
+					by: response.opponent.username,
+				});
+			}
+		});
 	}
 
 	checkGame() {
 		this.gameSocket.emit(ClientEvents.checkGame);
 	}
 
-	addEventListener(socket: "user" | "game", event: string, callback: (...args: any[]) => void) {
+	addEventListener(socket: "user" | "game" | "chat", event: string, callback: (...args: any[]) => void) {
 		if (socket == "user")
 			this.userSocket.on(event, callback);
 		else if (socket == "game")
 			this.gameSocket.on(event, callback);
+		else if (socket == "chat")
+			this.chatSocket.on(event, callback);
 	}
 
-	removeEventListener(socket: "user" | "game", event: string, callback: (...args: any[]) => void) {
+	removeEventListener(socket: "user" | "game" | "chat", event: string, callback: (...args: any[]) => void) {
 		if (socket == "user")
 			this.userSocket.off(event, callback);
 		else if (socket == "game")
 			this.gameSocket.off(event, callback);
+		else if (socket == "chat")
+			this.chatSocket.off(event, callback);
 	}
 
-	hasEventListener(socket: "user" | "game", event: string): boolean {
+	hasEventListener(socket: "user" | "game" | "chat", event: string): boolean {
 		if (socket == "user")
 			return this.userSocket.hasListeners(event);
 		else if (socket == "game")
 			return this.gameSocket.hasListeners(event);
+		else if (socket == "chat")
+			return this.chatSocket.hasListeners(event);
 		return false;
 	}
 
@@ -157,6 +199,10 @@ class SocketManager {
 		this.userSocket.emit(ClientEvents.gameInvite, opponentId);
 	}
 
+	addFriend(friendId: number, id: number) {
+		this.userSocket.emit(ClientEvents.addFriend, friendId);
+	}
+
 	useSpell(spell: string) {
 		this.gameSocket.emit(ClientEvents.useSpell, spell);
 	}
@@ -172,6 +218,69 @@ class SocketManager {
 			this.gameSocket.emit(event, ...args);
 		else if (socket == "chat")
 			this.chatSocket.emit(event, ...args);
+	}
+
+	sendMessage(message: any) {
+		// console.log(message);
+		this.chatSocket.emit("newMessageSend", message);
+	}
+
+	createChannel(channel: any) {
+		this.chatSocket.emit(ChatEvents.createNewChannel, channel);
+	}
+
+	deleteChannel(id : number) {
+		this.chatSocket.emit(ChatEvents.deleteChannel, id);
+	}
+
+	joinChannel(id: number, pw: string)
+	{
+		const userID = this.user.id;
+		this.chatSocket.emit(ChatEvents.joinChannel,{
+			channelId: id,
+			password: pw,
+			userId: userID,
+		})
+	}
+
+	leaveChannel(id: number) {
+		const userID = this.user.id;
+		this.chatSocket.emit(ChatEvents.leaveChannel, {id, userID})
+	}
+
+	updateChannel(id: number, name: string, mode: string, pw: string, userIds: number []) {
+		const editedChannel = {
+			channelId: id,
+			name: name, 
+			mode: mode,
+			password: pw,
+			userIds: userIds,
+		};
+	}
+
+	addUserToChannel(channelId: number, users: User []) {
+		for (const user of users) {
+			const id = user.id;
+			this.chatSocket.emit(ChatEvents.addUserToChannel, {channelId, id});
+		}
+	}
+
+	setActiveChannel(channelId: number) {
+		this.chatSocket.emit(ChatEvents.setActiveChannel,{
+			'channelId':channelId,
+			'currentUserId': this.user.id
+		} );
+	}
+
+	emitAction(action: string, userID : number, channelID: number)
+	{
+		if (action === 'admin') {
+			this.chatSocket.emit(ChatEvents.setAdmin ,{userId: userID, channelId: channelID});
+		} else if (action === 'kick') {
+			this.chatSocket.emit(ChatEvents.kickUser ,{userId: userID, channelId: channelID});
+		} else if (action === 'ban') {
+			this.chatSocket.emit(ChatEvents.banUser ,{userId: userID, channelId: channelID});
+		}
 	}
 }
 

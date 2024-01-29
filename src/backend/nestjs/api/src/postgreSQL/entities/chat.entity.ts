@@ -8,7 +8,7 @@ class ChannelEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
+	@Column() 
 	name: string;
 
 	@Column()
@@ -20,7 +20,8 @@ class ChannelEntity {
 	@Column({ nullable: true}) 
 	password: string;
 
-	@ManyToMany(() => UserEntity) @JoinTable()
+	@ManyToMany(() => UserEntity)
+	@JoinTable()
 	users: User [];
 
 	@ManyToMany(() => UserEntity)

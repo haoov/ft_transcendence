@@ -1,7 +1,7 @@
 <template>
-	<div class="Messages-div" :key="componentKey" >
+	<div class="Messages-div" >
 		<ul
-			v-for="(message, index) in messages"
+			v-for="(message, index) in props.messages"
 			:id="index === messages.length - 1 ? 'last' : ''"
 		>
 			<Message
@@ -18,12 +18,16 @@
 import Message from './Message.vue';
 import { onUpdated, onMounted, computed, watch} from 'vue';
 import { inject, ref } from 'vue';
-import { Socket } from 'socket.io-client';
-import type { User } from '@/utils';
+import { type User} from '@/utils'
 
-type Message = {
-	sender: User;
+interface Message {
+	id: number;
+	sender: {
+		name: string;
+		avatar: string;
+	};
 	message: {
+		id: number;
 		text: string;
 		time: string;
 	};
@@ -40,22 +44,8 @@ function scrollToBottomSmooth() {
 };
 
 const $data : any = inject('$data');
-const currentUser : any = await $data.getCurrentUser();
-const store = $data.getStore();
-const socket: Socket = store.socket;
-const componentKey = ref(0);
-const activeChannel = computed(() => store.activeChannel);
-const messages = computed(() => store.messages);
-
-watch(activeChannel, () => {
-	if (activeChannel) {
-		$data.loadMessagesByChannel(activeChannel.value.id);
-		componentKey.value++;
-		return;
-	}
-	store.messages = [];
-	return;
-});
+const currentUser = ref<User>(await $data.getCurrentUser());
+const props = defineProps<{channel: any, messages: Message []}>();
 
 onMounted(() => {
 	scrollToBottomOnMounted();
@@ -63,16 +53,6 @@ onMounted(() => {
 
 onUpdated(() => {
 	scrollToBottomSmooth();
-});
-
-socket.on("newMessage", async (message : any) => {
-	const blockedUsers = await $data.getBlockedUsers();
-	if (activeChannel.value.id !== message.message.channelId) {
-		return;
-	}
-	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === message.sender.id)) {
-		store.messages.push(message);
-	}
 });
 
 </script>

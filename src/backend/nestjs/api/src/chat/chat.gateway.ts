@@ -11,6 +11,7 @@ import {
 	WebSocketServer
 } from '@nestjs/websockets';
 import { ChannelEntity, UserEntity } from 'src/postgreSQL/entities';
+import * as bcrypt from 'bcrypt';
 import { Channel, Message } from './chat.interface';
 import { User } from 'src/user/user.interface';
 import { Repository } from 'typeorm';
@@ -182,12 +183,29 @@ export class ChatGateway implements OnGatewayConnection {
 
 	private readonly userSockets: Map<number, Socket[]>;
 
-	constructor(@InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>,) {
+	constructor(
+		@InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>,
+		 private readonly chatService: ChatService,) {
 		this.userSockets = new Map<number, Socket[]>();
 	}
 
 	handleConnection(@ConnectedSocket() client: Socket) {
 		console.log("chat connection");
+    }
+    
+	@SubscribeMessage('joinChannel')
+	async onJoinChannel(@MessageBody() channel: any) {
+		const channelToJoin = await this.chatService.getChannelById(channel.channelId);
+		const isMatch =  await bcrypt.compare(channel.password, channelToJoin.password);
+		if (channelToJoin.mode === 'Protected' && !isMatch) {
+			this.userSockets.get(channel.userId).forEach((s) => {s.emit('channelJoined', false)});
+			return;
+		}
+		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
+			this.userSockets.get(channel.userId).forEach((s) => {s.emit('channelJoined', true)});
+			this.userSockets.get(channel.userId).forEach((s) => {s.emit('newChannelCreated', channelToJoin)});
+			this.userSockets.get(channel.userId).forEach((s) => {s.join(channel.channelId.toString())});
+		}
 	}
 
 	@SubscribeMessage('userConnected')

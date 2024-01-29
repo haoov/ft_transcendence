@@ -1,19 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { MessageEntity , ChannelEntity} from 'src/postgreSQL/entities/chat.entity';
 import { UserEntity } from 'src/postgreSQL/entities/user.entity';
-import { Message, Channel } from './chat.interface';
+import { Channel, Message } from './chat.interface';
+import * as bcrypt from 'bcrypt';
 import { User, UserRelation } from 'src/user/user.interface';
 import { ChannelDTO, MessageDTO } from './dto/chat.dto';
 
-function createChannelObj(channel: any, users: User []) : ChannelEntity {
+
+async function encod(pw: string) : Promise<string> {
+	const saltOrRounds = 10;
+	const hash = await bcrypt.hash(pw, saltOrRounds);
+	return hash;
+}
+
+async function createChannelObj(channel: any, users: User [], admins : User []) : Promise<ChannelEntity> {
 	const newChannel = new ChannelEntity();
 	newChannel.name = channel.name;
 	newChannel.creatorId = channel.creatorId;
 	newChannel.mode = channel.mode;
-	newChannel.password = channel.password;
+	newChannel.password = await encod(channel.password);
 	newChannel.users = users;
+	newChannel.admins = admins;
 	return newChannel;
 }
 
@@ -51,23 +60,35 @@ export class ChatService {
 	// 	return await this.channelRepository.find() as Channel [];
 	// }
 
-	//Permet de fetch un channel par son id
+	//Fetch user all channels by user id
 	async getCurrentUserChannels(userId: number): Promise<Channel []> {
-		return await this.channelRepository
-        .createQueryBuilder("channel")
-        .innerJoinAndSelect("channel.users", "user", "user.id = :userId", { userId })
-        .getMany();
+		try {
+			return await this.channelRepository
+			.createQueryBuilder("channel")
+			.innerJoinAndSelect("channel.users", "user", "user.id = :userId", { userId })
+			.getMany();
+		} catch (err) {
+			throw err;
+		}
 	}
 
-	//Permet de fetch un channel par son id
+	//Fetch channel by id
 	async getChannelById(channelId: number): Promise<Channel> {
-		return await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+		try {
+			return await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+		} catch (err) {
+			throw err;
+		}
 	}
 
-	//Permet de recuperer les utilisateurs d'un channel
+	//Fetch users From channel by channel id
 	async getUsersByChannelId(channelId: number): Promise<User []> {
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
-		return channel.users;
+		try {
+			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+			return channel.users;
+		} catch (err) {
+			throw err;
+		}
 	}
 
 	//Permet de recuperer les channels qui ne sont ni prives ni secret et qui ne sont pas deja dans la liste des channels de l'utilisateur
@@ -117,31 +138,48 @@ export class ChatService {
 	// 	return newChannel;
 	// }
 
-	//Permet d'ajouter un utilisateur à un channel
+	//Add a user to a channel
 	async addUserToChannel(channelId: number, userId: number): Promise<boolean> {
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
-		const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
-		channel.users.push(user);
-		await this.channelRepository.save(channel);
-		return true;
+		try {
+			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+			const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
+			channel.users.push(user);
+			await this.channelRepository.save(channel);
+			return true;
+		} catch (err) {
+			throw err;
+		}
 	}
 
-	//Permet de supprimer un utilisateur d'un channel
+	//Delete a user from a channel (kick)
 	async removeUserFromChannel(channelId: number, userId: number): Promise<boolean> {
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
-		const user = await this.userRepository.findOne({ where: { id: userId }}) as User;
-		channel.users.splice(channel.users.indexOf(user), 1);
-		await this.channelRepository.save(channel);
-		return true;
+		try {
+			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+			let channelUsers = channel.users;
+			const index = channelUsers.findIndex((user: User) => user.id == userId);
+			if (index < 0) {
+				return ;
+			}
+			channelUsers.splice(index, 1);
+			channel.users = channelUsers;
+			await this.channelRepository.save(channel);
+			return true;
+		} catch (err) {
+			throw err;
+		}
 	}
 
-	//Permet de supprimer un channel
+	//Delete a channel
 	async deleteChannel(channelId: number): Promise<boolean> {
-		const messages = await this.messagesRepository.find({ where: { channelId: channelId }});
-		await this.messagesRepository.remove(messages);
-		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
-		await this.channelRepository.remove(channel);
-		return true;
+		try {
+			const messages = await this.messagesRepository.find({ where: { channelId: channelId }});
+			await this.messagesRepository.remove(messages);
+			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+			await this.channelRepository.remove(channel);
+			return true;
+		} catch (err) {
+			throw err;
+		}
 	}
 
 	/*----------------------------------------------------------------------------*/
@@ -166,7 +204,7 @@ export class ChatService {
 		let channels: Channel[];
 		try {
 			channels = await this.channelRepository.find({
-				where: {mode: "Public"},
+				where: {mode: In(["Public", "Protected"])},
 				relations: ["users", "bannedUsers"],
 			});
 			channels = channels.filter((c) => {
@@ -184,9 +222,11 @@ export class ChatService {
 	}
 
 	async getAddableUsers(channelId: number, userId: number): Promise<User[]> {
-		let users: User[] = await this.userRepository.find();
+		let users: User[] = await this.userRepository.find({
+            relations: ["users_blocked"]
+        });
 		try {
-			const user: User = await this.userRepository.findOneOrFail({
+			const currentUser: User = await this.userRepository.findOneOrFail({
 				where: { id: userId },
 				relations: [
 					"users_blocked",
@@ -199,9 +239,10 @@ export class ChatService {
 					relations: ["users", "bannedUsers"]
 				});
 				users = users.filter((u) => {
-					if (	channel.bannedUsers.find((user) => user.id == u.id)
-								|| user.users_blocked.find((user) => user.id == u.id)
-								|| channel.users.find((user) => user.id == u.id)
+					if (	channel.bannedUsers.includes(u)
+								|| currentUser.users_blocked.includes(u)
+								|| channel.users.includes(u)
+                || u.users_blocked.includes(currentUser)
 								|| u.id == userId) 
 									return false;
 					else
@@ -210,7 +251,7 @@ export class ChatService {
 			}
 			else {
 				users = users.filter((u) => {
-					if (	user.users_blocked.find((b_user) => b_user.id == u.id)
+					if (	currentUser.users_blocked.find((b_user) => b_user.id == u.id)
 								|| u.id == userId) {
 									return false;
 					}
@@ -254,12 +295,10 @@ export class ChatService {
 	async getUserChannels(userId: number): Promise<Channel[]> {
 		let channels: Channel[];
 		try {
-			channels = await this.channelRepository.find({
-				where: {
-					users: { id: userId }
-				},
-				relations: ["users", "messages", "messages.sender"]
-			});
+			channels = await this.channelRepository.createQueryBuilder("channel")
+			.leftJoinAndSelect("channel.users", "user")
+			.leftJoinAndSelect("channel.messages", "message")
+			.where("user.id = :userId", { userId: userId }).getMany();
 			this.sortCahnnels(channels);
 		}
 		catch (err) {

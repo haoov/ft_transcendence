@@ -16,15 +16,18 @@
 </template>
 
 <script setup lang="ts">
+import type { User } from '@/utils';
 import moment from 'moment-timezone';
 import { inject, computed } from 'vue';
 
-const props : any = defineProps({
-	data: Object,
-	currentUser: Object,
+const props = defineProps<{
+	data: any,
+	currentUser: User,
 	id: Number
-});
+}>();
+
 const $data : any = inject('$data');
+const store = $data.getStore();
 const username : string = props.data.sender.username;
 const profilePic : string = props.data.sender.avatar;
 const userId : number = props.data.sender.id;
@@ -42,7 +45,7 @@ const classDiv = computed(() => {
 
 const openProfilModal = () => {
 	if(userId !== currentUserId)
-		$data.openProfileModal(userId);
+		$data.openProfileModal(store.userIdClicked);
 }
 
 </script>
@@ -54,8 +57,8 @@ const openProfilModal = () => {
 }
 
 .profile-img-div {
-	width: 60px;
-	height: 60px;
+	width: 55px;
+	height: 55px;
 	border-radius: 50%;
 	overflow: hidden;
 	display: inline-flex;
@@ -93,7 +96,7 @@ const openProfilModal = () => {
 }
 
 h4 {
-  font-size: 1.25em;
+  font-size: 1em;
   color: #e9e8e8;
   text-transform: none;
   margin-top: 0;
@@ -103,7 +106,7 @@ h4 {
 }
 
 h5 {
-    font-size: 0.5em;
+    font-size: 0.6em;
     color: #c5c5c5;
     margin: 3px 0 0 5px;
 }

@@ -18,6 +18,8 @@ const me = ref<User>();
 const myStats = ref<UserStat>();
 const myGames = ref<GameStat[]>([]);
 const search = ref('');
+const options = ['All', 'Friends'];
+const selectedOption = ref('All');
 
 const $data : any = inject('$data');
 
@@ -32,19 +34,23 @@ const playersDisplayed = computed(() => {
 });
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
-	await fetchLeaderboard();
+	await fetchLeaderboard(selectedOption.value);
 });
 
 // FETCHING DATA
 async function fetchData() {
 	await fetchMe();
-	await fetchLeaderboard();
+	await fetchLeaderboard(selectedOption.value);
 	loadAllImages();
 }
 
-async function fetchLeaderboard() {
+async function fetchLeaderboard(option: string) {
+	selectedOption.value = option;
+	let query: string = '';
+	if (selectedOption.value == 'Friends')
+		query = '?friends=true';
 	await axios
-		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/leaderboard`)
+		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/leaderboard${query}`)
 		.then(data => { players.value = data.data; });
 }
 
@@ -60,7 +66,8 @@ async function fetchMe() {
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
-				myGames.value = data.data;})
+				myGames.value = data.data;
+				updatePieAnimation();})
 			});
 }
 
@@ -133,6 +140,22 @@ function getPieProportions() : string {
 	return myStats.value?.win_rate.toString() + " " + loses.toString();
 }
 
+function updatePieAnimation() {
+  const proportions = getPieProportions();
+  const styleElement = document.createElement('style');
+  styleElement.innerHTML = `
+    @keyframes donut {
+      0% {
+        stroke-dasharray: 0, 100;
+      }
+      100% {
+        stroke-dasharray: ${proportions};
+      }
+    }
+  `;
+  document.head.appendChild(styleElement);
+}
+
 function getDateStr(dt: Date) : string {
 	let date = new Date(dt);
 	return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });	
@@ -160,7 +183,7 @@ function goToProfile(username: string) {
 }
 
 function inviteToPlay(player: UserStat) {
-	if (player.status == "offline")
+	if (player.status == "offline" || player.status == "undefined")
 		notify.newNotification("error", {message: "User offline", by: player.username});
 	else if (player.status == "playing")
 		notify.newNotification("error", {message: "Already playing", by: player.username});
@@ -209,8 +232,7 @@ onMounted(async () => {
 							<svg width="50%" height="50%" viewBox="0 0 40 40">
 								<circle class="donut-ring" cx="20" cy="20" r="15.91549430918954" fill="transparent" stroke-width="3.5"></circle>
 								<circle class="donut-segment" cx="20" cy="20" r="15.91549430918954" fill="transparent"
-												stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"
-												:style="{ animation: 'donut 1s', '--end-dash': getPieProportions()}"></circle>
+									stroke-width="5" :stroke-dasharray="getPieProportions()" stroke-dashoffset="25"/>
 								<text y="50%" transform="translate(0, 2)">
 									<tspan x="50%" text-anchor="middle" class="donut-percent">{{ myStats?.win_rate}}%</tspan>	 
 								</text>
@@ -256,7 +278,26 @@ onMounted(async () => {
 			<div class="c-card">
 				<div class="c-card__header">
 					<h3>Leaderboard</h3>
-					<div class= "searchForm">
+					<div class="u-justify--right u-display--flex">
+						<div class="radio-inputs" id="friends">
+							<label class="radio"
+							v-for="option in options"
+							>
+							<input
+							autocomplete="off"
+							type="radio"
+							:value="option"
+							name="friends"
+							@click="fetchLeaderboard(option)"
+							v-model="selectedOption"
+							>
+							<span class="name">{{ option }}</span>
+							</label>
+						</div>
+					</div>
+					<div/>
+					<div class="u-justify--right u-display--flex">
+						<div class= "searchForm">
 						<input 
 						v-model="search"
 						name="searchUser"
@@ -266,9 +307,10 @@ onMounted(async () => {
 						placeholder="search..."
 						>
 					</div>
+					</div>
 				</div>
 				<div class="c-card__body">
-					<ul class="c-list">
+					<ul :key="playersDisplayed.length" class="c-list">
 						<li class="c-list__item">
 							<div class="c-list__grid">
 								<div class="u-text--left u-text--small u-text--overpass">Rank</div>
@@ -278,13 +320,13 @@ onMounted(async () => {
 							</div>
 						</li>
 						<div v-if="playersDisplayed.length" id="leaderboardContent" class="scroll"> 
-							<li v-for="(player, index) in playersDisplayed" :key="player.id" class="c-list__item">
+							<li v-for="(player, index) in playersDisplayed" :key="player.id" class="c-list__item c-list__content">
 								<div class="c-list__grid">
 									<div :class="getRankClass(player.rank)">{{ player.rank }}</div>
 									<div class="c-media">
 										<div v-if="imagesLoaded" class="c-avatar-container">
 											<img class="c-avatar c-media__img" :src="getAvatarSrc(player.id)" @click="goToProfile(player.username)" title="Go to profile"/>
-											<img v-if="!player.blocking" class="c-avatar-icon" :src="getStatusIcon(player)"/>
+											<img v-if="(player.id == me?.id) || (player.friend == true && !player.blocking)" class="c-avatar-icon" :src="getStatusIcon(player)"/>
 										</div>
 										<div class="c-media__content">
 											<div>
@@ -404,16 +446,12 @@ button, select {
 		padding: 1.2rem;
 	}
 }
+
 .c-card__header {
-	display: flex;
+	display: grid;
 	align-items: center;
-	justify-content: space-between;
 	padding-bottom: 0;
-}
-@media screen and (max-width: 750px) {
-	.c-card__header {
-		flex-direction: column;
-	}
+	grid-template-columns: 1fr 1fr;
 }
 
 @media screen and (max-width: 750px) {
@@ -441,8 +479,14 @@ button, select {
 
 
 #leaderboardContent {
-	height: 500px;
+	height: 470px;
 	overflow-y: auto;
+	overflow-x: hidden;
+}
+@media screen and (max-width: 750px) {
+	#leaderboardContent {
+		height: 500px;
+	}
 }
 
 .svg-pie {
@@ -503,14 +547,14 @@ button, select {
 		}
 }
 
-@keyframes donut {
+/* @keyframes donut {
 		0% {
 				stroke-dasharray: 0, 100;
 		}
 		100% {
-				stroke-dasharray: var(--end-dash);
+				stroke-dasharray: 
 		}
-}
+} */
 
 .donut-data {
 		font-size: 0.2em;
@@ -556,6 +600,52 @@ button, select {
 	font-size: 1.4rem;
 }
 
+.radio-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 0.5rem;
+    box-sizing: border-box;
+    background-color: var(--c-black-light);
+    box-shadow: 0 0 0 1px #0000000f;
+    padding: 0.25rem;
+    font-size: x-small;
+    margin-bottom: 0.5rem;
+	width: 120px;
+}
+
+.radio-inputs .radio {
+  flex: 1 1 auto;
+  text-align: center;
+  width: 2.2em;
+}
+
+.radio-inputs .radio input {
+  display: none;
+}
+
+.radio-inputs .radio .name {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: none;
+  padding: .5rem 0;
+  color: #717171;
+  transition: all .15s ease-in-out;
+  font-family: Overpass;
+  font-size: x-small;
+}
+
+.name {
+  font-size: xx-small;
+}
+
+.radio-inputs .radio input:checked + .name {
+  background-color: #fff;
+}
+
+
 .c-list {
 	margin: 0;
 	padding: 0;
@@ -575,10 +665,47 @@ button, select {
 		margin-top: 0.4rem;
 	}
 }
+
+@keyframes slideIn {
+  0% {
+    transform: translateX(+100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.c-list__content {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+.c-list__content:nth-child(n+2) {
+  animation-delay: 0.1s;
+}
+
+.c-list__content:nth-child(n+3) {
+  animation-delay: 0.2s;
+}
+
+.c-list__content:nth-child(n+4) {
+  animation-delay: 0.3s;
+}
+
+.c-list__content:nth-child(n+5) {
+  animation-delay: 0.4s;
+}
+
+.c-list__content:nth-child(n+6) {
+  animation-delay: 0.5s;
+}
+
 .c-list__grid {
 	display: grid;
 	grid-template-columns: 4.8rem 3fr 1fr 1fr;
 	grid-column-gap: 2.4rem;
+	overflow-x: hidden;
 }
 @media screen and (max-width: 750px) {
 	.c-list__grid {
@@ -588,14 +715,18 @@ button, select {
 }
 
 .searchForm input {
-	width: 80%;
-	padding: 4% 7%;
-	border-radius: 8px;
-	color: #fff;
-	font-family: inherit;
-	background-color: var(--c-black-light);
-	border: 1px solid var(--c-black-light);
-	font-family: Overpass;
+    width: 100px;
+    height: 10px;
+    padding: 7px 10px;
+    display: flex;
+    justify-content: right;
+    border-radius: 0.5rem;
+    color: #fff;
+    font-family: inherit;
+    background-color: var(--c-black-light);
+    border: 1px solid var(--c-black-light);
+    font-family: Overpass;
+	font-size: x-small;
 }
 
 .searchForm {
@@ -678,6 +809,7 @@ button, select {
 .c-avatar-container {
   position: relative;
   display: inline-block;
+  padding: 2px;
 }
 .c-avatar {
 	display: inline-flex;
@@ -817,6 +949,7 @@ button, select {
 	text-align: right;
 }
 
+
 .u-text--grey {
 	color: var(--c-grey) !important;
 }
@@ -870,6 +1003,10 @@ button, select {
 
 .u-justify--center {
 	justify-content: center;
+}
+
+.u-justify--right {
+	justify-content: right;
 }
 
 .u-align--flex-end {

@@ -1,8 +1,13 @@
 <template>
 	<div class="chat-display-div">
-		<ChatHeader></ChatHeader>
+		<ChatHeader 
+			:channel="store.activeChannel"
+		></ChatHeader>
 		<Suspense>
-			<MessageDisplay></MessageDisplay>
+			<MessageDisplay
+				:channel="store.activeChannel"
+				:messages="store.messages"
+			></MessageDisplay>
 		</Suspense>
 		<Suspense>
 			<InputBar></InputBar>
@@ -14,10 +19,61 @@
 import InputBar from './InputBar.vue';
 import MessageDisplay from './MessagesDisplay.vue';
 import ChatHeader from './ChatHeader.vue';
-import { Suspense, inject, computed, onMounted, ref, watch } from 'vue';
+import { Suspense, inject, onMounted } from 'vue';
+import { socketManager } from '@/SocketManager';
+import { ChatEvents, ServerEvents } from '@/utils';
 
-const data : any = inject('$data');
-const store = data.getStore();
+interface Message {
+	id : number;
+	sender: {
+		name: string;
+		avatar: string;
+	};
+	message: {
+		id: number;
+		text: string;
+		time: string;
+	};
+};
+
+const storeManager : any = inject('$data');
+const store = storeManager.getStore();
+
+async function recievedMessage(data : any) {
+	const blockedUsers = await storeManager.getBlockedUsers();
+	const blockers = await storeManager.getBlockersList();
+	if (store.activeChannel.id !== data.message.channelId) {
+		return;
+	}
+	if (!blockedUsers.some((blockedUser : any) => blockedUser.id === data.sender.id)
+	&& !blockers.some((blocker: any) => blocker.id === data.sender.id)) {
+		console.log('[Data received] ->', data);
+		const newMsg = {
+			sender: {
+				name: data.sender.username,
+				avatar: data.sender.avatar,
+			},
+			message: {
+				id: data.message.id,
+				text: data.message.text,
+				time: data.message.time,
+			}
+		}
+		store.messages = [...store.messages, newMsg];
+	}
+};
+
+onMounted(() => {
+	if(!socketManager.hasEventListener("chat", ChatEvents.newMessageReceived)) {
+		socketManager.addEventListener("chat", ChatEvents.newMessageReceived, recievedMessage);
+	}
+});
+
+socketManager.addEventListener("user", ServerEvents.dataChanged, async () => {
+	if (store.activeChannel) {
+		storeManager.loadMessagesByChannel(store.activeChannel.id);
+	}
+});
 
 </script>
 

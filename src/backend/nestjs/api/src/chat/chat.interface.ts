@@ -15,8 +15,9 @@ interface Channel {
 	mode: string;
 	password: string;
 	users: User [];
+	bannedUsers: User [];
+	admins: User [];
 	messages: Message[];
-	bannedUsers: User[];
 }
 
 export { Message, Channel };

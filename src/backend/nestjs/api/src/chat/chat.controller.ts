@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Param, Req, Put, Query, Body, ValidationPipe } from "@nestjs/common";
+import { Controller, Get, Post, Param, Req, Put, Query, Body, ValidationPipe, UseGuards } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
 import { UserEntity } from "src/postgreSQL/entities/user.entity";
 import { Message, Channel } from "./chat.interface";
 import { User, UserRelation } from "src/user/user.interface";
 import { Request } from "express";
+import Jwt2faGuard from "../auth/jwt-2fa/jwt-2fa.guard";
 import { UserGateway } from "src/user/user.gateway";
 import { ChatGateway } from "./chat.gateway";
 import { ChannelDTO, MessageDTO } from "./dto/chat.dto";
@@ -42,6 +43,9 @@ function isBlocked(user: UserEntity, blockedUsers: UserEntity []) : boolean {
 // 	return messages;
 // }
 
+
+
+@UseGuards(Jwt2faGuard)
 @Controller('chat')
 export class ChatController {
 	constructor(
@@ -127,6 +131,24 @@ export class ChatController {
 	async getJoinableChannels(@Req() request: Request): Promise<Channel[]> {
 		return await this.chatService.getJoinableChannels(request.user['id']);
 	}
+
+	// @Get('/channels/admins')
+	// async getAdmins(@Query("id") id : number) : Promise<User []> {
+	// 	try {
+	// 		return await this.chatService.getAdminsByChannelId(id);
+	// 	} catch (err) {
+	// 		throw err;
+	// 	}
+	// }
+    
+	// @Get('/channels/banned')
+	// async getBanlist(@Query("id") id : number): Promise<User []> {
+	// 	try {
+	// 		return await this.chatService.getBannedUsersByChannelId(id);
+	// 	} catch (err) {
+	// 		throw err;
+	// 	}
+	// }
 
 	@Post('/channel')
 	async createChannel(@Body() channelDTO: ChannelDTO) {
