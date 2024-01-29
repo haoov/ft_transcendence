@@ -1,4 +1,4 @@
-import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io'
 import { clientEvents, serverEvents } from './enum/events.enum';
 import { User } from 'src/user/user.interface';
@@ -17,8 +17,8 @@ export class GameGateway
 	rooms: Room[];
 	roomId: number;
 
-	constructor(private readonly userService: UserService,
-								@Inject(forwardRef(() => UserGateway)) private readonly userGateway: UserGateway,
+	constructor(	private readonly userService: UserService,
+								private readonly userGateway: UserGateway,
 								private readonly gameService: GameService) {
 		this.rooms = [];
 		this.roomId = 0;
@@ -32,19 +32,19 @@ export class GameGateway
 	 * Handle connection of a user
 	 * @param client socket of the user
 	 */
-	handleConnection(client: Socket) {
-		//wait for connected event from client side
-		client.on(clientEvents.connected, (data: User) => {
-			console.log("game connection: " + data.username);
-			//store user data in socket
-			client.data.user = data;
-			//check if user is already in a room
-			const room: Room = this.findRoom(client);
-			if (room) {
-				//if user is already in a room manage socket
-				this.manageSocket(client, room);
-			}
-		});
+	handleConnection() {}
+
+	@SubscribeMessage('userConnected')
+	onUserConnected(@ConnectedSocket() client: Socket, @MessageBody() user: User) {
+		console.log("game connection: " + user.username);
+		//store user data in socket
+		client.data.user = user;
+		//check if user is already in a room
+		const room: Room = this.findRoom(client);
+		if (room) {
+			//if user is already in a room manage socket
+			this.manageSocket(client, room);
+		}
 	}
 
 	/**

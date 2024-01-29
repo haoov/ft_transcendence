@@ -1,30 +1,44 @@
 <script setup lang="ts">
+	import v_sideBar from './sideBar.vue';
 	import v_channel from './channel.vue';
-	import chat from '@/chat/chat';
+	import v_chatMenu from './menu/chatMenu.vue';
+	import { ref, watch, type Ref } from 'vue';
+	import { chat, type Channel } from '@/chat';
+
+	const currentChannel: Ref<Channel | undefined> = ref<Channel>();
+	watch(chat.getChannels(), (channels) => {
+		if (currentChannel.value) {
+			const channel = chat.getChannel(currentChannel.value.getId());
+			if (channel && channel != currentChannel.value) {
+				currentChannel.value = channel;
+			}
+		}
+	})
 </script>
 
 <template>
-	<button v-on:click="chat.testChannels()">TEST</button>
-	<TransitionGroup
-		appear
-		tag="div"
-		id="channels"
-		name="channels">
-		<v_channel
-			v-for="channel in chat.getActiveChannels()"
-			:key="channel.getId()"
-			:channel="channel">
-		</v_channel>
-	</TransitionGroup>
+	<!--CHAT-->
+	<div id="chat">
+		<v_sideBar
+			v-on:setCurrentChannel="(channel) => {currentChannel = channel}">
+		</v_sideBar>
+		<v_channel :channel="currentChannel"></v_channel>
+	</div><!--CHAT END-->
+	<v_chatMenu :channel="currentChannel"></v_chatMenu>
 </template>
 
 <style scoped>
-	#channels {
-		position: absolute;
-		bottom: 0px;
-		right: 15px;
+	#chat {
 		display: flex;
-		flex-direction: row-reverse;
-		gap: 10px;
+		align-items: flex-start;
+		height: 90%;
+		width: 90%;
+		max-height: 1000px;
+		max-width: 1000px;
+		margin-top: 20px;
+		margin-bottom: 5px;
+		border-radius: 0.8rem;
+		box-shadow: 0 0 0 1px var(--c-black-light);
+		background-color: var(--c-surface);
 	}
 </style>

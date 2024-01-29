@@ -17,7 +17,8 @@ const computer = {
 	friends: [],
 	twofa_enabled: false,
 	twofa_auth: false,
-	twofa_secret: ""
+	twofa_secret: "",
+	users_blocked: [],
 };
 
 export class Room {
