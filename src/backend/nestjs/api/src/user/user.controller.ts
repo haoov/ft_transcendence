@@ -16,78 +16,140 @@ export class UserController {
 				private readonly userGateway: UserGateway) {}
 
 	@Get()
-	getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
-		if (id)
-			return this.userService.getUserById(id);
-		else if (username)
-			return this.userService.getUserByUsername(username);
-		return null;
+	async getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
+		try {
+			let user: User;
+			if (id)
+				user = await this.userService.getUserById(id);
+			else if (username)
+				user = await this.userService.getUserByUsername(username);
+			if (!user)
+				return null;
+			const { twofa_secret, ...user_ret } = user;
+			return user_ret as User;
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Get("all")
-	getAllUsers(): Promise<User[]> {
-		return this.userService.getAllUsers();
+	async getAllUsers(): Promise<User[]> {
+		try {
+			const users = await this.userService.getAllUsers()
+			return users.map(({ twofa_secret, ...user_ret }) => user_ret);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Get("me")
 	async getCurrentUser(@Req() req: Request): Promise<User> {
-		const user: UserEntity = await this.userService.getCurrentUser(req) as UserEntity;
-		const { twofa_secret, ...user_ret } = user;
-		return user_ret as User;
+		try {
+			const user: UserEntity = await this.userService.getCurrentUser(req) as UserEntity;
+			const { twofa_secret, ...user_ret } = user;
+			return user_ret as User;
+		}
+		catch (err) {
+			throw err;
+		
+		}
 	}
 	
 	@Get("block")
-	getBlockedUsers(@Req() req: Request): Promise<User[]> {
-		const user = req.user as User;
-		return this.userService.getBlockedUsers(user.id);
+	async getBlockedUsers(@Req() req: Request): Promise<User[]> {
+		try {
+			const user = req.user as User;
+			const blocked = await this.userService.getBlockedUsers(user.id);
+			return blocked.map(({ twofa_secret, ...user_ret }) => user_ret);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Get("blockedBy")
 	isBlocked(@Param("id") id: number, @Req() req: Request): Promise<number []> {
-		const user = req.user as User;
-		return this.userService.getBlockingList(user.id);
+		try {
+			const user = req.user as User;
+			return this.userService.getBlockingList(user.id);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Put('update/username')
 	async updateUsername(@Req() req: Request, @Body() body: updateUsernameDto): Promise<User> {
-		const user = await this.userService.updateUsername(req);
-		this.userGateway.dataChanged(user);
-		const { twofa_secret, ...user_ret } = user;
-		return user_ret as User;
+		try {
+			const user = await this.userService.updateUsername(req);
+			this.userGateway.dataChanged(user);
+			const { twofa_secret, ...user_ret } = user;
+			return user_ret as User;
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Put('update/avatar')
 	@UseInterceptors(FileInterceptor('avatar', multerConfig))
 	async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request) : Promise<User> {
-		let user = req.user as User;
-		user = await this.userService.uptadeAvatar(user.id);
-		this.userGateway.dataChanged(user);
-		const { twofa_secret, ...user_ret } = user;
-		return user_ret as User;
+		try {
+			let user = req.user as User;
+			user = await this.userService.uptadeAvatar(user.id);
+			this.userGateway.dataChanged(user);
+			const { twofa_secret, ...user_ret } = user;
+			return user_ret as User;
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Put('friend/add')
 	async addFriend(@Req() req: Request, @Query("id") friendId: number): Promise <boolean> {
-		const user = req.user as User;
-		const areMutualFriends = await this.userService.addFriend(user.id, friendId);
-		this.userGateway.dataChanged(user);
-		return areMutualFriends;
+		try {
+			const user = req.user as User;
+			const areMutualFriends = await this.userService.addFriend(user.id, friendId);
+			this.userGateway.dataChanged(user);
+			return areMutualFriends;
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 	
 	@Put('friend/delete')
 	async deleteFriend(@Req() req: Request, @Query("id") friendId: number) {
-		const user = req.user as User;
-		await this.userService.deleteFriend(user.id, friendId);
-		this.userGateway.dataChanged(user);
+		try {
+			const user = req.user as User;
+			await this.userService.deleteFriend(user.id, friendId);
+			this.userGateway.dataChanged(user);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Get('avatar/:id')
 	getAvatar(@Param('id') id: number, @Res() res: Response) {
-		return this.userService.getAvatar(id, res);
+		try {
+			return this.userService.getAvatar(id, res);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Delete(":username")
 	deleteUser(@Param("username") username: string) {
-		this.userService.deleteUser(username);
+		try {
+			this.userService.deleteUser(username);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 }
