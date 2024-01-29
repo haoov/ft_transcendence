@@ -11,6 +11,7 @@ import {
 	WebSocketServer
 } from '@nestjs/websockets';
 import { ChannelEntity, UserEntity } from 'src/postgreSQL/entities';
+import * as bcrypt from 'bcrypt';
 
 function buildMsg(sender, message) {
 	return {
@@ -87,18 +88,25 @@ export class ChatGateway implements OnGatewayConnection {
 
 	@SubscribeMessage('createNewChannel')
 	async onNewChannel(@MessageBody() channel: any) {
-		const newChannelCreated = await this.chatService.createChannel(channel);
-		for (const userId of channel.users) {
-			const socket = this.usersSocketList.get(userId);
-			socket?.join(newChannelCreated.id.toString());
-			socket?.emit('newChannelCreated', newChannelCreated);
+		try {
+				const newChannelCreated = await this.chatService.createChannel(channel);
+				for (const userId of channel.users) {
+					const socket = this.usersSocketList.get(userId);
+					socket?.join(newChannelCreated.id.toString());
+					socket?.emit('newChannelCreated', newChannelCreated);
+				}
+		} catch (err) {
+			if (channel.creatorId && typeof channel.creatorId === "number")
+			var socket = this.usersSocketList.get(channel.creatorId);
+			socket?.emit('errorManager', "Channel already exist");
 		}
 	}
 
 	@SubscribeMessage('joinChannel')
 	async onJoinChannel(@MessageBody() channel: any) {
 		const channelToJoin = await this.chatService.getChannelById(channel.channelId);
-		if (channelToJoin.mode === 'Protected' && channelToJoin.password !== channel.password) {
+		const isMatch =  await bcrypt.compare(channel.password, channelToJoin.password);
+		if (channelToJoin.mode === 'Protected' && !isMatch) {
 			this.usersSocketList.get(channel.userId)?.emit('channelJoined', false);
 			return;
 		}

@@ -97,47 +97,47 @@ const isSubmitDisabled = computed(() => {
 	return !channelName.value || nameError.value || passwordError.value;
 });
 const submitForm = () => {
-	userIds.value.push(currentUser.id);
-	let newChannel;
-	if (selectedOption.value === 'Private') {
-		if (userIds.value.length < 2) {
-			return;
+		userIds.value.push(currentUser.id);
+		let newChannel;
+		if (selectedOption.value === 'Private') {
+			if (userIds.value.length < 2) {
+				return;
+			}
+			const name = '#' + userIds.value.sort((a,b) => a -b).join('#');
+			if (currentPrivateChannels.some((channel: any) => channel.name === name)) {
+				const newActiveChannel = currentPrivateChannels.find((channel: any) => channel.name === name);
+				$data.setActiveChannel(newActiveChannel);
+				$data.closeModalForm();
+				return;
+			}
+			newChannel = {
+				name: name,
+				mode: selectedOption.value,
+				creatorId: currentUser.id,
+				password: password.value,
+				users: userIds.value,
+			};
+		} else {
+			if (!channelName.value) {
+				nameError.value = true;
+				return;
+			}
+			if (selectedOption.value === 'Protected' && !password.value) {
+				passwordError.value = true;
+				return;
+			}
+			newChannel = {
+				name: channelName.value,
+				mode: selectedOption.value,
+				creatorId: currentUser.id,
+				password: password.value,
+				users: userIds.value,
+			};
 		}
-		const name = '#' + userIds.value.sort((a,b) => a -b).join('#');
-		if (currentPrivateChannels.some((channel: any) => channel.name === name)) {
-			const newActiveChannel = currentPrivateChannels.find((channel: any) => channel.name === name);
-			$data.setActiveChannel(newActiveChannel);
-			$data.closeModalForm();
-			return;
-		}
-		newChannel = {
-			name: name,
-			mode: selectedOption.value,
-			creatorId: currentUser.id,
-			password: password.value,
-			users: userIds.value,
-		};
-	} else {
-		if (!channelName.value) {
-			nameError.value = true;
-			return;
-		}
-		if (selectedOption.value === 'Protected' && !password.value) {
-			passwordError.value = true;
-			return;
-		}
-		newChannel = {
-			name: channelName.value,
-			mode: selectedOption.value,
-			creatorId: currentUser.id,
-			password: password.value,
-			users: userIds.value,
-		};
-	}
-	nameError.value = false;
-	passwordError.value = false;
-	$data.closeModalForm();
-	socketManager.createChannel(newChannel);
+		nameError.value = false;
+		passwordError.value = false;
+		$data.closeModalForm();
+		socketManager.createChannel(newChannel);
 };
 
 const resetchannelName = () => {
