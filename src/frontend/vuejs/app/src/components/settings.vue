@@ -203,8 +203,6 @@ async function	update2FA(to: string) {
 			})
 			.catch( (err) => {
 				twoFaCode.value = "";
-				qrCode.value = "";
-				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
 				notify.newNotification("error", {message: "Invalid code!"})
 			});
 	}

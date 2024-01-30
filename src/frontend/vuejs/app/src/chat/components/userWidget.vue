@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import type { User } from '@/utils';
+	import type { User, UserRelation } from '@/utils';
 	import addFriendIcon from '@/assets/images/friend-add.png';
 	import friendPendingIcon from '@/assets/images/friend-pending.png';
 	import friendRemoveIcon from '@/assets/images/friend-remove.png';
@@ -9,7 +9,7 @@
 	import offlineIcon from '@/assets/images/status-offline-32.png';
 	import playingIcon from '@/assets/images/status-playing-32.png';
 
-	const props = defineProps<{user: User}>();
+	const props = defineProps<{user: UserRelation}>();
 </script>
 
 <template>

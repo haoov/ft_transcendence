@@ -32,7 +32,7 @@
 						Users
 					</div>
 					<div id="editButton"
-						v-on:click="console.log('TEST'); setMenu('settings')">
+						v-on:click="setMenu('settings')">
 						Edit
 					</div>
 					<div>Leave</div>
