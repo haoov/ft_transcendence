@@ -11,7 +11,6 @@ router.beforeEach((to) => {
 	if (to.name != "login") {
 		axios(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth`, {
 			method: "get",
-			//withCredentials: true,
 		}).then(
 			() => {
 			},

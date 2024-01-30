@@ -30,13 +30,7 @@ export class UserService {
 
 	async	getCurrentUser(req: Request): Promise<User> {
 		const reqUser: User = req.user as User;
-		try {
-			const user: User = await this.usersRepository.findOneBy({ id: reqUser.id });
-			return user;
-		}
-		catch (err) {
-			throw err;
-		};
+		return await this.usersRepository.findOneBy({ id: reqUser.id });
 	}
 
 	async	createUser(user: User): Promise<User> {
@@ -109,7 +103,8 @@ export class UserService {
 
 	async	uptadeAvatar(id: number): Promise<User> {
 		const user = await this.getUserById(id);
-
+		if (!user)
+			throw new NotFoundException("User not found in database");
 		if (user.avatar.includes(':3000/api/user/avatar/')) {
 			// Delete old avatar
 			const directoryPath = process.cwd() + '/src/user/avatar-uploads';
@@ -132,6 +127,8 @@ export class UserService {
 		const directoryPath = process.cwd() + '/src/user/avatar-uploads';
 		const files = fs.readdirSync(directoryPath);
 		const userFiles = files.filter(file => file.startsWith(`avatar-user${id}-`));
+		if (!userFiles)
+			throw new NotFoundException("No custom avatar uploaded");
 	  
 		// Take the last one
 		userFiles.sort();
@@ -139,7 +136,7 @@ export class UserService {
 	  
 		// Return the image file
 		if (!avatar)
-			throw new NotFoundException("no custom avatar uploaded");
+			throw new NotFoundException("No custom avatar uploaded");
 		res.sendFile(path.join(directoryPath, avatar));
 	}
 
@@ -148,20 +145,20 @@ export class UserService {
 			throw new ForbiddenException("You can't block yourself");
 		const user = await this.usersRepository.findOne({where : { id: userId },  relations: ['users_blocked']});
 		const blocked = await this.usersRepository.findOne({where : { id: blockedId }});
-		if (user && blocked) {
-			user.users_blocked.push(blocked);;
-			await this.usersRepository.save(user);
-		}
+		if (!user || !blocked)
+			throw new NotFoundException("User not found in database");
+		user.users_blocked.push(blocked);;
+		await this.usersRepository.save(user);
 	}
 
 	async	unblockUser(userId: number, blockedId: number) {
 		if (userId === blockedId)
 			throw new ForbiddenException("You can't unblock yourself");
 		const user = await this.usersRepository.findOne({where : { id: userId },  relations: ['users_blocked']});
-		if (user) {
-			user.users_blocked = user.users_blocked.filter(user => user.id != blockedId);
-			await this.usersRepository.save(user);
-		}
+		if (!user)
+			throw new NotFoundException("User not found in database")
+		user.users_blocked = user.users_blocked.filter(user => user.id != blockedId);
+		await this.usersRepository.save(user);
 	}
 
 	// Users blocked by the user with id idUser
@@ -180,6 +177,8 @@ export class UserService {
 		.where('blockedUser.id = :userId', { userId: idUser })
 		.getMany()
 
+		if (!blockingList)
+			throw new NotFoundException("User not found in database");
 		const blockingListIds = blockingList.map((user) => user.id);
 	
 		return blockingListIds;
@@ -213,6 +212,8 @@ export class UserService {
 		const mutualFriends = await Promise.all(
 		  user.friends.map(async friend => {
 			const friendEntity = await this.usersRepository.findOne({where : { id: friend.id },  relations: ['friends']});
+			if (!friendEntity)
+				throw new NotFoundException("User not found in database");
 			return friendEntity.friends.some(friendOfFriend => friendOfFriend.id == userId) ? friendEntity.id : null;
 		  })
 		);
