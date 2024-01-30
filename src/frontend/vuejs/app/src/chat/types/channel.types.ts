@@ -5,8 +5,10 @@ export type ChannelParams  = {
 	name: string;
 	mode: string;
 	creatorId: number;
+	password?: string;
 	users: User[];
 	messages?: Message[];
+	admins: User[];
 }
 
 export type ChannelData = {

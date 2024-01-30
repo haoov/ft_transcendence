@@ -71,7 +71,8 @@ export class Channel {
 			const otherUser = this.users.find(
 					user => user.username !== currentUser.username
 			);
-			return otherUser?.avatar;
+			if (otherUser)
+				return otherUser.avatar;
 		}
 		return channeIcon;
 	}

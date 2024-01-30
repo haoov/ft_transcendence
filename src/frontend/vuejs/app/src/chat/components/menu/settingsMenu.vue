@@ -11,6 +11,7 @@
 		mode: 'Public',
 		creatorId: 0,
 		users: [],
+		admins: [],
 	};
 
 	function updateChannel() {
