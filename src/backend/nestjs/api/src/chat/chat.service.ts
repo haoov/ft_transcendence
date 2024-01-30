@@ -336,26 +336,26 @@ export class ChatService {
 		})
 	}
 
-	async getChannelUsers(userId: number, channelId: number): Promise<UserRelation[]> {
-		const currentUser: User = await this.userRepository.findOneOrFail({
-			where: { id: userId },
-			relations: [
-				"friends",
-				"users_blocked",
-			]
-		})
-		const channel: Channel = await this.channelRepository.findOneOrFail({
-			where: { id: channelId },
-			relations: ["users"]
-		});
+	async getChannelRelations(userId: number, channelId: number): Promise<UserRelation[]> {
+		const currentUser: User = await this.userRepository.createQueryBuilder("user")
+			.leftJoinAndSelect("user.friends", "friends")
+			.leftJoinAndSelect("user.users_blocked", "users_blocked")
+			.where("user.id = :id", { id: userId })
+			.getOneOrFail();
+		const channel: Channel = await this.channelRepository.createQueryBuilder("channel")
+			.leftJoinAndSelect("channel.users", "users")
+			.leftJoinAndSelect("users.users_blocked", "users_blocked")
+			.leftJoinAndSelect("users.friends", "friends")
+			.where("channel.id = :id", { id: channelId })
+			.getOneOrFail();
 		const userRelations: UserRelation[] = channel.users.map(
 			(user) => {
 				let friend: boolean | string = false;
-				if (currentUser.friends.includes(user))
+				if (currentUser.friends.includes(user) && user.friends.includes(currentUser))
 					friend = true;
-				else if (user.friends.includes(currentUser))
+				else if (currentUser.friends.includes(user))
 					friend = 'pending';
-				const userRelation: UserRelation = {
+				return {
 					id: user.id,
 					username: user.username,
 					avatar: user.avatar,
@@ -364,7 +364,6 @@ export class ChatService {
 					blocked: currentUser.users_blocked.includes(user),
 					friend: friend,
 				}
-				return userRelation;
 			});
 		return userRelations;
 	}
