@@ -53,16 +53,6 @@ export class AuthController {
 		return res.redirect("/");
 	}
 
-	@Get("2fa")
-	@UseGuards(JwtAuthGuard)
-	async get2FA(@Req() req: Request) {
-		const user: User = req.user as User;
-		const userDB = await this.userService.getUserById(user.id);
-		return { 
-			"twofa_status": userDB.twofa_enabled,
-		};
-	}
-
 	@Post('2fa/turn-on')
 	@UseGuards(JwtAuthGuard)
 	async swithOn2fa(@Req() req: Request, @Body() body: Body2faDTO) {
