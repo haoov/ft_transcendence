@@ -22,7 +22,7 @@ const params = {
 
 const cam = {
 	FOV: 10,
-	ASPECT: 720/480,
+	ASPECT: 16/9,
 	NEARZ: 0.1,
 	FARZ: 1000,
 	ZPOS: 20,

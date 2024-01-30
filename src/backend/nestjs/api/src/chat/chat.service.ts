@@ -299,8 +299,10 @@ export class ChatService {
 			.leftJoinAndSelect("channel.users", "user")
 			.leftJoinAndSelect("channel.messages", "message")
 			.leftJoinAndSelect("message.sender", "sender")
-			.where("user.id = :userId", { userId: userId }).getMany();
+			.getMany();
 			this.sortCahnnels(channels);
+			channels = channels.filter((c) => 
+			c.users.find((u) => u.id == userId));
 		}
 		catch (err) {
 			console.log(err);

@@ -5,11 +5,12 @@ import notify from "./notify/notify";
 import router from "./router";
 import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
-import { chat, Channel, type MessageData, type ChannelData, type MessageParams, type ChatEvents } from "@/chat";
+import { chat, Channel, type MessageData, type ChannelData, type ChatEvents } from "@/chat";
+import { type GameEvents } from "@/game/types";
 
 export type SocketType = "user" | "game" | "chat";
 
-export type SocketEvent = ChatEvents;
+export type SocketEvent = ChatEvents | GameEvents;
 
 class SocketManager {
 	private readonly userSocket: Socket;
@@ -28,12 +29,13 @@ class SocketManager {
 		this.userSocket.connect();
 		this.chatSocket.connect();
 		this.gameSocket.connect();
-		await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((response) => {
-			this.user = response.data;
-			this.userSocket.emit("userConnected", this.user);
-			this.chatSocket.emit("userConnected", this.user);
-			this.gameSocket.emit("userConnected", this.user);
-			chat.loadChannels(this.user.id);
+		await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then(
+			async (response) => {
+				this.user = response.data;
+				this.userSocket.emit("userConnected", this.user);
+				this.chatSocket.emit("userConnected", this.user);
+				this.gameSocket.emit("userConnected", this.user);
+				await chat.loadChannels(this.user.id);
 		});
 
 		this.userSocket.on(ServerEvents.ping, () => {
@@ -214,7 +216,7 @@ class SocketManager {
 		this.gameSocket.emit(ClientEvents.move, direction);
 	}
 
-	emit(socket: SocketType, event: SocketEvent, arg: any) {
+	emit(socket: SocketType, event: SocketEvent, arg?: any) {
 		if (socket == "user")
 			this.userSocket.emit(event, arg);
 		else if (socket == "game")

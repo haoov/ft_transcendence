@@ -127,7 +127,7 @@ export class GameGateway
 		}
 	}
 
-	@SubscribeMessage(clientEvents.update)
+	@SubscribeMessage("needUpdate")
 	update(client: Socket) {
 		const room: Room = this.findRoom(client);
 		if (room) {

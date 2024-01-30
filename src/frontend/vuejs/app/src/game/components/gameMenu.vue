@@ -7,6 +7,11 @@
 	import type { GameDifficulty, GameMap, GameMode, GameParams, GameType } from "@/game/interfaces";
 	import gameData from "../gameData";
 
+	const props = defineProps<{
+		width: number,
+		height: number
+	}>();
+
 	const selectedParams: Ref<GameParams> = ref({
 		mode: "classic",
 		type: undefined,
@@ -80,7 +85,9 @@
 
 <template>
 	<!--Menu select params-->
-	<div class="menuContainer">
+	<div class="menuContainer"
+		:width="width"
+		:height="height">
 		<div id="menu">
 			<div id="header">
 				<div id="title">Pong</div>
@@ -174,8 +181,6 @@
 <style scoped>
 	.menuContainer {
 		position: absolute;
-		width: 720px;
-		height: 480px;
 		background: transparent;
 		backdrop-filter: blur(3px);
 		border-radius: 0.8rem;

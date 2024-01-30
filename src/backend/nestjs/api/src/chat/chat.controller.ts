@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Param, Req, Put, Query, Body, ValidationPipe, UseGuards } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
-import { UserEntity } from "src/postgreSQL/entities/user.entity";
 import { Message, Channel } from "./chat.interface";
 import { User, UserRelation } from "src/user/user.interface";
 import { Request } from "express";
