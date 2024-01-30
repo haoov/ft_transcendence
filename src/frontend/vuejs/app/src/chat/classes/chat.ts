@@ -10,6 +10,7 @@ import {
 } from "@/chat";
 import { reactive, ref, type Ref } from "vue";
 import type { User } from "@/utils";
+import notify from "@/notify/notify";
 
 const apiChat: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat`;
 
@@ -90,16 +91,39 @@ class Chat {
 		this.chatMenu.value = menu;
 	}
 
-	createChannel(params: ChannelParams): void {
+	async createChannel(params: ChannelParams): Promise<boolean> {
 		console.log("[creating channel]", params);
-		axios.post(`${apiChat}/channel`, params);
+		return await axios.post(`${apiChat}/channel`, params).then(
+			() => true,
+			(err) => {
+				notify.newNotification("error", {
+					message: err.response.data.message
+				});
+				return false;
+			}
+		);
+	}
+
+	async deleteChannel(channel: Channel): Promise<boolean> {
+		console.log("[deleting channel]", channel);
+		return await axios.delete(`${apiChat}/channel?id=${channel.getId()}`).then(
+			() => true,
+			(err) => {
+				notify.newNotification("error", {
+					message: err.response.data.message
+				});
+				return false;
+			}
+		);
 	}
 
 	updateChannel(channel: Channel, updatedParams: ChannelParams): void {
 		if (updatedParams.name === "" || updatedParams.name.length > 32)
+			return;
 		updatedParams.mode = channel.getMode();
 		updatedParams.creatorId = channel.getCreatorId();
 		updatedParams.messages = channel.getMessages();
+		updatedParams.admins = channel.getAdmins();
 		updatedParams.users.push(...channel.getUsers());
 		console.log("[updating channel]", updatedParams);
 		axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams);

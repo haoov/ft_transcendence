@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Req, Put, Query, Body, ValidationPipe, UseGuards } from "@nestjs/common";
+import { Controller, Get, Post, Param, Req, Put, Query, Body, ValidationPipe, UseGuards, Delete } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
 import { Message, Channel } from "./chat.interface";
@@ -21,17 +21,34 @@ export class ChatController {
 
 	@Get('/channels')
 	async getUserChannels(@Req() request: Request): Promise<Channel[]> {
-		return await this.chatService.getUserChannels(request.user['id']);
+		try {
+			return await this.chatService.getUserChannels(request.user['id']);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Get('/channel/addable')
-	async getAddableUsers(@Query('id') channelId: number, @Query('userId') userId: number): Promise<User[]> {
-		return await this.chatService.getAddableUsers(channelId, userId);
+	async getAddableUsers(
+		@Req() request: Request,
+		@Query('id') channelId: number) {
+		try {
+			return await this.chatService.getAddableUsers(channelId, request.user['id']);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Get('/channels/joinable')
 	async getJoinableChannels(@Req() request: Request): Promise<Channel[]> {
-		return await this.chatService.getJoinableChannels(request.user['id']);
+		try {
+			return await this.chatService.getJoinableChannels(request.user['id']);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Post('/channel')
@@ -41,7 +58,7 @@ export class ChatController {
 			this.chatGateway.newChannel(channel);
 		}
 		catch (err) {
-			console.log(err);
+			throw err;
 		}
 	}
 
@@ -56,8 +73,26 @@ export class ChatController {
 		}
 	}
 
+	@Delete('/channel')
+	async deleteChannel(@Req() request: Request, @Query('id') channelId: number) {
+		try {
+			await this.chatService.deleteChannel(channelId, request.user['id']);
+			this.chatGateway.channelDeleted(channelId);
+		}
+		catch (err) {
+			throw err;
+		}
+	}
+
 	@Get('/channel/users')
-	async getChannelUsers(@Req() request: Request, @Query('id') channelId: number): Promise<UserRelation[]> {
-		return await this.chatService.getChannelUsers(request.user['id'], channelId);
+	async getChannelUsers(
+		@Req() request: Request,
+		@Query('id') channelId: number): Promise<UserRelation[]> {
+		try {
+			return await this.chatService.getChannelUsers(request.user['id'], channelId);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 }

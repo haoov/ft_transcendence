@@ -1,24 +1,27 @@
 <script setup lang="ts">
 	import { chat, type ChannelParams, type ChannelData } from '@/chat'
 	import { socketManager } from '@/SocketManager';
-	import { ref, type Ref } from 'vue';
+	import { reactive, ref, type Ref } from 'vue';
 	import v_selector from '@/components/selector.vue';
 	import v_joinMenu from '@/chat/components/menu/joinMenu.vue';
 	import v_addUsers from '@/chat/components/menu/addUsers.vue';
 	import type { User } from '@/utils';
 
 	const subMenu: Ref<string> = ref('Create');
-	const channelParams: ChannelParams = {
+	const channelParams: ChannelParams = reactive({
 		name: '',
 		mode: 'Public',
 		creatorId: socketManager.getUser().id,
+		password: '',
 		users: [socketManager.getUser()],
-	}
+		admins: [socketManager.getUser()],
+	});
 
 	let channelTOJoin: ChannelData;
 
-	function createChannel() {
-		chat.createChannel(channelParams);
+	async function createChannel() {
+		if (await chat.createChannel(channelParams) == false)
+			return;
 		chat.setChatMenu('none');
 	}
 
@@ -68,6 +71,16 @@
 					autocomplete="off"
 					placeholder="Channel Name"
 					v-model="channelParams.name">
+			</label>
+			<label class="inputLabel"
+				v-if="channelParams.mode == 'Protected'">
+				Password :
+				<input id="channelName"
+					class="channelInput"
+					type="text"
+					autocomplete="off"
+					placeholder="Channel Name"
+					v-model="channelParams.password">
 			</label>
 			<Suspense>
 				<v_addUsers

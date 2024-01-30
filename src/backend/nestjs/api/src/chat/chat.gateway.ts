@@ -96,4 +96,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 		}
 	}
+
+	channelDeleted(channelId: number): void {
+		this.server.to(channelId.toString()).emit('channelDeleted', channelId);
+	}
 }

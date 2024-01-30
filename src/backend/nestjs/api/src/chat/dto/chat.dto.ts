@@ -27,4 +27,6 @@ export class ChannelDTO {
 	@IsArray()
 	@IsOptional()
 	messages: Message[];
+	@IsArray()
+	admins: User[];
 }

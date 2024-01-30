@@ -32,7 +32,8 @@ class ChannelEntity {
 	@JoinTable()
 	admins: User [];
 
-	@ManyToMany(() => MessageEntity) @JoinTable()
+	@ManyToMany(() => MessageEntity, {cascade: ["remove"]})
+	@JoinTable()
 	messages: Message[];
 }
 
