@@ -8,7 +8,6 @@ import { userStatus } from 'src/user/enum/userStatus.enum';
 import { GameParams } from './interfaces/gameParams';
 import { GameService } from './game.service';
 import { UserGateway } from 'src/user/user.gateway';
-import { Inject, forwardRef } from '@nestjs/common';
 
 @WebSocketGateway({ namespace: 'game' })
 export class GameGateway 
@@ -128,7 +127,7 @@ export class GameGateway
 		}
 	}
 
-	@SubscribeMessage(clientEvents.update)
+	@SubscribeMessage("needUpdate")
 	update(client: Socket) {
 		const room: Room = this.findRoom(client);
 		if (room) {

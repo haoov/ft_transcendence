@@ -38,7 +38,7 @@ const message = computed(() => {
 
 const leaveChannel = (channelId: number) => {
 	if (isCreator.value) {
-		socketManager.deleteChannel(channelId);
+		//socketManager.deleteChannel(channelId);
 	} else {
 		socketManager.leaveChannel(channelId);
 	}

@@ -1,6 +1,5 @@
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { UserService } from '../user/user.service';
 import { 
 	ConnectedSocket,
 	MessageBody,
@@ -8,160 +7,59 @@ import {
 	OnGatewayDisconnect,
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer
+	WebSocketServer,
 } from '@nestjs/websockets';
-import { ChannelEntity, UserEntity } from 'src/postgreSQL/entities';
+import { ChannelEntity } from 'src/postgreSQL/entities';
 import * as bcrypt from 'bcrypt';
 import { Channel, Message } from './chat.interface';
 import { User } from 'src/user/user.interface';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-
-// function buildMsg(sender, message) {
-// 	return {
-// 		sender: sender as UserEntity,
-// 		message: {
-// 			id: message.id,
-// 			channelId : message.channelId,
-// 			text : message.text,
-// 			time: message.datestamp,
-// 		}
-// 	}
-// };
-
-// @WebSocketGateway({ namespace: 'chat' })
-// export class ChatGateway implements OnGatewayConnection {
-// 	constructor(
-// 		private readonly chatService: ChatService,
-// 		private readonly userService: UserService
-// 		) {}
-
-// 	@WebSocketServer()
-// 	server: Server;
-// 	private listActiveChannel: Map<number, string> = new Map<number, string>();
-// 	private usersSocketList : Map<number, Socket> = new Map<number, Socket>();
-
-// 	handleDisconnect(socket: Socket) {
-// 		this.usersSocketList.forEach((value: Socket, key: number) => {
-// 			if (value === socket) {
-// 				this.usersSocketList.delete(key);
-// 			}
-// 		});
-// 	}
-
-// 	@SubscribeMessage('setActiveChannel')
-// 	async onJoinCurrentChannel(@MessageBody() data: any) {
-// 		const channelid = data.channelId;
-// 		const userId = data.currentUserId;
-// 		this.listActiveChannel.set(userId, channelid);
-// 	}
-
-// 	// @SubscribeMessage('createNewChannel')
-// 	// async onNewChannel(@MessageBody() channel: any) {
-// 	// 	const newChannelCreated = await this.chatService.createChannel(channel);
-// 	// 	for (const userId of channel.users) {
-// 	// 		const socket = this.usersSocketList.get(userId);
-// 	// 		socket?.join(newChannelCreated.id.toString());
-// 	// 		socket?.emit('newChannelCreated', newChannelCreated);
-// 	// 	}
-// 	// }
-
-// 	@SubscribeMessage('joinChannel')
-// 	async onJoinChannel(@MessageBody() channel: any) {
-// 		const channelToJoin = await this.chatService.getChannelById(channel.channelId);
-// 		if (channelToJoin.mode === 'Protected' && channelToJoin.password !== channel.password) {
-// 			this.usersSocketList.get(channel.userId)?.emit('channelJoined', false);
-// 			return;
-// 		}
-// 		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
-// 			this.usersSocketList.get(channel.userId)?.emit('channelJoined', true);
-// 			this.usersSocketList.get(channel.userId)?.emit('newChannelCreated', channelToJoin);
-// 			this.usersSocketList.get(channel.userId)?.join(channel.channelId.toString());
-// 		}
-// 	}
-
-// 	@SubscribeMessage('leaveChannel')
-// 	async onLeaveChannel(@MessageBody() data: any) {
-// 		const channelId = data.channelId;
-// 		const userId = data.userId;
-// 		if (await this.chatService.removeUserFromChannel(channelId, userId)) {
-// 			this.usersSocketList.get(userId)?.emit('channelDeleted', channelId);
-// 		}
-// 	}
-
-// 	@SubscribeMessage('updateChannel')
-// 	async onUpdateChannel(@MessageBody() channel: any) {
-// 		const channelToUpdate = await this.chatService.getChannelById(channel.channelId);
-// 		channelToUpdate.name = channel.name;
-// 		channelToUpdate.mode = channel.mode;
-// 		channelToUpdate.password = channel.password;
-// 		const channelUpdated = await this.chatService.updateChannel(channelToUpdate);
-// 		const users = await this.chatService.getUsersByChannelId(channel.channelId);
-// 		for (const user of users) {
-// 			this.usersSocketList.get(user.id)?.emit('channelUpdated', channelUpdated);
-// 		}
-// 	}
-
-// 	@SubscribeMessage('deleteChannel')
-// 	async onDeleteChannel(@MessageBody() channelId: number) {
-// 		const users = await this.chatService.getUsersByChannelId(channelId);
-// 		if (await this.chatService.deleteChannel(channelId)) {
-// 			for (const user of users) {
-// 				this.usersSocketList.get(user.id)?.emit('channelDeleted', channelId);
-// 			}
-// 		}
-// 	}
-
-// 	@SubscribeMessage('addUserToChannel')
-// 	async onAddUserToChannel(@MessageBody() data: Object ) {
-// 		const channelId = data['channelId'];
-// 		const users = data['users'];
-// 		const userIdList = users.map((user) => user.id);
-// 		const channelToUpdate = await this.chatService.getChannelById(channelId);
-// 		for (const userId of userIdList) {
-// 			await this.chatService.addUserToChannel(channelToUpdate.id, userId);
-// 			const socket = this.usersSocketList.get(userId);
-// 			socket?.emit('channelJoined', true);
-// 			socket?.emit('channelUpdated', channelId);
-// 		}
-// 	}
-
-
-	/*----------------------------------------------------------------------------*/
-	/*                                      RAPH                                  */
-	/*----------------------------------------------------------------------------*/
+import { MessageDTO } from './dto/chat.dto';
 
 @WebSocketGateway({ namespace: 'chat' })
-export class ChatGateway implements OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
-	@WebSocketServer() 
-	server: Server;
+	@WebSocketServer() server: Server;
 	private readonly userSockets: Map<number, Socket[]>;
 	private listMutedUsers : Map<number, number[]>;
 
 	constructor(
-		@InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>,
-		 private readonly chatService: ChatService,) {
+		@InjectRepository(
+			ChannelEntity) private channelRepository: Repository<ChannelEntity>,
+			private readonly chatService: ChatService,) {
 		this.userSockets = new Map<number, Socket[]>();
 		this.listMutedUsers = new Map<number, number[]>();
 	}
 
-	handleConnection(@ConnectedSocket() client: Socket) {
-		console.log("chat connection");
-    }
+	handleConnection(@ConnectedSocket() client: Socket) {}
+
+	handleDisconnect(@ConnectedSocket() client: Socket) {
+		this.userSockets.delete(client.data.userId);
+		if (!this.userSockets.has(client.data.userId)) {
+			console.log("chat disconnection");
+		}
+	}
     
 	@SubscribeMessage('joinChannel')
 	async onJoinChannel(@MessageBody() channel: any) {
-		const channelToJoin = await this.chatService.getChannelById(channel.channelId);
-		const isMatch =  await bcrypt.compare(channel.password, channelToJoin.password);
+		const idChannel = channel.channelId;
+		const idUser = channel.userId;
+		const passwordChannel = channel.password;
+		let channelToJoin = await this.chatService.getChannel(idChannel);
+		let isMatch;
+		if (channelToJoin.mode === 'Protected')
+			isMatch =  await bcrypt.compare(passwordChannel, channelToJoin.password);
+		else
+			isMatch = true;
 		if (channelToJoin.mode === 'Protected' && !isMatch) {
-			this.userSockets.get(channel.userId).forEach((s) => {s.emit('channelJoined', false)});
+			this.userSockets.get(idUser).forEach((s) => {s.emit('errorManager', 'Wrong password')});
 			return;
 		}
-		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
-			this.userSockets.get(channel.userId).forEach((s) => {s.emit('channelJoined', true)});
-			this.userSockets.get(channel.userId).forEach((s) => {s.emit('newChannelCreated', channelToJoin)});
+		if (await this.chatService.addUserToChannel(idChannel, idUser)) {
+			channelToJoin = await this.chatService.getChannel(idChannel);
 			this.userSockets.get(channel.userId).forEach((s) => {s.join(channel.channelId.toString())});
+			this.server.to(channel.channelId.toString()).emit('channelUpdated', channelToJoin);
 		}
 	}
 
@@ -170,9 +68,7 @@ export class ChatGateway implements OnGatewayConnection {
 		client.data.userId = user.id;
 		this.userSockets.set(user.id, [client]);
 		const userChannels: Channel[] = await this.channelRepository.find({
-			where: {
-				users: { id: user.id }
-			} 
+			where: { users: { id: user.id } } 
 		});
 		if (userChannels) {
 			for (const channel of userChannels) {
@@ -181,11 +77,21 @@ export class ChatGateway implements OnGatewayConnection {
 		}
 	}
 
-	handleDisconnect(@ConnectedSocket() client: Socket) {
-		this.userSockets.delete(client.data.userId);
-		if (!this.userSockets.has(client.data.userId)) {
-			console.log("chat disconnection");
+	@SubscribeMessage('newMessage')
+	async newMessage(@ConnectedSocket() client: Socket, @MessageBody() MessageDTO: MessageDTO) {
+		const channel: Channel = await this.chatService.getChannel(MessageDTO.channelId);
+        const muted = this.listMutedUsers.get(channel.id);
+		if (muted && muted.includes(MessageDTO.sender.id)) {
+			const sockets: Socket[] = this.userSockets.get(MessageDTO.sender.id);
+			if (sockets) {
+				for (const socket of sockets) {
+					socket.emit('muted', channel);
+				}
+			}
+			return;
 		}
+    const message: Message = await this.chatService.createMessage(MessageDTO);
+		this.server.to(channel.id.toString()).emit('newMessage', message);
 	}
 
 	newChannel(channel: Channel): void {
@@ -194,6 +100,7 @@ export class ChatGateway implements OnGatewayConnection {
 			const sockets: Socket[] = this.userSockets.get(user.id);
 			if (sockets) {
 				for (const socket of sockets) {
+					socket.join(channel.id.toString());
 					socket.emit('newChannelCreated', channel);
 				}
 			}
@@ -204,37 +111,23 @@ export class ChatGateway implements OnGatewayConnection {
 		for (const user of channel.users) {
 			const sockets: Socket[] = this.userSockets.get(user.id);
 			if (sockets) {
-				for (const socket of sockets) {
+				for (const socket of sockets)
 					socket.emit('channelUpdated', channel);
-				}
 			}
-		}
-	
-	}
-
-	newMessage(message: Message, channel: Channel): void {
-		// Check if user is muted
-		const muted = this.listMutedUsers.get(channel.id);
-		if (muted && muted.includes(message.sender.id)) {
-			const sockets: Socket[] = this.userSockets.get(message.sender.id);
-			if (sockets) {
-				for (const socket of sockets) {
-					socket.emit('muted', channel);
-				}
-			}
-			return;
-		}
-		for (const user of channel.users) {
-			this.server.to(channel.id.toString()).emit('newMessage', message);
 		}
 	}
 
 	@SubscribeMessage('setAdmin')
-	async onSetAdmin(@MessageBody() data: any) {
+	async onSetAdmin(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
 		const channelId = data.channelId;
 		const userId = data.userId;
-		const channel: Channel = await this.chatService.getChannelById(channelId);
+		let channel: Channel = await this.chatService.getChannel(channelId);
+		if (await this.chatService.isAlreadyAdmin(channelId, userId)) {
+			client.emit('errorManager', 'User is already admin');
+			return;
+		}
 		if (await this.chatService.setChannelAdmin(channelId, userId)) {
+			channel = await this.chatService.getChannel(channelId);
 			const sockets: Socket[] = this.userSockets.get(userId);
 			if (sockets) {
 				for (const socket of sockets) {
@@ -245,12 +138,21 @@ export class ChatGateway implements OnGatewayConnection {
 		}
 	}
 
+	channelDeleted(channelId: number): void {
+		this.server.to(channelId.toString()).emit('channelDeleted', channelId);
+	}
+
 	@SubscribeMessage('kickUser')
-	async onKickUser(@MessageBody() data: any) {
+	async onKickUser(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
 		const channelId = data.channelId;
 		const userId = data.userId;
-		const channel: Channel = await this.chatService.getChannelById(channelId);
+		let channel: Channel = await this.chatService.getChannel(channelId);
+		if (await this.chatService.isAlreadyKicked(channelId, userId)) {
+			client.emit('errorManager', 'User is already kicked');
+			return;
+		}
 		if (await this.chatService.removeUserFromChannel(channelId, userId)) {
+			channel = await this.chatService.getChannel(channelId);
 			const sockets: Socket[] = this.userSockets.get(userId);
 			if (sockets) {
 				for (const socket of sockets) {
@@ -266,8 +168,13 @@ export class ChatGateway implements OnGatewayConnection {
 	async onBanUser(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
 		const channelId = data.channelId;
 		const userId = data.userId;
-		const channel: Channel = await this.chatService.getChannelById(channelId);
+		let channel: Channel = await this.chatService.getChannel(channelId);
+		if (await this.chatService.isAlreadyBanned(channelId, userId)) {
+			client.emit('errorManager', 'User is already banned');
+			return;
+		}
 		if (await this.chatService.banUserFromChannel(channelId, userId)) {
+			channel = await this.chatService.getChannel(channelId);
 			const sockets: Socket[] = this.userSockets.get(userId);
 			if (sockets) {
 				for (const socket of sockets) {
@@ -284,7 +191,7 @@ export class ChatGateway implements OnGatewayConnection {
 		try {
 			const channelId = data.channelId;
 			const userId = data.userId;
-			const channel: Channel = await this.chatService.getChannelById(channelId);
+			const channel: Channel = await this.chatService.getChannel(channelId);
 		
 			let mutedUsers = this.listMutedUsers.get(channelId);
 			if (!mutedUsers) {
@@ -305,7 +212,7 @@ export class ChatGateway implements OnGatewayConnection {
 				}, 15 * 60 * 1000); // 15 minutes en millisecondes
 			}
 			else {
-				client.emit('alreadyMuted', data);
+				client.emit('errorManager', 'User is already muted');
 			}
 		  } catch (error) {
 				throw error;

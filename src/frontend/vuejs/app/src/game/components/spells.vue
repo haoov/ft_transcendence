@@ -24,11 +24,10 @@
 
 <style scoped>
 	.spells {
-		align-self: flex-end;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 720px;
+		width: 66%;
 		height: 50px;
 		border-radius: 5rem;
 		background: linear-gradient(to right,var(--c-white),10%, transparent);

@@ -3,12 +3,21 @@
 	import { socketManager } from '@/SocketManager';
 	import actionsIcon from '@/assets/images/actionsIcon.png';
 	import { ref, type Ref } from 'vue';
+import notify from '@/notify/notify';
 
 	const props = defineProps<{channel: Channel | undefined}>();
 	const actionsMenu: Ref<boolean> = ref<boolean>(false);
 
 	function setMenu(menu: ChatMenu) {
 		chat.setChatMenu(menu);
+		actionsMenu.value = false;
+	}
+
+	async function deleteChannel() {
+		if (props.channel == undefined)
+			return;
+		if (await chat.deleteChannel(props.channel) == false)
+			return;
 		actionsMenu.value = false;
 	}
 </script>
@@ -36,7 +45,10 @@
 						Edit
 					</div>
 					<div>Leave</div>
-					<div>Delete</div>
+					<div
+						v-on:click="deleteChannel()">
+						Delete
+					</div>
 				</div>
 			</Transition>
 		</div>
