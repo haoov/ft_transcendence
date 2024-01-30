@@ -154,11 +154,11 @@ export class ChatService {
 	//Delete a user from a channel (kick)
 	async removeUserFromChannel(channelId: number, userId: number): Promise<boolean> {
 		try {
-			const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
+			const channel = await this.channelRepository.findOneOrFail({ where: { id: channelId }, relations: ["users"]});
 			let channelUsers = channel.users;
 			const index = channelUsers.findIndex((user: User) => user.id == userId);
 			if (index < 0) {
-				return ;
+				return false;
 			}
 			channelUsers.splice(index, 1);
 			channel.users = channelUsers;
@@ -240,11 +240,11 @@ export class ChatService {
 				});
 				users = users.filter((u) => {
 					if (	channel.bannedUsers.includes(u)
-								|| currentUser.users_blocked.includes(u)
-								|| channel.users.includes(u)
-                || u.users_blocked.includes(currentUser)
-								|| u.id == userId) 
-									return false;
+							|| currentUser.users_blocked.includes(u)
+							|| channel.users.includes(u)
+							|| u.users_blocked.includes(currentUser)
+							|| u.id == userId) 
+								return false;
 					else
 						return true;
 				});
@@ -298,8 +298,10 @@ export class ChatService {
 			channels = await this.channelRepository.createQueryBuilder("channel")
 			.leftJoinAndSelect("channel.users", "user")
 			.leftJoinAndSelect("channel.messages", "message")
-			.where("user.id = :userId", { userId: userId }).getMany();
+			.leftJoinAndSelect("message.sender", "sender")
+			.getMany();
 			this.sortCahnnels(channels);
+			channels = channels.filter((c) => c.users.find((u) => u.id == userId));
 		}
 		catch (err) {
 			console.log(err);
@@ -365,5 +367,44 @@ export class ChatService {
 				return userRelation;
 			});
 		return userRelations;
+	}
+
+	async banUserFromChannel(channelId: number, userId: number): Promise<boolean>{
+		try {
+			const channel: Channel = await this.channelRepository.findOneOrFail({
+				where: { id: channelId },
+				relations: ["users", "bannedUsers"]
+			});
+			const userList = channel.users;
+			if (!userList.find((u) => u.id == userId))
+				return false;
+			const user : User = await this.userRepository.findOneOrFail({
+				where: { id: userId }
+			});
+			channel.bannedUsers.push(user);
+			this.removeUserFromChannel(channelId, userId);
+			return true;
+		} catch (err) {
+			throw err;
+		}
+	};
+
+	async setChannelAdmin(channelId: number, userId: number): Promise<boolean> {
+		try {
+			const channel: Channel = await this.channelRepository.findOneOrFail({
+				where: { id: channelId },
+				relations: ["users", "admins"]
+			});
+			const user: User = await this.userRepository.findOneOrFail({
+				where: { id: userId }
+			});
+			if (!channel.users.find((u) => u.id == userId))
+				return false;
+			channel.admins.push(user);
+			await this.channelRepository.save(channel);
+			return true;
+		} catch (err) {
+			throw err;
+		}
 	}
 }

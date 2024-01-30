@@ -111,8 +111,41 @@ class SocketManager {
 		this.chatSocket.on(ChatEvents.kicked, (data: ChannelData) => {
 			const channel = chat.getChannel(data.id);
 			if (channel) {
-				notify.newNotification("error", {
-					message: 'You have been kicked from channel',
+				notify.newNotification("infos", {
+					message: 'You have been kicked from channel: ',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.banned, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been ban from channel: ',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.namedAdmin, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been named admin of channel: ',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.muteUser, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been muted of channel: ',
 					by: channel.getName(),
 				});
 				chat.removeChannel(channel.getId());
