@@ -1,13 +1,19 @@
 <script setup lang="ts">
 	import { chat, Channel } from '@/chat';
 	import cancelIcon from '@/assets/images/cancelIcon.png';
-	import { ref, type Ref } from 'vue';
+	import { reactive, ref, type Ref } from 'vue';
 	import v_userWidget from '../userWidget.vue';
-	import type { User } from '@/utils';
+	import { ServerEvents, type User, type UserRelation } from '@/utils';
+import { socketManager } from '@/SocketManager';
 
 	const props = defineProps<{channel: Channel | undefined}>();
-	const emit = defineEmits({selectUser: (user: User) => user});
+	const emit = defineEmits({selectUser: (user: UserRelation) => user});
 	const search: Ref<string> = ref('');
+	const userRelations = ref<UserRelation[]>(props.channel ? await chat.getChannelRelations(props.channel) : []);
+
+	socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
+		props.channel ? userRelations.value = await chat.getChannelRelations(props.channel) : [];
+	});
 </script>
 
 <template>
@@ -34,7 +40,7 @@
 				tag="div"
 				name="users">
 				<v_userWidget
-					v-for="user in channel?.getUsers()"
+					v-for="user in userRelations"
 					:user="user"
 					v-on:click="emit('selectUser', user)">
 				</v_userWidget>

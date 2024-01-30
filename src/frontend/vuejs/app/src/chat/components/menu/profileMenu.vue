@@ -1,20 +1,34 @@
 <script setup lang="ts">
-	import { ChatEvents, type User } from '@/utils';
+	import { ChatEvents, ServerEvents, type User, type UserRelation } from '@/utils';
 	import profileIcon from '@/assets/images/profileIcon.png';
 	import messageIcon from '@/assets/images/message-50.png';
 	import playIcon from '@/assets/images/racket-50.png';
 	import blockIcon from '@/assets/images/status-blocked-32.png';
 	import unblockIcon from '@/assets/images/unblock-50.png';
+	import offline from '@/assets/images/status-offline-32.png';
+	import online from '@/assets/images/status-online-32.png';
+	import playing from '@/assets/images/status-playing-32.png';
 	import { socketManager } from '@/SocketManager';
 	import router from '@/router';
 	import { Channel, chat } from '@/chat';
+	import { computed, ref, toRef } from 'vue';
+	import axios from 'axios';
 
-	const props = defineProps<{user: User, channel: Channel}>();
+	const props = defineProps<{user: UserRelation, channel: Channel}>();
+	const userRef = toRef(props, 'user');
+	const me = ref<User>(socketManager.getUser());
+
+	socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
+		if (user.id == props.user.id || user.id == me.value.id) {
+			userRef.value = (await chat.getChannelRelations(props.channel)).filter((relation) => relation.id == userRef.value.id)[0];
+			me.value = socketManager.getUser();
+		}
+	});
 
 	function setAdmin() {
 		socketManager.emit('chat', ChatEvents.setAdmin, {
 			channelId: props.channel.getId(),
-			userId: props.user.id,
+			userId: userRef.value.id,
 		});
 	}
 	
@@ -22,42 +36,66 @@
 		console.log('Mute User');
 		socketManager.emit('chat', ChatEvents.muteUser, {
 			channelId: props.channel.getId(),
-			userId: props.user.id,
+			userId: userRef.value.id,
 		});
 	}
 
 	function kick() {
 		socketManager.emit('chat', ChatEvents.kickUser, {
 			channelId: props.channel.getId(),
-			userId: props.user.id,
+			userId: userRef.value.id,
 		});
 	}
 
 	function ban() {
 		socketManager.emit('chat', ChatEvents.banUser, {
 			channelId: props.channel.getId(),
-			userId: props.user.id,
+			userId: userRef.value.id,
 		});
 	}
 
 	function profile() {
-		router.push(`/${props.user.username}`);
+		router.push(`/${userRef.value.username}`);
 		chat.setChatMenu('none');
 	}
 
 	function play() {
-		console.log('play')
 		chat.setChatMenu('none');
+		socketManager.invite(userRef.value.id);
 	}
 
-	function block() {
-		console.log('block')
+	async function block() {
 		chat.setChatMenu('none');
+		await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block?id=${userRef.value.id}`)
+			.catch( (err) => { console.log(err) });
+	}
+
+	async function unblock() {
+		chat.setChatMenu('none');
+		await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/unblock?id=${userRef.value.id}`)
+			.catch( (err) => { console.log(err) });
 	}
 
 	function message() {
 		console.log('message')
 		chat.setChatMenu('none');
+	}
+
+	function displayActions(action: string) {
+		 const admins = props.channel.getAdmins().map(admin => admin.id);
+		const owner = props.channel.getCreatorId();
+		if (action == "Play" || action == "Message")
+			return (me.value.id != userRef.value.id && !userRef.value.blocking);
+		if (action == "Block")
+			return (me.value.id != userRef.value.id && !userRef.value.blocked);
+		if (action == "Unblock")
+			return (me.value.id != userRef.value.id && userRef.value.blocked);
+		if (action == "Set Admin" || action == "Mute" || action == "Kick" || action == "Ban")
+			return (props.channel.getMode() != "Private"
+				&& me.value.id != userRef.value.id
+				&& owner != userRef.value.id
+				&& admins.includes(me.value.id));
+		return (true);
 	}
 
 	interface Action {
@@ -70,22 +108,22 @@
 	const channelActions: Action[] = [
 		{
 			name: 'Set Admin',
-			title: `Set ${props.user.username} as admin`,
+			title: `Set ${userRef.value.username} as admin`,
 			function: setAdmin,
 		},
 		{
 			name: 'Mute',
-			title: `Mute ${props.user.username}`,
+			title: `Mute ${userRef.value.username}`,
 			function: mute,
 		},
 		{
 			name: 'Kick',
-			title: `Kick ${props.user.username}`,
+			title: `Kick ${userRef.value.username}`,
 			function: kick,
 		},
 		{
 			name: 'Ban',
-			title: `Ban ${props.user.username}`,
+			title: `Ban ${userRef.value.username}`,
 			function: ban,
 		},
 	];
@@ -99,23 +137,49 @@
 		},
 		{
 			name: 'Play',
-			title: `Invite ${props.user.username} to play`,
+			title: `Invite ${userRef.value.username} to play`,
 			function: play,
 			icon: playIcon
 		},
 		{
 			name: 'Message',
-			title: `Send direct message to ${props.user.username}`,
+			title: `Send direct message to ${userRef.value.username}`,
 			function: message,
 			icon: messageIcon
 		},
 		{
 			name: 'Block',
-			title: `Block ${props.user.username}`,
+			title: `Block ${userRef.value.username}`,
 			function: block,
 			icon: blockIcon
 		},
+		{
+			name: 'Unblock',
+			title: `Unblock ${userRef.value.username}`,
+			function: unblock,
+			icon: unblockIcon
+		},
 	];
+
+	const authorizedUserAction = computed(() => {
+		return userActions.filter(action => displayActions(action.name));
+	});
+
+	const authorizedChannelAction = computed(() => {
+		return channelActions.filter(action => displayActions(action.name));
+	});
+
+	const statusIcon = computed(() => {
+		if (userRef.value.blocked)
+			return (blockIcon);
+		if (userRef.value.status == "undefined" || userRef.value.status == "offline")
+			return (offline);
+		if (userRef.value.status == "playing")
+			return (playing);
+		else
+			return (online);
+	});
+
 </script>
 
 <template>
@@ -123,11 +187,14 @@
 		v-if="user">
 		<div id="user">
 			<div id="userInfos">
-				<img id="avatar" :src="user.avatar">
-				<div id="username">{{ user.username }}</div>
+				<div id="avatarContainer">
+					<img id="avatar" :src="userRef.avatar">
+					<img v-if="userRef.id == me.id || (userRef.friend == true && !userRef.blocking)" id="avatar-icon" :src="statusIcon"/>
+				</div>
+				<div id="username">{{ userRef.username }}</div>
 			</div>
 			<div id="userActions">
-				<div v-for="action in userActions"
+				<div v-for="action in authorizedUserAction"
 					class="action"
 					v-on:click="action.function"
 					:title="action.title">
@@ -137,7 +204,7 @@
 		</div>
 		<div id="channel">
 			<div id="channelActions">
-				<button v-for="action in channelActions"
+				<button v-for="action in authorizedChannelAction"
 					class="action"
 					v-on:click="action.function"
 					:title="action.title">
@@ -170,12 +237,23 @@
 				align-items: center;
 				gap: 10px;
 
+				#avatarContainer {
+					position: relative;
+  					display: inline-block;
+				}
+
 				#avatar {
 					width: 70px;
 					height: 70px;
 					border-radius: 50%;
 				}
-
+				#avatar-icon {
+					position: absolute;
+					bottom: 0.5rem;
+					right: 0.5rem;
+					width: 2rem;
+					height: 2rem;
+				}
 				#username {
 					font-weight: 700;
 				}

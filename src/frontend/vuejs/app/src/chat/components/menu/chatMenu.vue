@@ -4,12 +4,12 @@
 	import v_settingsMenu from './settingsMenu.vue'
 	import v_usersMenu from './usersMenu.vue'
 	import v_profileMenu from './profileMenu.vue'
-	import type { User } from '@/utils';
+	import type { User, UserRelation } from '@/utils';
 	import { ref, type Ref } from 'vue';
 
 	const props = defineProps<{channel: Channel | undefined}>();
-	const selectedUser: Ref<User | undefined> = ref<User>();
-	function selectUser(user: User) {
+	const selectedUser: Ref<UserRelation | undefined> = ref<UserRelation>();
+	function selectUser(user: UserRelation) {
 		selectedUser.value = user;
 		chat.setChatMenu('profile');
 	}
@@ -32,12 +32,14 @@
 				v-on:click.stop
 				:channel="channel">
 			</v_settingsMenu>
-			<v_usersMenu
-				v-if="chat.getChatMenu().value == 'users'"
-				v-on:click.stop
-				:channel="channel"
-				v-on:selectUser="selectUser">
-			</v_usersMenu>
+			<Suspense>
+				<v_usersMenu
+					v-if="chat.getChatMenu().value == 'users'"
+					v-on:click.stop
+					:channel="channel"
+					v-on:selectUser="selectUser">
+				</v_usersMenu>
+			</Suspense>
 			<v_profileMenu
 				v-if="chat.getChatMenu().value == 'profile' && channel && selectedUser"
 				v-on:click.stop

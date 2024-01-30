@@ -299,6 +299,7 @@ export class ChatService {
 			.leftJoinAndSelect("channel.users", "user")
 			.leftJoinAndSelect("channel.messages", "message")
 			.leftJoinAndSelect("message.sender", "sender")
+			.leftJoinAndSelect("channel.admins", "admin")
 			.getMany();
 			this.sortCahnnels(channels);
 			channels = channels.filter((c) => c.users.find((u) => u.id == userId));
@@ -336,36 +337,27 @@ export class ChatService {
 		})
 	}
 
-	async getChannelRelations(userId: number, channelId: number): Promise<UserRelation[]> {
-		const currentUser: User = await this.userRepository.createQueryBuilder("user")
-			.leftJoinAndSelect("user.friends", "friends")
-			.leftJoinAndSelect("user.users_blocked", "users_blocked")
-			.where("user.id = :id", { id: userId })
-			.getOneOrFail();
-		const channel: Channel = await this.channelRepository.createQueryBuilder("channel")
-			.leftJoinAndSelect("channel.users", "users")
-			.leftJoinAndSelect("users.users_blocked", "users_blocked")
-			.leftJoinAndSelect("users.friends", "friends")
-			.where("channel.id = :id", { id: channelId })
-			.getOneOrFail();
-		const userRelations: UserRelation[] = channel.users.map(
-			(user) => {
-				let friend: boolean | string = false;
-				if (currentUser.friends.includes(user) && user.friends.includes(currentUser))
-					friend = true;
-				else if (currentUser.friends.includes(user))
-					friend = 'pending';
-				return {
-					id: user.id,
-					username: user.username,
-					avatar: user.avatar,
-					status: user.status,
-					blocking: user.users_blocked.includes(currentUser),
-					blocked: currentUser.users_blocked.includes(user),
-					friend: friend,
-				}
-			});
-		return userRelations;
+	async getChannelRelations(channelId: number,
+							blockingList: number[],
+							blockedList: number[],
+							friendList: number[]): Promise<UserRelation[]> {
+
+		const channel: Channel = await this.channelRepository.findOneOrFail({
+			where: { id: channelId },
+			relations: ["users"]
+		});
+		const userRelation = channel.users.map((user) => {
+			return {
+				id: user.id,
+				username: user.username,
+				avatar: user.avatar,
+				status: user.status,
+				blocking: blockingList.includes(user.id),
+				blocked: blockedList.includes(user.id),
+				friend: friendList.includes(user.id),
+			};
+		});
+		return userRelation;
 	}
 
 	async banUserFromChannel(channelId: number, userId: number): Promise<boolean>{
