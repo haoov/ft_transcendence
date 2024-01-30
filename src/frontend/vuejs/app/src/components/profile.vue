@@ -43,7 +43,7 @@ async function fetchUser() {
 			await axios.get(url1).then( data => {
 				userStats.value = data.data;})
 			// Fetch my games
-			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
+			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
 				userGames.value = data.data;
 				updatePieAnimation();
@@ -66,12 +66,12 @@ async function fetchMe() {
 
 // BLOCK & UNBLOCK FUNCTIONS
 async function blockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block?id=${user.value?.id}`)
 			.catch( (err) => { console.log(err) });
 }
 
 async function unblockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/unblock?id=${user.value?.id}`)
 			.catch( (err) => { console.log(err) });
 }
 
@@ -79,7 +79,6 @@ async function unblockUser() {
 async function addFriend(user: User | undefined) {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${user?.id}`)
 		.then( (data) => {
-			console.log(data.data);
 			if (data.data == false && user != undefined && me.value != undefined) {
 				socketManager.addFriend(user.id, me.value.id);
 			}

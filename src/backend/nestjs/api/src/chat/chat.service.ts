@@ -266,15 +266,19 @@ export class ChatService {
 
 	async getUserChannels(userId: number): Promise<Channel[]> {
 		let channels: Channel[];
-		channels = await this.channelRepository.createQueryBuilder("channel")
-		.leftJoinAndSelect("channel.users", "user")
-		.leftJoinAndSelect("channel.messages", "message")
-		.leftJoinAndSelect("message.sender", "sender")
-		.getMany();
-		this.sortCahnnels(channels);
-		channels = channels.filter((c) => 
-			c.users.find((u) => u.id == userId)
-		);
+		try {
+			channels = await this.channelRepository.createQueryBuilder("channel")
+			.leftJoinAndSelect("channel.users", "user")
+			.leftJoinAndSelect("channel.messages", "message")
+			.leftJoinAndSelect("message.sender", "sender")
+			.leftJoinAndSelect("channel.admins", "admin")
+			.getMany();
+			this.sortCahnnels(channels);
+			channels = channels.filter((c) => c.users.find((u) => u.id == userId));
+		}
+		catch (err) {
+			console.log(err);
+		}
 		return channels;
 	}
 
@@ -300,37 +304,27 @@ export class ChatService {
 		})
 	}
 
-	async getChannelUsers(userId: number, channelId: number): Promise<UserRelation[]> {
-		const currentUser: User = await this.userRepository.findOneOrFail({
-			where: { id: userId },
-			relations: [
-				"friends",
-				"users_blocked",
-			]
-		})
+	async getChannelRelations(channelId: number,
+							blockingList: number[],
+							blockedList: number[],
+							friendList: number[]): Promise<UserRelation[]> {
+
 		const channel: Channel = await this.channelRepository.findOneOrFail({
 			where: { id: channelId },
 			relations: ["users"]
 		});
-		const userRelations: UserRelation[] = channel.users.map(
-			(user) => {
-				let friend: boolean | string = false;
-				if (currentUser.friends.includes(user))
-					friend = true;
-				else if (user.friends.includes(currentUser))
-					friend = 'pending';
-				const userRelation: UserRelation = {
-					id: user.id,
-					username: user.username,
-					avatar: user.avatar,
-					status: user.status,
-					blocking: user.users_blocked.includes(currentUser),
-					blocked: currentUser.users_blocked.includes(user),
-					friend: friend,
-				}
-				return userRelation;
-			});
-		return userRelations;
+		const userRelation = channel.users.map((user) => {
+			return {
+				id: user.id,
+				username: user.username,
+				avatar: user.avatar,
+				status: user.status,
+				blocking: blockingList.includes(user.id),
+				blocked: blockedList.includes(user.id),
+				friend: friendList.includes(user.id),
+			};
+		});
+		return userRelation;
 	}
 
 	async isAlreadyAdmin(channelId: number, userId: number) {

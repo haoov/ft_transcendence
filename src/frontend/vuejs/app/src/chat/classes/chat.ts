@@ -5,11 +5,11 @@ import {
 	type ChannelParams,
 	type ChatMenu,
 	type MessageData,
-	type MessageParams,
 	type ChannelData
 } from "@/chat";
 import { reactive, ref, type Ref } from "vue";
-import { ChatEvents, type User } from "@/utils";
+import type { User, UserRelation } from "@/utils";
+import { ChatEvents } from "@/utils";
 import { socketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
 
@@ -187,6 +187,14 @@ class Chat {
 
 	async getJoinableChannels(user: User): Promise<ChannelData[]> {
 		const response = await axios.get(`${apiChat}/channels/joinable?id=${user.id}`);
+		if (response.data)
+			return response.data;
+		else
+			return [];
+	}
+
+	async getChannelRelations(channel: Channel): Promise<UserRelation[]> {
+		const response = await axios.get(`${apiChat}/channel/relations?id=${channel.getId()}`);
 		if (response.data)
 			return response.data;
 		else
