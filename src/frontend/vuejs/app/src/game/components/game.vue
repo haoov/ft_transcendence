@@ -4,11 +4,10 @@
 	import gameMenu from '@/game/components/gameMenu.vue';
 	import score from '@/game/components/score.vue';
 	import spells from '@/game/components/spells.vue';
-	import { type SocketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 	import { onBeforeRouteLeave } from 'vue-router';
 	import gameData from '@/game/gameData';
 
-	const socketManager: SocketManager = inject('socketManager') as SocketManager;
 	let afId: number;
 
 	function moveEvents(event: KeyboardEvent) {

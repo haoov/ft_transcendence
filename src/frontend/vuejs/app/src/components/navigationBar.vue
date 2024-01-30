@@ -14,6 +14,10 @@
 			link: '/chat',
 		},
 		{
+			name: 'CHAT2',
+			link: '/chat2',
+		},
+		{
 			name: 'SETTINGS',
 			link: '/settings'
 		}

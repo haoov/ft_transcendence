@@ -6,8 +6,7 @@ import router from "./router";
 import { reactive } from "vue";
 import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
-import chat from "./chat/chat";
-import { Message } from "./chat/classes";
+import { chat, Channel, type ChannelParams, type MessageData, type ChannelData } from "@/chat";
 
 class SocketManager {
 	private readonly userSocket: Socket;
@@ -16,18 +15,22 @@ class SocketManager {
 	private user: User;
 
 	constructor() {
-		this.userSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/users`);
-		this.gameSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/game`);
-		this.chatSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`);
+		this.userSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/users`, {autoConnect: false});
+		this.gameSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/game`, {autoConnect: false});
+		this.chatSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`, {autoConnect: false});
 		this.user = {} as User;
 	}
 
 	async initSocket() {
+		this.userSocket.connect();
+		this.chatSocket.connect();
+		this.gameSocket.connect();
 		await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((response) => {
-			this.user = reactive(response.data);
-			this.userSocket.emit(ClientEvents.connected, response.data);
-			this.gameSocket.emit(ClientEvents.connected, response.data);
-			this.chatSocket.emit(ClientEvents.connected, response.data);
+			this.user = response.data;
+			this.userSocket.emit("userConnected", this.user);
+			this.chatSocket.emit("userConnected", this.user);
+			this.gameSocket.emit("userConnected", this.user);
+			chat.loadChannels(this.user.id);
 		});
 
 		this.userSocket.on(ServerEvents.ping, () => {
@@ -91,13 +94,66 @@ class SocketManager {
 			}
 		});
 
-		this.chatSocket.on(ChatEvents.miniChatMessage, (data: any) => {
-			const channel = chat.getChannelById(data.message.channelId);
+		this.chatSocket.on("newMessage", (message: MessageData) => {
+			chat.newMessage(message);
+		});
+
+		this.chatSocket.on("newChannelCreated", (data: ChannelData) => {
+			const newChannel = new Channel(data);
+			chat.addChannel(newChannel);
+		});
+
+		this.chatSocket.on("channelUpdated", (data: ChannelData) => {
+			chat.channelUpdate(data);
+		});
+
+		this.chatSocket.on(ChatEvents.kicked, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
 			if (channel) {
-				const newMessageSend = new Message(	data.id, data.sender, data.message.text, data.message.time);
-				console.log('[SOCKET MANAGER]', newMessageSend);
-				channel.addMessage(newMessageSend);
+				notify.newNotification("infos", {
+					message: 'You have been kicked from channel: ',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
 			}
+		});
+
+		this.chatSocket.on(ChatEvents.banned, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been banned from channel: ',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.namedAdmin, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been named admin of channel: ',
+					by: channel.getName(),
+				});
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.muted, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been muted on channel: ',
+					by: channel.getName(),
+				});
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.alreadyMuted, (data: any) => {
+			notify.newNotification("error", {
+				message: data.userId + " is already muted", // replace by username
+				by: "on channel " + data.channelId,
+			});
 		});
 
 		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
@@ -130,26 +186,6 @@ class SocketManager {
 			}
 		});
 
-		this.chatSocket.on(ChatEvents.muted, (data: any) => {
-			notify.newNotification("infos", {
-				message: 'You have been muted',
-				by: "on channel " + data.channelId,
-			});
-		});
-
-		this.chatSocket.on(ChatEvents.haveMuted, (data: any) => {
-			notify.newNotification("infos", {
-				message: 'You muted ' + data.userId, // replace by username
-				by: "on channel " + data.channelId,
-			});
-		});
-
-		this.chatSocket.on(ChatEvents.alreadyMuted, (data: any) => {
-			notify.newNotification("error", {
-				message: data.userId + " is already muted", // replace by username
-				by: "on channel " + data.channelId,
-			});
-		});
 	}
 
 	checkGame() {
@@ -224,8 +260,13 @@ class SocketManager {
 		this.gameSocket.emit(ClientEvents.move, direction);
 	}
 
-	disconnected(): boolean {
-		return this.userSocket.disconnected && this.gameSocket.disconnected;
+	emit(socket: string, event: string, ...args: any[]) {
+		if (socket == "user")
+			this.userSocket.emit(event, ...args);
+		else if (socket == "game")
+			this.gameSocket.emit(event, ...args);
+		else if (socket == "chat")
+			this.chatSocket.emit(event, ...args);
 	}
 
 	sendMessage(message: any) {

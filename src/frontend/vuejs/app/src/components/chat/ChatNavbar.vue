@@ -42,7 +42,6 @@ function userAddedHandler(channelJoined: any) {
 }
 
 function newChannelCreatedHandler(newChannelCreated : any) {
-	console.log(newChannelCreated);
 	$data.addChannel(newChannelCreated);
 	if (newChannelCreated.creatorId == currentUser.id) {
 		socketManager.setActiveChannel(newChannelCreated.id);
@@ -112,31 +111,24 @@ function adminNomination(channelId: number) {
 
 onMounted(() => {
 	if (!socketManager.hasEventListener("chat", ChatEvents.newChannelCreated)) {
-		// console.log('[ChatEvents.newChannelCreated]');
 		socketManager.addEventListener("chat", ChatEvents.newChannelCreated, newChannelCreatedHandler);
 	}
 	if (!socketManager.hasEventListener("chat", ChatEvents.userAdded)) {
-		// console.log('[ChatEvents.userAdded]');
 		socketManager.addEventListener("chat", ChatEvents.userAdded, userAddedHandler);
 	}
 	if (!socketManager.hasEventListener("chat", ChatEvents.channelDeleted)) {
-		// console.log('[ChatEvents.channelDeleted]');
 		socketManager.addEventListener("chat", ChatEvents.channelDeleted, channelIdDeletedHandler);
 	}
 	if (!socketManager.hasEventListener("chat", ChatEvents.channelUpdated)) {
-		// console.log('[ChatEvents.channelUpdated]');
 		socketManager.addEventListener("chat", ChatEvents.channelUpdated, channelUpdatedHandler);
 	}
 	if (!socketManager.hasEventListener("chat", ChatEvents.kicked)) {
-		// console.log('[ChatEvents.kicked]');
 		socketManager.addEventListener("chat", ChatEvents.kicked, KickedHandler);
 	}
 	if (!socketManager.hasEventListener("chat", ChatEvents.banned)) {
-		// console.log('[ChatEvents.banned]');
 		socketManager.addEventListener("chat", ChatEvents.banned, bannedHandler);
 	}
 	if (!socketManager.hasEventListener("chat", ChatEvents.namedAdmin)) {
-		// console.log('[ChatEvents.namedAdmin]');
 		socketManager.addEventListener("chat", ChatEvents.namedAdmin, adminNomination);
 	}
 });

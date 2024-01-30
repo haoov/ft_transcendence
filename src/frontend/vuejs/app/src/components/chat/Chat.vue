@@ -42,6 +42,7 @@ import ProfilModal from './ProfilModal.vue';
 import { Suspense, inject, onMounted } from 'vue';
 import { SocketManager } from '@/SocketManager';
 import { ChatEvents } from '@/utils';
+import notify from '@/notify/notify';
 
 const $data: any = inject('$data');
 const store = $data.getStore();
@@ -58,9 +59,18 @@ async function setInBackLastActiveChannel(id: string) {
 	}
 }
 
+function handleError(error: string) {
+	notify.newNotification("error", {
+		message: error,
+	})
+}
+
 onMounted(() => {
 	if (!socketManager.hasEventListener("chat", ChatEvents.lastActiveChannel)) {
 		socketManager.addEventListener("chat", ChatEvents.lastActiveChannel, setInBackLastActiveChannel);
+	}
+	if (!socketManager.hasEventListener("chat", ChatEvents.errorManager)) {
+		socketManager.addEventListener("chat", ChatEvents.errorManager, handleError);
 	}
 });
 

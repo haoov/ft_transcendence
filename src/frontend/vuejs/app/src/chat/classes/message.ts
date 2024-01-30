@@ -1,16 +1,19 @@
 import type { User } from "@/utils";
+import type { MessageData } from "@/chat";
 
 export class Message {
 	private readonly id: number;
 	private readonly sender: User;
+	private readonly channelId: number;
 	private readonly text: string;
-	private readonly time: string;
+	private readonly datestamp: string;
 
-	constructor(id: number, sender: User, text: string, time: string) {
-		this.id = id;
-		this.sender = sender;
-		this.text = text;
-		this.time = time;
+	constructor(data: MessageData) {
+		this.id = data.id;
+		this.channelId = data.channelId;
+		this.sender = data.sender;
+		this.text = data.text;
+		this.datestamp = data.datestamp;
 	}
 
 	getId(): number {
@@ -25,7 +28,7 @@ export class Message {
 		return this.text;
 	}
 
-	getTime(): string {
-		return this.time;
+	getDatestamp(): string {
+		return this.datestamp;
 	}
 }
