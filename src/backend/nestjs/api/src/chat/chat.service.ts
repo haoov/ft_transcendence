@@ -369,6 +369,30 @@ export class ChatService {
 		return userRelations;
 	}
 
+	async isAlreadyAdmin(channelId: number, userId: number) {
+		const channel: Channel = await this.channelRepository.findOneOrFail({
+			where: { id: channelId },
+			relations: ["admins"]
+		});
+		return channel.admins.find((u) => u.id == userId);
+	}
+	
+		async isAlreadyKicked(channelId: number, userId: number) {
+			const channel: Channel = await this.channelRepository.findOneOrFail({
+				where: { id: channelId },
+				relations: ["users"]
+			});
+			return !(channel.users.find((u) => u.id == userId));
+		}
+
+	async isAlreadyBanned(channelId: number, userId: number) {
+		const channel: Channel = await this.channelRepository.findOneOrFail({
+			where: { id: channelId },
+			relations: ["bannedUsers"]
+		});
+		return channel.bannedUsers.find((u) => u.id == userId);
+	}
+
 	async banUserFromChannel(channelId: number, userId: number): Promise<boolean>{
 		try {
 			const channel: Channel = await this.channelRepository.findOneOrFail({

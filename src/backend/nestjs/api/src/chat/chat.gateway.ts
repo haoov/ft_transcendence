@@ -17,44 +17,6 @@ import { User } from 'src/user/user.interface';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-// function buildMsg(sender, message) {
-// 	return {
-// 		sender: sender as UserEntity,
-// 		message: {
-// 			id: message.id,
-// 			channelId : message.channelId,
-// 			text : message.text,
-// 			time: message.datestamp,
-// 		}
-// 	}
-// };
-
-// @WebSocketGateway({ namespace: 'chat' })
-// export class ChatGateway implements OnGatewayConnection {
-// 	constructor(
-// 		private readonly chatService: ChatService,
-// 		private readonly userService: UserService
-// 		) {}
-
-// 	@WebSocketServer()
-// 	server: Server;
-// 	private listActiveChannel: Map<number, string> = new Map<number, string>();
-// 	private usersSocketList : Map<number, Socket> = new Map<number, Socket>();
-
-// 	handleDisconnect(socket: Socket) {
-// 		this.usersSocketList.forEach((value: Socket, key: number) => {
-// 			if (value === socket) {
-// 				this.usersSocketList.delete(key);
-// 			}
-// 		});
-// 	}
-
-// 	@SubscribeMessage('setActiveChannel')
-// 	async onJoinCurrentChannel(@MessageBody() data: any) {
-// 		const channelid = data.channelId;
-// 		const userId = data.currentUserId;
-// 		this.listActiveChannel.set(userId, channelid);
-// 	}
 
 // 	// @SubscribeMessage('createNewChannel')
 // 	// async onNewChannel(@MessageBody() channel: any) {
@@ -229,10 +191,14 @@ export class ChatGateway implements OnGatewayConnection {
 	}
 
 	@SubscribeMessage('setAdmin')
-	async onSetAdmin(@MessageBody() data: any) {
+	async onSetAdmin(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
 		const channelId = data.channelId;
 		const userId = data.userId;
 		const channel: Channel = await this.chatService.getChannelById(channelId);
+		if (await this.chatService.isAlreadyAdmin(channelId, userId)) {
+			client.emit('errorManager', 'User is already admin');
+			return;
+		}
 		if (await this.chatService.setChannelAdmin(channelId, userId)) {
 			const sockets: Socket[] = this.userSockets.get(userId);
 			if (sockets) {
@@ -245,10 +211,14 @@ export class ChatGateway implements OnGatewayConnection {
 	}
 
 	@SubscribeMessage('kickUser')
-	async onKickUser(@MessageBody() data: any) {
+	async onKickUser(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
 		const channelId = data.channelId;
 		const userId = data.userId;
 		const channel: Channel = await this.chatService.getChannelById(channelId);
+		if (await this.chatService.isAlreadyKicked(channelId, userId)) {
+			client.emit('errorManager', 'User is already kicked');
+			return;
+		}
 		if (await this.chatService.removeUserFromChannel(channelId, userId)) {
 			const sockets: Socket[] = this.userSockets.get(userId);
 			if (sockets) {
@@ -266,6 +236,10 @@ export class ChatGateway implements OnGatewayConnection {
 		const channelId = data.channelId;
 		const userId = data.userId;
 		const channel: Channel = await this.chatService.getChannelById(channelId);
+		if (await this.chatService.isAlreadyBanned(channelId, userId)) {
+			client.emit('errorManager', 'User is already banned');
+			return;
+		}
 		if (await this.chatService.banUserFromChannel(channelId, userId)) {
 			const sockets: Socket[] = this.userSockets.get(userId);
 			if (sockets) {
@@ -304,7 +278,7 @@ export class ChatGateway implements OnGatewayConnection {
 				}, 15 * 60 * 1000); // 15 minutes en millisecondes
 			}
 			else {
-				client.emit('alreadyMuted', data);
+				client.emit('errorManager', 'User is already muted');
 			}
 		  } catch (error) {
 				throw error;
