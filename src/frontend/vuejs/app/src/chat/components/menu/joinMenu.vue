@@ -1,25 +1,20 @@
 <script setup lang="ts">
 	import { socketManager } from '@/SocketManager';
 	import { chat, type Channel, type ChannelData } from '@/chat';
+	import notify from '@/notify/notify';
 	import { computed, ref, type Ref } from 'vue';
 
-	const emit = defineEmits({
-		selectChannel: (channel: ChannelData) => channel
-	});
-
 	const joignableChannels: ChannelData[] = await chat.getJoinableChannels(socketManager.getUser());
-
+	const password: Ref<string> = ref('');
 	const search: Ref<string> = ref('');
 	const result: Ref<ChannelData> = ref({} as ChannelData);
+
 	const searchResults = computed((): ChannelData[] => {
-		if (result.value.name == search.value) {
+		if (search.value == result.value.name) {
 			return [result.value];
-		}
-		else
-		if (search.value.length == 0) { 
+		} else if (search.value.length == 0) { 
 			return [];
-		}
-		else {
+		} else {
 			return joignableChannels.filter((channel: ChannelData) => {
 				return channel.name.toLowerCase().startsWith(search.value.toLowerCase());
 			});
@@ -27,11 +22,22 @@
 	});
 
 	function selectChannel(channel: ChannelData) {
-		emit('selectChannel', channel);
-		search.value = channel.name;
 		result.value = channel;
+		search.value = channel.name;
 	}
 
+	function cancelSelection() {
+		search.value = '';
+		result.value = {} as ChannelData;
+	}
+
+	function submitEvent() {
+		if (!result.value) {
+			notify.newNotification('error', {message:'You must select a channel to join'});
+		}
+		chat.joinChannel(result.value.id, socketManager.getUser(), password.value);
+		chat.setChatMenu('none');
+	}
 
 </script>
 
@@ -54,7 +60,7 @@
 					class="searchResult"
 					v-for="channel in searchResults"
 					v-on:click="selectChannel(channel)"
-					>
+				>
 						{{ channel.name }}
 						<span v-if="channel.mode === 'Protected'">
 							<svg fill="#7c7979" height="10px" width="10px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 330 330" xml:space="preserve" stroke="#7c7979">
@@ -64,8 +70,28 @@
 							</svg>
 						</span>
 				</div>
+				<div class="selected">
+					<span v-if="result.name">
+						{{ result.name }}
+					</span>
+					</div>
+				<label class="inputLabel"
+				v-if="result.mode == 'Protected'">
+				Password :
+				<input id="channelName"
+					class="channelInput"
+					type="password"
+					autocomplete="off"
+					placeholder="Channel Name"
+					v-model="password"
+					>
+				</label>
 			</div>
 		</div>
+		<button id="submitButton"
+			v-on:click="submitEvent()">
+			Join
+		</button>
 	</div>
 </template>
 
@@ -83,7 +109,7 @@
 			font-size: 1.4rem;
 			color: var(--c-grey-light);
 
-			#searchChannel {
+			#searchChannel, .channelInput {
 				width: 80%;
 				padding: 3% 7%;
 				border-radius: 8px;
@@ -118,6 +144,20 @@
 					color: var(--c-grey);
 					border: var(--c-pink) 1px solid;
 				}
+			}
+		}
+
+		#submitButton {
+			background-color: var(--c-black-light);
+			border: 1px solid var(--c-black-light);
+			padding: 12px 16px;
+			cursor: pointer;
+			border-radius: 6px;
+
+			&:hover:not(:disabled) {
+				background-color: var(--c-grey-light);
+				color: var(--c-black-light);
+				border: 1px solid var(--c-pink);
 			}
 		}
 	}
