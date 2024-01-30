@@ -149,10 +149,9 @@ class SocketManager {
 			}
 		});
 
-		this.chatSocket.on(ChatEvents.alreadyMuted, (data: any) => {
+		this.chatSocket.on(ChatEvents.errorManager, (error: string) => {
 			notify.newNotification("error", {
-				message: data.userId + " is already muted", // replace by username
-				by: "on channel " + data.channelId,
+				message: error,
 			});
 		});
 
