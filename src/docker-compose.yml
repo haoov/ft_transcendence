@@ -60,6 +60,8 @@ services:
     
       - OTP_NAME=${OTP_NAME}
       - JWT_ACCESS_TOKEN=${JWT_ACCESS_TOKEN}
+
+      - SESSION_SECRET=${SESSION_SECRET}
     depends_on:
       postgresql:
         condition: service_healthy
