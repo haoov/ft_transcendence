@@ -151,28 +151,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 // 		}
 // 	}
 
-// 	@SubscribeMessage('blockUser')
-// 	async onBlockUser(@MessageBody() data: Object) {
-// 		const userId = data['userId'];
-// 		const userToBlockId = data['userToBlockId'];
-// 		try {
-// 			await this.userService.blockUser(userId, userToBlockId);
-// 		} catch (err) {
-// 			throw err;
-// 		}
-// 	}
-
-// 	@SubscribeMessage('unblockUser')
-// 	async onUnblockUser(@MessageBody() data: Object) {
-// 		const userId = data['userId'];
-// 		const userToUnblockId = data['userToUnblockId'];
-// 		try {
-// 			await this.userService.unblockUser(userId, userToUnblockId);
-// 		} catch (err) {
-// 			throw err;
-// 		}
-// 	}
-// }
 
 	/*----------------------------------------------------------------------------*/
 	/*                                      RAPH                                  */
@@ -181,6 +159,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 @WebSocketGateway({ namespace: 'chat' })
 export class ChatGateway implements OnGatewayConnection {
 
+	@WebSocketServer() server: Server;
 	private readonly userSockets: Map<number, Socket[]>;
 
 	constructor(
@@ -256,12 +235,29 @@ export class ChatGateway implements OnGatewayConnection {
 
 	newMessage(message: Message, channel: Channel): void {
 		for (const user of channel.users) {
-			const sockets: Socket[] = this.userSockets.get(user.id);
+			// const sockets: Socket[] = this.userSockets.get(user.id);
+			// if (sockets) {
+			// 	for (const socket of sockets) {
+			// 		socket.emit('newMessage', message);
+			// 	}
+			// }
+			this.server.to(channel.id.toString()).emit('newMessage', message);
+		}
+	}
+
+	@SubscribeMessage('setAdmin')
+	async onSetAdmin(@MessageBody() data: any) {
+		const channelId = data.channelId;
+		const userId = data.userId;
+		const channel: Channel = await this.chatService.getChannelById(channelId);
+		if (await this.chatService.setChannelAdmin(channelId, userId)) {
+			const sockets: Socket[] = this.userSockets.get(userId);
 			if (sockets) {
 				for (const socket of sockets) {
-					socket.emit('newMessage', message);
+					socket.emit('namedAdmin', channel);
 				}
 			}
+			this.server.to(channelId.toString()).emit('channelUpdated', channel);
 		}
 	}
 
@@ -269,8 +265,33 @@ export class ChatGateway implements OnGatewayConnection {
 	async onKickUser(@MessageBody() data: any) {
 		const channelId = data.channelId;
 		const userId = data.userId;
+		const channel: Channel = await this.chatService.getChannelById(channelId);
 		if (await this.chatService.removeUserFromChannel(channelId, userId)) {
-			this.userSockets.get(userId).forEach((s) => {s.emit('kicked', channelId)});
+			const sockets: Socket[] = this.userSockets.get(userId);
+			if (sockets) {
+				for (const socket of sockets) {
+					socket.emit('kicked', channel);
+					socket.leave(channelId.toString());
+				}
+			}
+			this.server.to(channelId.toString()).emit('channelUpdated', channel);
+		}
+	}
+
+	@SubscribeMessage('banUser')
+	async onBanUser(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+		const channelId = data.channelId;
+		const userId = data.userId;
+		const channel: Channel = await this.chatService.getChannelById(channelId);
+		if (await this.chatService.banUserFromChannel(channelId, userId)) {
+			const sockets: Socket[] = this.userSockets.get(userId);
+			if (sockets) {
+				for (const socket of sockets) {
+					socket.emit('banned', channel);
+					socket.leave(channelId.toString());
+				}
+			}
+			this.server.to(channelId.toString()).emit('channelUpdated', channel);
 		}
 	}
 

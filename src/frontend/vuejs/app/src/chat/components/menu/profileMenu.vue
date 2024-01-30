@@ -5,45 +5,59 @@
 	import playIcon from '@/assets/images/racket-50.png';
 	import blockIcon from '@/assets/images/status-blocked-32.png';
 	import unblockIcon from '@/assets/images/unblock-50.png';
-import { socketManager } from '@/SocketManager';
-import router from '@/router';
+	import { socketManager } from '@/SocketManager';
+	import router from '@/router';
+	import { Channel, chat } from '@/chat';
 
-	const props = defineProps<{user: User}>();
+	const props = defineProps<{user: User, channel: Channel}>();
 
 	function setAdmin() {
-		console.log('setAdmin');
-		socketManager.emit('chat', ChatEvents.setAdmin, props.user.id);
+		socketManager.emit('chat', ChatEvents.setAdmin, {
+			channelId: props.channel.getId(),
+			userId: props.user.id,
+		});
 	}
 	
 	function mute() {
 		console.log('Mute User');
-		socketManager.emit('chat', ChatEvents.muteUser, props.user.id);
+		socketManager.emit('chat', ChatEvents.muteUser, {
+			channelId: props.channel.getId(),
+			userId: props.user.id,
+		});
 	}
 
 	function kick() {
-		console.log('kick user');
-		socketManager.emit('chat', ChatEvents.kickUser, props.user.id);
+		socketManager.emit('chat', ChatEvents.kickUser, {
+			channelId: props.channel.getId(),
+			userId: props.user.id,
+		});
 	}
 
 	function ban() {
-		console.log('ban user');
-		socketManager.emit('chat', ChatEvents.banUser, props.user.id);
+		socketManager.emit('chat', ChatEvents.banUser, {
+			channelId: props.channel.getId(),
+			userId: props.user.id,
+		});
 	}
 
 	function profile() {
 		router.push(`/${props.user.username}`);
+		chat.setChatMenu('none');
 	}
 
 	function play() {
 		console.log('play')
+		chat.setChatMenu('none');
 	}
 
 	function block() {
 		console.log('block')
+		chat.setChatMenu('none');
 	}
 
 	function message() {
 		console.log('message')
+		chat.setChatMenu('none');
 	}
 
 	interface Action {
