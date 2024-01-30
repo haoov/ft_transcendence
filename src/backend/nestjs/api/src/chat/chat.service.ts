@@ -208,9 +208,8 @@ export class ChatService {
 				relations: ["users", "bannedUsers"],
 			});
 			channels = channels.filter((c) => {
-				if (c.users.find((user) => user.id == userId)
-						|| c.bannedUsers.find((user) => user.id == userId))
-							return false;
+				if (c.users.find((u) => u.id == userId) || c.bannedUsers.find((u) => u.id == userId))
+					return false;
 				else
 					return true;
 			});
@@ -218,6 +217,9 @@ export class ChatService {
 		catch (err) {
 			console.log(err);
 		}
+		console.log('===========================');
+		console.log('[JOINABLE CHANNELS]', channels);
+		console.log('===========================');
 		return channels;
 	}
 
@@ -406,6 +408,7 @@ export class ChatService {
 				where: { id: userId }
 			});
 			channel.bannedUsers.push(user);
+			await this.channelRepository.save(channel);
 			this.removeUserFromChannel(channelId, userId);
 			return true;
 		} catch (err) {
