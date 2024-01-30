@@ -25,7 +25,7 @@ socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser:
 		if (user.value?.id == newUser.id && newUser.username != username) {
 			username = newUser.username;
 			await fetchUser();  
-			router.push(`/${newUser.username}`);
+			router.replace(`/${newUser.username}`);
 		}
 		else
 			await fetchUser();
@@ -43,27 +43,36 @@ async function fetchUser() {
 			await axios.get(url1).then( data => {
 				userStats.value = data.data;})
 			// Fetch my games
-			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
-			await axios.get(url2).then( data => {
+			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
+			axios.get(url2).then( data => {
 				userGames.value = data.data;
-				updatePieAnimation();})
+				updatePieAnimation();
 			});
+		})
+		.catch((err) => {
+			router.replace("/error");
+		});
 }
 
 async function fetchMe() {
 	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
 		.then( (data) => {
-			me.value = data.data; });
+			me.value = data.data; })
+		.catch( (err) => {
+			console.log(err);
+		});
 }
 
 // BLOCK & UNBLOCK FUNCTIONS
 async function blockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block?id=${user.value?.id}`)
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
+			.catch( (err) => { console.log(err) });
 }
 
 async function unblockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/unblock?id=${user.value?.id}`)
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
+			.catch( (err) => { console.log(err) });
 }
 
 // ADD TO FRIEND & REMOVE FROM FRIENDS

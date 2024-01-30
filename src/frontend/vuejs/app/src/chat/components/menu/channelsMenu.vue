@@ -38,6 +38,16 @@
 	function channelSelected(channel: ChannelData) {
 		channelTOJoin = channel;
 	}
+
+	function submitButton() {
+		if (subMenu.value == 'Create') {
+			chat.createChannel(channelParams);
+		}
+		else if (subMenu.value == 'Join') {
+			chat.joinChannel(channelTOJoin, socketManager.getUser());
+		}
+		chat.setChatMenu('none');
+	}
 </script>
 
 <template>
@@ -99,7 +109,7 @@
 			</v_joinMenu>
 		</Suspense><!--END JOIN CHANNEL-->
 		<button id="submitButton"
-			v-on:click="createChannel()">
+			v-on:click="submitButton()">
 			{{ subMenu }}
 		</button>
 	</div> <!--END CHANNELS MENU-->

@@ -48,6 +48,9 @@ export enum ChatEvents {
 	newMessageReceived = "newMessageReceived",
 	miniChatMessage = "miniChatMessage",
 	errorManager = "errorManager",
+	muted = "muted",
+	alreadyMuted = "alreadyMuted", // If an admin try to mute a user already muted
+
 	// Events Emit
 	newMessageSend = "newMessageSend",
 	createNewChannel = "createNewChannel",
@@ -57,7 +60,8 @@ export enum ChatEvents {
 	updateChannel = "updateChannel",
 	joinChannel = "joinChannel",
 	leaveChannel = "leaveChannel",
+	setAdmin = "setAdmin",
+	muteUser = "muteUser",
 	kickUser = "kickUser",
 	banUser = "banUser",
-	setAdmin = "setAdmin",
 };

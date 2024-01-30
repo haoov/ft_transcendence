@@ -7,6 +7,7 @@ import { Body2faDTO, User } from "src/user/user.interface";
 import JwtAuthGuard from "./jwt/jwt.guard";
 import Jwt2faGuard from "./jwt-2fa/jwt-2fa.guard";
 import { UserEntity } from "src/postgreSQL/entities";
+import { UserValidate } from "./auth.interface";
 
 @Controller("auth")
 export class AuthController {
@@ -17,7 +18,7 @@ export class AuthController {
 
 	@Get()
 	@UseGuards(Jwt2faGuard)
-	checkAuth() {
+	checkAuth(@Req() req: Request){
 		return { "status": "ok" };
 	}
 
@@ -25,7 +26,7 @@ export class AuthController {
 	@UseGuards(Intra42Guard)
 	async login(@Res() res: Response): Promise<Response> {
    		return res.status(200).send({
-			"status": "logout"
+			"status": "login"
 		});
 	}
 
@@ -37,6 +38,8 @@ export class AuthController {
 		res.setHeader('Set-Cookie', cookie);
 		if (user.twofa_enabled) 
 			return res.redirect("/login?2fa=true");
+		if ((req.user as UserValidate).first_connection)
+			return res.redirect("/settings");
 		return res.redirect("/");
 	}
 
@@ -94,7 +97,6 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard)
 	async authentificate(@Req() req: Request, @Body() body: Body2faDTO) {
 		const user: UserEntity = await this.userService.getUserById((req.user as User).id) as UserEntity;
-		console.log(user);
 		if (!user.twofa_enabled)
 			throw new UnauthorizedException('no 2fa needed');
 		if (!user.twofa_secret)
