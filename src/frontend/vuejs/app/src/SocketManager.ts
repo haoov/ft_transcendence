@@ -7,6 +7,7 @@ import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
 import { chat, Channel, type MessageData, type ChannelData } from "@/chat";
 import { type GameEvents } from "@/game/types";
+import { ref, type Ref } from "vue";
 
 export type SocketType = "user" | "game" | "chat";
 
@@ -225,7 +226,7 @@ class SocketManager {
 	getUser(): User {
 		return this.user;
 	}
-
+	
 	selectParams(params: GameParams) {
 		this.gameSocket.emit(ClientEvents.gameParams, params);
 	}

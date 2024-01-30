@@ -4,7 +4,7 @@
 	import { reactive, ref, type Ref } from 'vue';
 	import v_userWidget from '../userWidget.vue';
 	import { ServerEvents, type User, type UserRelation } from '@/utils';
-import { socketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 
 	const props = defineProps<{channel: Channel | undefined}>();
 	const emit = defineEmits({selectUser: (user: UserRelation) => user});

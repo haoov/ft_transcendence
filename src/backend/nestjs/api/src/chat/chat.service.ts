@@ -218,7 +218,6 @@ export class ChatService {
 				) return false;
 				else return true;
 			});
-			console.log(users);
 		}
 		else {
 			users = users.filter((u) => {
