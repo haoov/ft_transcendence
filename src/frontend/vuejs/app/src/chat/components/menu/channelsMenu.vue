@@ -6,7 +6,6 @@
 	import v_joinMenu from '@/chat/components/menu/joinMenu.vue';
 	import v_addUsers from '@/chat/components/menu/addUsers.vue';
 	import type { User } from '@/utils';
-import notify from '@/notify/notify';
 
 	const subMenu: Ref<string> = ref('Create');
 	const channelParams: ChannelParams = reactive({
@@ -17,8 +16,6 @@ import notify from '@/notify/notify';
 		users: [socketManager.getUser()],
 		admins: [socketManager.getUser()],
 	});
-
-	let channelTOJoin: ChannelData;
 
 	async function createChannel() {
 		if (await chat.createChannel(channelParams) == false)
@@ -36,22 +33,6 @@ import notify from '@/notify/notify';
 			channelParams.users.splice(index, 1);
 	}
 
-	function channelSelected(channel: ChannelData) {
-		channelTOJoin = channel;
-	}
-
-	function submitButton() {
-		if (subMenu.value == 'Create') {
-			chat.createChannel(channelParams);
-		}
-		else if (subMenu.value == 'Join') {
-			if (!channelTOJoin) {
-				notify.newNotification('error', {message:'You must select a channel to join'});
-			}
-			chat.joinChannel(channelTOJoin, socketManager.getUser());
-		}
-		chat.setChatMenu('none');
-	}
 </script>
 
 <template>
@@ -91,7 +72,7 @@ import notify from '@/notify/notify';
 				Password :
 				<input id="channelName"
 					class="channelInput"
-					type="text"
+					type="password"
 					autocomplete="off"
 					placeholder="Channel Name"
 					v-model="channelParams.password">
@@ -109,12 +90,13 @@ import notify from '@/notify/notify';
 		<Suspense>
 			<v_joinMenu
 				v-if="subMenu == 'Join'"
-				v-on:selectChannel="channelSelected">
+			>
 			</v_joinMenu>
 		</Suspense><!--END JOIN CHANNEL-->
 		<button id="submitButton"
-			v-on:click="submitButton()">
-			{{ subMenu }}
+			v-if="subMenu == 'Create'"
+			v-on:click="createChannel()">
+			Create
 		</button>
 	</div> <!--END CHANNELS MENU-->
 </template>

@@ -40,12 +40,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			console.log("chat disconnection");
 		}
 	}
-    
+
 	@SubscribeMessage('joinChannel')
 	async onJoinChannel(@MessageBody() channel: any) {
 		const idChannel = channel.channelId;
 		const idUser = channel.userId;
 		const passwordChannel = channel.password;
+		console.log('===================================');
+		console.log('ID Channel->', idChannel,'idUser ->',  idUser, 'Password -> ', passwordChannel);
+		console.log('===================================');
 		let channelToJoin = await this.chatService.getChannel(idChannel);
 		let isMatch;
 		if (channelToJoin.mode === 'Protected')

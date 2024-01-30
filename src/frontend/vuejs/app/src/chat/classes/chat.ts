@@ -155,9 +155,9 @@ class Chat {
 		axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams);
 	}
 
-	joinChannel(channel: ChannelData, user: User, password?: string) : void {
-		const pw = password ? password : "";
-		socketManager.emit("chat", ChatEvents.joinChannel, { channelId: channel.id, userId: user.id, password: pw });
+	joinChannel(channelId: number, user: User, password?: string) : void {
+		console.log('ID Channel->', channelId,'idUser ->',  user.id, 'Password -> ', password);
+		socketManager.emit("chat", ChatEvents.joinChannel, { channelId: channelId, userId: user.id, password: password });
 	}
 
 	channelUpdate(data: ChannelData) {
