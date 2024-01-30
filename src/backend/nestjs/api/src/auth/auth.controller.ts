@@ -19,7 +19,6 @@ export class AuthController {
 	@Get()
 	@UseGuards(Jwt2faGuard)
 	checkAuth(@Req() req: Request){
-		console.log(req.user);
 		return { "status": "ok" };
 	}
 
@@ -34,7 +33,6 @@ export class AuthController {
 	@Get("42-redirect")
 	@UseGuards(Intra42Guard)
 	async redirect(@Req() req: Request, @Res() res: Response) {
-		console.log(req.user);
 		const user: User = await this.userService.getUserById((req.user as User).id);
 		const cookie = this.authService.getCookieWithJwtToken(user.id);
 		res.setHeader('Set-Cookie', cookie);

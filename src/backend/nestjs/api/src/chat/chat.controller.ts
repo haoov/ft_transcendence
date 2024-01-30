@@ -184,8 +184,8 @@ export class ChatController {
 		}
 	}
 
-	@Get('/channel/users')
-	async getChannelUsers(@Req() request: Request, @Query('id') channelId: number): Promise<UserRelation[]> {
-		return await this.chatService.getChannelUsers(request.user['id'], channelId);
+	@Get('/channel/relations')
+	async getChannelRelations(@Req() request: Request, @Query('id') channelId: number): Promise<UserRelation[]> {
+		return await this.chatService.getChannelRelations(request.user['id'], channelId);
 	}
 }

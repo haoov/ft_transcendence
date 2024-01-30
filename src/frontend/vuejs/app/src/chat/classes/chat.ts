@@ -9,7 +9,7 @@ import {
 	type ChannelData
 } from "@/chat";
 import { reactive, ref, type Ref } from "vue";
-import type { User } from "@/utils";
+import type { User, UserRelation } from "@/utils";
 
 const apiChat: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat`;
 
@@ -149,6 +149,14 @@ class Chat {
 
 	async getJoinableChannels(user: User): Promise<ChannelData[]> {
 		const response = await axios.get(`${apiChat}/channels/joinable?id=${user.id}`);
+		if (response.data)
+			return response.data;
+		else
+			return [];
+	}
+
+	async getChannelRelations(channel: Channel): Promise<UserRelation[]> {
+		const response = await axios.get(`${apiChat}/channel/relations?id=${channel.getId()}`);
 		if (response.data)
 			return response.data;
 		else
