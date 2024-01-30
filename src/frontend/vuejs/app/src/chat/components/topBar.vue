@@ -2,14 +2,21 @@
 	import { chat, type Channel, type ChatMenu } from '@/chat';
 	import { socketManager } from '@/SocketManager';
 	import actionsIcon from '@/assets/images/actionsIcon.png';
-	import { ref, type Ref, watchEffect } from 'vue';
-	import type { User, UserRelation } from '@/utils';
+	import { ref, type Ref, watchEffect, watch } from 'vue';
+	import { ServerEvents, type User, type UserRelation } from '@/utils';
 	import eventBus from '@/composables/eventBus';
 
 	const props = defineProps<{channel: Channel}>();
 	const actionsMenu: Ref<boolean> = ref<boolean>(false);
 	const userRelations = ref<UserRelation[]>(await chat.getChannelRelations(props.channel));
-	const me = ref<User>(socketManager.getUser());
+
+
+	socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
+		const userConcerned = userRelations.value.map((relation) => relation.id);
+		if (userConcerned.includes(user.id)) {
+			userRelations.value = await chat.getChannelRelations(props.channel);
+		}
+	});
 
 	watchEffect(async () => {
 		const channelRelations = await chat.getChannelRelations(props.channel);
@@ -23,7 +30,7 @@
 
 	async function clickOnAction() {
 		if (props.channel && props.channel.getMode() == "Private") {
-			const otherUser = userRelations.value.find((user) => user.id != me.value.id);
+			const otherUser = userRelations.value.find((user) => user.id != socketManager.getUser().id);
 			eventBus.emit('selectUser', otherUser);
 		} 
 		else 
