@@ -99,6 +99,26 @@ class Chat {
 		axios.post(`${apiChat}/message`, params);
 	}
 
+	sendPrivateMessage(User : User) {
+		const currentUser = socketManager.getUser();
+		const channelName = `#${currentUser.id}#${User.id}`;
+		const index = this.userChannels.findIndex((c) => c.getName() == channelName);
+		if (index != -1) {
+			const [channel] = this.userChannels.splice(index, 1);
+			this.userChannels.splice(0, 0, channel);
+			return;
+		} else {
+			const params: ChannelParams = {
+				name: channelName,
+				mode: "Private",
+				creatorId: currentUser.id,
+				messages: [],
+				users: [currentUser, User],
+			};
+			this.createChannel(params);
+		}
+	}
+
 	getChatMenu(): Ref<ChatMenu> {
 		return this.chatMenu;
 	}
