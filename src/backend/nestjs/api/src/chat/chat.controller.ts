@@ -9,41 +9,13 @@ import Jwt2faGuard from "../auth/jwt-2fa/jwt-2fa.guard";
 import { UserGateway } from "src/user/user.gateway";
 import { ChatGateway } from "./chat.gateway";
 import { ChannelDTO, MessageDTO } from "./dto/chat.dto";
+import * as bcrypt from 'bcrypt';
 
-
-function isBlocked(user: UserEntity, blockedUsers: UserEntity []) : boolean {
-	if (blockedUsers) {
-		for (const blockedUser of blockedUsers) {
-			if (blockedUser.id === user.id)
-				return true;
-		}
-	}
-	return false;
-}
-
-// function convertRawMessagesToMessages(
-// 	messagesRaw: MessageRaw [], users: UserEntity [], blockedUsers: UserEntity []
-// 	) : Message [] {
-	
-// 		let messages: Message [] = [];
-// 	for (const message of messagesRaw) {
-// 		const user = users.find((user) => { return user.id === message.senderId });
-// 		if (!isBlocked(user, blockedUsers)) {
-// 			let messageConverted: Message = {
-// 				id: message.id,
-// 				sender: user,
-// 				message: {
-// 					text: message.text,
-// 					time: message.timestamp,
-// 				}
-// 			};
-// 			messages.push(messageConverted);
-// 		}
-// 	}
-// 	return messages;
-// }
-
-
+async function ft_encode(str: string): Promise<string> {
+	const saltOrRounds = 10;
+	const hash = await bcrypt.hash(str, saltOrRounds);
+	return hash;
+ }
 
 @UseGuards(Jwt2faGuard)
 @Controller('chat')
@@ -153,7 +125,10 @@ export class ChatController {
 	@Post('/channel')
 	async createChannel(@Body() channelDTO: ChannelDTO) {
 		try {
+			if (channelDTO.mode === 'Protected')
+				channelDTO.password = await ft_encode(channelDTO.password);
 			const channel: Channel = await this.chatService.createChannel(channelDTO);
+			console.log(channel);
 			this.chatGateway.newChannel(channel);
 		}
 		catch (err) {

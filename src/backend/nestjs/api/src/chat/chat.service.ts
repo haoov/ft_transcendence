@@ -217,9 +217,6 @@ export class ChatService {
 		catch (err) {
 			console.log(err);
 		}
-		console.log('===========================');
-		console.log('[JOINABLE CHANNELS]', channels);
-		console.log('===========================');
 		return channels;
 	}
 

@@ -28,20 +28,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 // 	// 	}
 // 	// }
 
-// 	@SubscribeMessage('joinChannel')
-// 	async onJoinChannel(@MessageBody() channel: any) {
-// 		const channelToJoin = await this.chatService.getChannelById(channel.channelId);
-// 		if (channelToJoin.mode === 'Protected' && channelToJoin.password !== channel.password) {
-// 			this.usersSocketList.get(channel.userId)?.emit('channelJoined', false);
-// 			return;
-// 		}
-// 		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
-// 			this.usersSocketList.get(channel.userId)?.emit('channelJoined', true);
-// 			this.usersSocketList.get(channel.userId)?.emit('newChannelCreated', channelToJoin);
-// 			this.usersSocketList.get(channel.userId)?.join(channel.channelId.toString());
-// 		}
-// 	}
-
 // 	@SubscribeMessage('leaveChannel')
 // 	async onLeaveChannel(@MessageBody() data: any) {
 // 		const channelId = data.channelId;
@@ -110,19 +96,33 @@ export class ChatGateway implements OnGatewayConnection {
 
 	handleConnection(@ConnectedSocket() client: Socket) {
 		console.log("chat connection");
-    }
-    
+	}
+
 	@SubscribeMessage('joinChannel')
 	async onJoinChannel(@MessageBody() channel: any) {
-		const channelToJoin = await this.chatService.getChannelById(channel.channelId);
-		const isMatch =  await bcrypt.compare(channel.password, channelToJoin.password);
+		const idChannel = channel.channelId;
+		const idUser = channel.userId;
+		const passwordChannel = channel.password;
+		const channelToJoin = await this.chatService.getChannelById(idChannel);
+		let isMatch;
+		if (channelToJoin.mode === 'Protected')
+			isMatch =  await bcrypt.compare(passwordChannel, channelToJoin.password);
+		else
+			isMatch = true;
 		if (channelToJoin.mode === 'Protected' && !isMatch) {
-			this.userSockets.get(channel.userId).forEach((s) => {s.emit('channelJoined', false)});
+			this.userSockets.get(idUser).forEach((s) => {s.emit('channelJoined', {
+				channel: channelToJoin,
+				passCheck: false,
+			})});
 			return;
 		}
-		if ( await this.chatService.addUserToChannel(channel.channelId, channel.userId)) {
-			this.userSockets.get(channel.userId).forEach((s) => {s.emit('channelJoined', true)});
-			this.userSockets.get(channel.userId).forEach((s) => {s.emit('newChannelCreated', channelToJoin)});
+		if (await this.chatService.addUserToChannel(idChannel, idUser)) {
+
+			this.userSockets.get(channel.userId).forEach((s) => {s.emit('channelJoined', {
+				channel: channelToJoin,
+				passCheck:true,
+			})});
+			// this.userSockets.get(channel.userId).forEach((s) => {s.emit('newChannelCreated', channelToJoin)});
 			this.userSockets.get(channel.userId).forEach((s) => {s.join(channel.channelId.toString())});
 		}
 	}
