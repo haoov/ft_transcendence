@@ -234,15 +234,15 @@ export class ChatGateway implements OnGatewayConnection {
 			if (!mutedUsers.includes(userId)) {
 			  mutedUsers.push(userId);
 			  this.listMutedUsers.set(channelId, mutedUsers);
-			  this.usersSocketList.get(userId)?.emit('muted', channelId);
-			  this.usersSocketList.get(senderId)?.emit('haveMuted', channelId);
+			  this.usersSocketList.get(userId)?.emit('muted', data);
+			  this.usersSocketList.get(senderId)?.emit('haveMuted', data);
 			  setTimeout(() => {
 				mutedUsers = this.listMutedUsers.get(channelId).filter(id => id != userId);
 				this.listMutedUsers.set(channelId, mutedUsers);
 			  }, 15 * 60 * 1000); // 15 minutes en millisecondes
 			}
 			else {
-				this.usersSocketList.get(senderId)?.emit('alreadyMuted', channelId);
+				this.usersSocketList.get(senderId)?.emit('alreadyMuted', data);
 			}
 		  } catch (error) {
 				throw error;

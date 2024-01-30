@@ -129,6 +129,27 @@ class SocketManager {
 				});
 			}
 		});
+
+		this.chatSocket.on(ChatEvents.muted, (data: any) => {
+			notify.newNotification("infos", {
+				message: 'You have been muted',
+				by: "on channel " + data.channelId,
+			});
+		});
+
+		this.chatSocket.on(ChatEvents.haveMuted, (data: any) => {
+			notify.newNotification("infos", {
+				message: 'You muted ' + data.userId, // replace by username
+				by: "on channel " + data.channelId,
+			});
+		});
+
+		this.chatSocket.on(ChatEvents.alreadyMuted, (data: any) => {
+			notify.newNotification("error", {
+				message: data.userId + " is already muted", // replace by username
+				by: "on channel " + data.channelId,
+			});
+		});
 	}
 
 	checkGame() {
