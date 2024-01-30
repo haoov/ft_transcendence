@@ -5,6 +5,6 @@ export interface TokenPayload {
 	twofaAuth?: boolean;
 }
 
-export interface UserValidate extends User{
+export interface UserValidate extends User {
 	first_connection: boolean,
 }
