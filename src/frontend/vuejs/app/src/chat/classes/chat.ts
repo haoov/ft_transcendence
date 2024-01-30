@@ -9,7 +9,8 @@ import {
 	type ChannelData
 } from "@/chat";
 import { reactive, ref, type Ref } from "vue";
-import type { User } from "@/utils";
+import { ChatEvents, type User } from "@/utils";
+import { socketManager } from "@/SocketManager";
 
 const apiChat: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat`;
 
@@ -113,12 +114,18 @@ class Chat {
 
 	updateChannel(channel: Channel, updatedParams: ChannelParams): void {
 		if (updatedParams.name === "" || updatedParams.name.length > 32)
+			return;
 		updatedParams.mode = channel.getMode();
 		updatedParams.creatorId = channel.getCreatorId();
 		updatedParams.messages = channel.getMessages();
 		updatedParams.users.push(...channel.getUsers());
 		console.log("[updating channel]", updatedParams);
 		axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams);
+	}
+
+	joinChannel(channel: ChannelData, user: User, password?: string) : void {
+		const pw = password ? password : "";
+		socketManager.emit("chat", ChatEvents.joinChannel, { channelId: channel.id, userId: user.id, password: pw });
 	}
 
 	channelUpdate(data: ChannelData) {

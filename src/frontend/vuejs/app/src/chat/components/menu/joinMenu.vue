@@ -12,6 +12,10 @@
 	const search: Ref<string> = ref('');
 	const result: Ref<ChannelData> = ref({} as ChannelData);
 	const searchResults = computed((): ChannelData[] => {
+		if (result.value.name == search.value) {
+			return [result.value];
+		}
+		else
 		if (search.value.length == 0) { 
 			return [];
 		}
@@ -25,6 +29,7 @@
 	function selectChannel(channel: ChannelData) {
 		emit('selectChannel', channel);
 		search.value = channel.name;
+		result.value = channel;
 	}
 
 
@@ -107,29 +112,13 @@
 				font-size: small;
 				color: var(--c-black-light);
 				cursor: pointer;
-				transition: all 0.3s ease-in-out;
 
 				&:hover {
 					background-color: var(--c-black-light);
 					color: var(--c-grey);
-					border: var(--c-grey-light) 1px solid;
-					animation: border-animation 5s infinite;
+					border: var(--c-pink) 1px solid;
 				}
-
-				@keyframes border-animation {
-					0% {
-						border: var(--c-pink) 1px solid;
-					}
-					50% {
-						border: var(--c-teal) 1px solid;
-					}
-					100% {
-						border: var(--c-pink) 1px solid;
-					}
-				}
-			
 			}
-
 		}
 	}
 </style>

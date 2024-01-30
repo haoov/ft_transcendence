@@ -107,6 +107,12 @@ class SocketManager {
 			chat.channelUpdate(data);
 		});
 
+		this.chatSocket.on(ChatEvents.channelJoined, (data: {channel: ChannelData, passCheck: boolean}) => {
+			const passCheck : boolean = data.passCheck;
+			const channel : Channel = new Channel(data.channel);
+			chat.addChannel(channel);
+		});
+
 		this.chatSocket.on(ChatEvents.kicked, (data: ChannelData) => {
 			const channel = chat.getChannel(data.id);
 			if (channel) {
