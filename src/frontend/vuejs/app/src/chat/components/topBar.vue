@@ -14,7 +14,7 @@ import notify from '@/notify/notify';
 	}
 
 	async function deleteChannel() {
-		notify.newNotification('infos', {
+		notify.newNotification("warning", {
 			message: "Are you shure ?",
 			by: `Delete channel ${props.channel?.getTitle(socketManager.getUser())}`,
 			autoClose: false,
