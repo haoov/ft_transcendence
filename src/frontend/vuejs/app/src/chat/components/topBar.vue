@@ -35,6 +35,29 @@ import notify from '@/notify/notify';
 		});
 		actionsMenu.value = false;
 	}
+
+	async function leaveChannel() {
+		notify.newNotification("warning", {
+			message: "Are you shure ?",
+			by: `Leave channel ${props.channel?.getTitle(socketManager.getUser())}`,
+			autoClose: false,
+			buttons: [
+				{
+					text: "Yes",
+					action: () => {
+						if (props.channel == undefined)
+							return;
+						chat.leaveChannel(props.channel);
+					}
+				},
+				{
+					text: "No",
+					action: () => {}
+				}
+			]
+		});
+		actionsMenu.value = false;
+	}
 </script>
 
 <template>
@@ -59,7 +82,9 @@ import notify from '@/notify/notify';
 						v-on:click="setMenu('settings')">
 						Edit
 					</div>
-					<div>Leave</div>
+					<div
+						v-on:click="leaveChannel()">Leave
+					</div>
 					<div
 						v-on:click="deleteChannel()">
 						Delete

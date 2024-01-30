@@ -66,53 +66,6 @@ export class ChatService {
 		}
 	}
 
-	//Permet de recuperer les channels qui ne sont ni prives ni secret et qui ne sont pas deja dans la liste des channels de l'utilisateur
-	// async getJoinableChannels(userId: number): Promise<Channel []> {
-	// 	let channels: Channel [] = [];
-	// 	const alreadyJoinedChannels = await this.channelRepository
-	// 	.createQueryBuilder("channel")
-	// 	.innerJoin("channel.users", "user", "user.id = :userId", { userId })
-	// 	.getMany();
-	// 	if (alreadyJoinedChannels.length === 0) {
-	// 		channels = await this.channelRepository
-	// 		.createQueryBuilder("channel")
-	// 		.leftJoin("channel.users", "user")
-	// 		.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
-	// 		.andWhere("user.id != :userId", { userId })
-	// 		.getMany();
-	// 	} else {
-	// 		channels = await this.channelRepository
-	// 		.createQueryBuilder("channel")
-	// 		.where("channel.mode IN (:...modes)", { modes: ['Public', 'Protected'] })
-	// 		.andWhere("channel.id NOT IN (:...alreadyJoinedChannelIds)", { alreadyJoinedChannelIds: alreadyJoinedChannels.map(channel => channel.id) })
-	// 		.getMany();
-	// 	}
-	// 	return channels;
-	// }
-
-	//Permet de créer un channel dans la base de données
-	// async createChannel(channel: any): Promise<Channel> {
-	// 	const users : User [] = [];
-	// 	for (const idUser of channel.users) {
-	// 		const newUser = await this.userRepository.findOneBy({ id: idUser }) as User;
-	// 		users.push(newUser);
-	// 	}
-	// 	const newChannel : ChannelEntity = createChannelObj(channel, users);
-	// 	this.channelRepository.create(newChannel);
-	// 	return await this.channelRepository.save(newChannel) as Channel;
-	// }
-
-	//Permet de mettre à jour un channel
-	// async updateChannel(channel: Channel): Promise<Channel> {
-	// 	const newChannel = await this.channelRepository.findOne({ where: { id: channel.id }, relations: ["users"]});
-	// 	newChannel.name = channel.name;
-	// 	newChannel.creatorId = channel.creatorId;
-	// 	newChannel.mode = channel.mode;
-	// 	newChannel.password = channel.password;
-	// 	await this.channelRepository.save(newChannel);
-	// 	return newChannel;
-	// }
-
 	//Add a user to a channel
 	async addUserToChannel(channelId: number, userId: number): Promise<boolean> {
 		try {
@@ -143,19 +96,6 @@ export class ChatService {
 			throw err;
 		}
 	}
-
-	// //Delete a channel
-	// async deleteChannel(channelId: number): Promise<boolean> {
-	// 	try {
-	// 		const messages = await this.messagesRepository.find({ where: { channelId: channelId }});
-	// 		await this.messagesRepository.remove(messages);
-	// 		const channel = await this.channelRepository.findOne({ where: { id: channelId }, relations: ["users"]});
-	// 		await this.channelRepository.remove(channel);
-	// 		return true;
-	// 	} catch (err) {
-	// 		throw err;
-	// 	}
-	// }
 
 	/*----------------------------------------------------------------------------*/
 	/*                                      RAPH                                  */
