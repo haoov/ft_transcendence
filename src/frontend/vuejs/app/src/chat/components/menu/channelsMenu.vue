@@ -1,11 +1,12 @@
 <script setup lang="ts">
 	import { chat, type ChannelParams, type ChannelData } from '@/chat'
 	import { socketManager } from '@/SocketManager';
-	import { reactive, ref, type Ref } from 'vue';
+	import { computed, reactive, ref, type Ref } from 'vue';
 	import v_selector from '@/components/selector.vue';
 	import v_joinMenu from '@/chat/components/menu/joinMenu.vue';
 	import v_addUsers from '@/chat/components/menu/addUsers.vue';
 	import type { User } from '@/utils';
+import notify from '@/notify/notify';
 
 	const subMenu: Ref<string> = ref('Create');
 	const channelParams: ChannelParams = reactive({
@@ -44,6 +45,9 @@
 			chat.createChannel(channelParams);
 		}
 		else if (subMenu.value == 'Join') {
+			if (!channelTOJoin) {
+				notify.newNotification('error', {message:'You must select a channel to join'});
+			}
 			chat.joinChannel(channelTOJoin, socketManager.getUser());
 		}
 		chat.setChatMenu('none');
@@ -188,5 +192,11 @@
 		padding: 12px 16px;
 		cursor: pointer;
 		border-radius: 6px;
+
+		&:hover:not(:disabled) {
+			background-color: var(--c-grey-light);
+			color: var(--c-black-light);
+			border: 1px solid var(--c-pink);
+		}
 	}
 </style>
