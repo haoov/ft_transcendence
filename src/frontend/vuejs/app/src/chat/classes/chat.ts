@@ -32,11 +32,16 @@ class Chat {
 	}
 
 	removeChannel(id: number) {
-		const index = this.userChannels.findIndex(
+		let index = this.userChannels.findIndex(
 			(channel) => channel.getId() == id
 		);
 		if (index != -1)
 			this.userChannels.splice(index, 1);
+		index = this.activeChannels.findIndex(
+			(channel) => channel.getId() == id
+		);
+		if (index != -1)
+			this.activeChannels.splice(index, 1);
 	}
 
 	getUserChannels(): Channel[] {

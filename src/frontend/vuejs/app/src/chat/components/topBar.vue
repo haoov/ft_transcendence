@@ -14,10 +14,25 @@ import notify from '@/notify/notify';
 	}
 
 	async function deleteChannel() {
-		if (props.channel == undefined)
-			return;
-		if (await chat.deleteChannel(props.channel) == false)
-			return;
+		notify.newNotification('infos', {
+			message: "Are you shure ?",
+			by: `Delete channel ${props.channel?.getTitle(socketManager.getUser())}`,
+			autoClose: false,
+			buttons: [
+				{
+					text: "Yes",
+					action: () => {
+						if (props.channel == undefined)
+							return;
+						chat.deleteChannel(props.channel);
+					}
+				},
+				{
+					text: "No",
+					action: () => {}
+				}
+			]
+		});
 		actionsMenu.value = false;
 	}
 </script>

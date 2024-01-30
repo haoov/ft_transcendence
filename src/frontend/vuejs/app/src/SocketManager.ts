@@ -110,6 +110,13 @@ class SocketManager {
 			chat.channelUpdate(data);
 		});
 
+		this.chatSocket.on("channelDeleted", (data: number) => {
+			chat.removeChannel(data);
+			notify.newNotification("success", {
+				message: 'Channel deleted',
+			});
+		})
+
 		this.chatSocket.on(ChatEvents.kicked, (data: ChannelData) => {
 			const channel = chat.getChannel(data.id);
 			if (channel) {
