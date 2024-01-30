@@ -1,5 +1,4 @@
 import { User } from "src/user/user.interface";
-import { inherits } from "util";
 
 export interface TokenPayload {
 	id: number;

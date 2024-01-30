@@ -8,7 +8,6 @@ import { toDataURL } from 'qrcode'
 import { JwtService } from "@nestjs/jwt";
 import { TokenPayload, UserValidate } from "./auth.interface";
 import { UserEntity } from "src/postgreSQL/entities";
-import { use } from "passport";
 
 @Injectable()
 export class AuthService {

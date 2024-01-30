@@ -18,23 +18,31 @@ export class AuthController {
 
 	@Get()
 	@UseGuards(Jwt2faGuard)
-	checkAuth(@Req() req: Request){
-		console.log(req.user);
-		return { "status": "ok" };
+	checkAuth(){
+		return { "is_logged": true };
 	}
 
 	@Get("login")
 	@UseGuards(Intra42Guard)
 	async login(@Res() res: Response): Promise<Response> {
    		return res.status(200).send({
-			"status": "login"
+			"login_status": true
+		});
+	}
+
+	@Get("logout")
+	@UseGuards(JwtAuthGuard)
+	logout(@Res() res: Response) {
+		res.setHeader('Set-Cookie', this.authService.getCookieForLogout());
+		res.clearCookie("connect.sid");
+   		return res.status(200).send({
+			"login_status": false
 		});
 	}
 
 	@Get("42-redirect")
 	@UseGuards(Intra42Guard)
 	async redirect(@Req() req: Request, @Res() res: Response) {
-		console.log(req.user);
 		const user: User = await this.userService.getUserById((req.user as User).id);
 		const cookie = this.authService.getCookieWithJwtToken(user.id);
 		res.setHeader('Set-Cookie', cookie);
@@ -70,17 +78,17 @@ export class AuthController {
 		await this.userService.set2faMode(user.id, true);
 		const accessTokenCookie = this.authService.getCookieWithJwtAccessToken(user.id, true);
 		req.res.setHeader('Set-Cookie', [accessTokenCookie]);
-		return { "2fa_status": "on" };
+		return { "twofa_status": true };
 	}
 
 	@Post('2fa/turn-off')
 	@UseGuards(JwtAuthGuard)
-	async swithOff2fa(@Req() req: Request, @Body() body: Body2faDTO) {
+	async swithOff2fa(@Req() req: Request) {
 		const user = await this.userService.getUserById((req.user as User).id);
 		if (!user.twofa_enabled)
 			throw new UnauthorizedException('2fa already off');
 		await this.userService.set2faMode(user.id, false);
-		return { "2fa_status": "off" };
+		return { "twofa_status": false };
 	}
 
 	@Get('2fa/generate')
@@ -111,31 +119,6 @@ export class AuthController {
 			throw new UnauthorizedException('Wrong Auth Code');
 		const accessTokenCookie = this.authService.getCookieWithJwtAccessToken(user.id, true);
 		req.res.setHeader('Set-Cookie', [accessTokenCookie]);
-		return { "message": "2fa logged"}
-	}
-
-	@Get("2fa/test")
-	@UseGuards(JwtAuthGuard)
-	async random() {
-		return { 'message': `logged with 2fa` }; 
-	}
-
-	@Get('2fa/reset')
-	@UseGuards(JwtAuthGuard)
-	async reset(@Req() req: Request) {
-		const user: User = req.user as User;
-		await this.userService.set2faMode(user.id, false);
-		return { "2fa_status": "reset" };
-
-	}
-
-	@Get("logout")
-	@UseGuards(JwtAuthGuard)
-	logout(@Req() req: Request, @Res() res: Response) {
-		res.setHeader('Set-Cookie', this.authService.getCookieForLogout());
-		res.clearCookie("connect.sid");
-   		return res.status(200).send({
-			"status": "logout"
-		});
+		return { "twofa_logged": true}
 	}
 }
