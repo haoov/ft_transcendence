@@ -6,6 +6,7 @@
 	import v_profileMenu from './profileMenu.vue'
 	import type { User, UserRelation } from '@/utils';
 	import { ref, type Ref } from 'vue';
+	import eventBus from '@/composables/eventBus'
 
 	const props = defineProps<{channel: Channel | undefined}>();
 	const selectedUser: Ref<UserRelation | undefined> = ref<UserRelation>();
@@ -13,6 +14,10 @@
 		selectedUser.value = user;
 		chat.setChatMenu('profile');
 	}
+
+	eventBus.on('selectUser', (user) => {
+		selectUser(user);
+	});
 </script>
 
 <template>
@@ -40,12 +45,14 @@
 					v-on:selectUser="selectUser">
 				</v_usersMenu>
 			</Suspense>
-			<v_profileMenu
-				v-if="chat.getChatMenu().value == 'profile' && channel && selectedUser"
-				v-on:click.stop
-				:user="selectedUser"
-				:channel="channel">
-			</v_profileMenu>
+			<Suspense>
+				<v_profileMenu
+					v-if="chat.getChatMenu().value == 'profile' && channel && selectedUser"
+					v-on:click.stop
+					:user="selectedUser"
+					:channel="channel">
+				</v_profileMenu>
+			</Suspense>
 		</div>
 	</Transition>
 </template>

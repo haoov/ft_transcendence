@@ -30,14 +30,15 @@
 			channelId: props.channel.getId(),
 			userId: userRef.value.id,
 		});
+		chat.setChatMenu('none');
 	}
 	
 	function mute() {
-		console.log('Mute User');
 		socketManager.emit('chat', ChatEvents.muteUser, {
 			channelId: props.channel.getId(),
 			userId: userRef.value.id,
 		});
+		chat.setChatMenu('none');
 	}
 
 	function kick() {
@@ -45,6 +46,7 @@
 			channelId: props.channel.getId(),
 			userId: userRef.value.id,
 		});
+		chat.setChatMenu('none');
 	}
 
 	function ban() {
@@ -52,11 +54,12 @@
 			channelId: props.channel.getId(),
 			userId: userRef.value.id,
 		});
+		chat.setChatMenu('none');
 	}
 
 	function profile() {
-		router.push(`/${userRef.value.username}`);
 		chat.setChatMenu('none');
+		router.push(`/${userRef.value.username}`);
 	}
 
 	function play() {
@@ -65,13 +68,11 @@
 	}
 
 	async function block() {
-		chat.setChatMenu('none');
 		await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block?id=${userRef.value.id}`)
 			.catch( (err) => { console.log(err) });
 	}
 
 	async function unblock() {
-		chat.setChatMenu('none');
 		await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/unblock?id=${userRef.value.id}`)
 			.catch( (err) => { console.log(err) });
 	}

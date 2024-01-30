@@ -2,15 +2,32 @@
 	import { chat, type Channel, type ChatMenu } from '@/chat';
 	import { socketManager } from '@/SocketManager';
 	import actionsIcon from '@/assets/images/actionsIcon.png';
-	import { ref, type Ref } from 'vue';
-import notify from '@/notify/notify';
+	import { ref, type Ref, watchEffect } from 'vue';
+	import type { User, UserRelation } from '@/utils';
+	import eventBus from '@/composables/eventBus';
 
-	const props = defineProps<{channel: Channel | undefined}>();
+	const props = defineProps<{channel: Channel}>();
 	const actionsMenu: Ref<boolean> = ref<boolean>(false);
+	const userRelations = ref<UserRelation[]>(await chat.getChannelRelations(props.channel));
+	const me = ref<User>(socketManager.getUser());
+
+	watchEffect(async () => {
+		const channelRelations = await chat.getChannelRelations(props.channel);
+		userRelations.value = channelRelations;
+	});
 
 	function setMenu(menu: ChatMenu) {
 		chat.setChatMenu(menu);
 		actionsMenu.value = false;
+	}
+
+	async function clickOnAction() {
+		if (props.channel && props.channel.getMode() == "Private") {
+			const otherUser = userRelations.value.find((user) => user.id != me.value.id);
+			eventBus.emit('selectUser', otherUser);
+		} 
+		else 
+			actionsMenu.value = !actionsMenu.value
 	}
 
 	async function deleteChannel() {
@@ -31,7 +48,7 @@ import notify from '@/notify/notify';
 		<div id="actions">
 			<img id="actionsIcon"
 				:src="actionsIcon"
-				v-on:click="actionsMenu = !actionsMenu">
+				v-on:click="clickOnAction()">
 			<Transition id="showActions"
 				name="showActions">
 				<div id="actionsList"

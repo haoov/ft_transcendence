@@ -16,7 +16,7 @@ router.beforeEach((to) => {
 			async () => {
 				if (socketManager.getUser().id == undefined) {
 					console.log("init socket");
-					socketManager.initSocket();
+				 await socketManager.initSocket();
 				}
 			},
 			() => {
