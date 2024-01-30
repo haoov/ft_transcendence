@@ -1,4 +1,4 @@
-import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
 import { Socket } from 'socket.io'
 import { User } from 'src/user/user.interface';
 import { clientEvents, serverEvents } from '../game/enum/events.enum';
@@ -13,36 +13,23 @@ import { Inject, forwardRef } from '@nestjs/common';
 export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private usersSockets: Map<number, Socket[]>;
 	
-	constructor(	private readonly userService: UserService,
-								@Inject(forwardRef(() => GameGateway)) private readonly gameGateway: GameGateway) {
+	constructor(private readonly userService: UserService) {
 		this.usersSockets = new Map<number, Socket[]>();
 	}
 
-	handleConnection(client: Socket) {
-		client.on(clientEvents.connected, async (user: User) => {
-			client.data.user = user;
-			const socketIds: Socket[] = this.usersSockets.get(user.id);
-			if (socketIds)
-				socketIds.push(client);
-			else
-				this.usersSockets.set(user.id, [client]);
-			const updatedUser = await this.userService.updateUserStatus(user, userStatus.online);
-			this.dataChanged(updatedUser);
-			console.log("user connection: " + user.username);
-		});
-		// Handle ping/pong
-		let timeout: NodeJS.Timeout;
-		const interval = setInterval(() => {
-			client.emit(serverEvents.ping, {});
-			timeout = setTimeout(() => {
-			  clearInterval(interval);
-			}, 1000);
-	  
-		}, 120000);
-		client.on(clientEvents.pong, () => {
-			clearTimeout(timeout);
-		});
+	handleConnection() {}
 
+	@SubscribeMessage('userConnected')
+	async onUserConnected(@ConnectedSocket() client: Socket, @MessageBody() user: User) {
+		client.data.user = user;
+		const socketIds: Socket[] = this.usersSockets.get(user.id);
+		if (socketIds)
+			socketIds.push(client);
+		else
+			this.usersSockets.set(user.id, [client]);
+		const updatedUser = await this.userService.updateUserStatus(user, userStatus.online);
+		this.dataChanged(updatedUser);
+		console.log("user connection: " + user.username);
 	}
 
 	async handleDisconnect(client: Socket) {

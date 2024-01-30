@@ -8,7 +8,6 @@
 	<div class="chat body">
 		<navigationBar></navigationBar>
 		<Chat></Chat>
-		<v_chat></v_chat>
 	</div>
 </template>
 

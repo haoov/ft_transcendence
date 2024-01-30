@@ -1,9 +1,7 @@
 <script setup lang="ts">
-	import { inject } from 'vue';
-	import type { SocketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 	import gameData from '../gameData';
 
-	const socketManager: SocketManager = inject("socketManager") as SocketManager;
 	function getSpells() {
 		const username: string = socketManager.getUser().username;
 		return gameData.getCurrentPlayer(username).value.spells;

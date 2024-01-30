@@ -8,7 +8,7 @@ import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
 import { type UserStat, type User, type GameStat, ServerEvents } from "@/utils";
 import { computed, inject, onMounted, ref } from "vue";
-import { type SocketManager } from "@/SocketManager";
+import { socketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
 
 const router = useRouter();
@@ -22,7 +22,6 @@ const options = ['All', 'Friends'];
 const selectedOption = ref('All');
 
 const $data : any = inject('$data');
-const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 const playersDisplayed = computed(() => {
 		if (search.value.length === 0) {

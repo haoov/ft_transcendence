@@ -12,8 +12,10 @@ import { updateUsernameDto } from "./dto/updateUsername.dto";
 @Controller("user")
 @UseGuards(Jwt2faGuard)
 export class UserController {
-	constructor(private readonly userService: UserService,
-				private readonly userGateway: UserGateway) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly userGateway: UserGateway
+	) {}
 
 	@Get()
 	async getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
@@ -55,6 +57,20 @@ export class UserController {
 			throw err;
 		
 		}
+	}
+
+	@Put("block")
+	async blockUser(@Req() req: Request, @Query("id") id: number) {
+		const user = req.user as User;
+		await this.userService.blockUser(user.id, id);
+		this.userGateway.dataChanged(user);
+	}
+
+	@Put("unblock")
+	async unblockUser(@Req() req: Request, @Query("id") id: number) {
+		const user = req.user as User;
+		await this.userService.unblockUser(user.id, id);
+		this.userGateway.dataChanged(user);
 	}
 	
 	@Get("block")
@@ -151,5 +167,12 @@ export class UserController {
 		catch (err) {
 			throw err;
 		}
+	}
+
+	@Put('/update/status')
+	async updateStatus(@Query('id') userId: number, @Query("status") status: string) {
+		const user = await this.userService.getUserById(userId);
+		await this.userService.updateUserStatus(user, status);
+		this.userGateway.dataChanged(user);
 	}
 }
