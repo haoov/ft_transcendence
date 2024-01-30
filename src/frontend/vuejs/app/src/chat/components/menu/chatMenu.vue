@@ -39,9 +39,10 @@
 				v-on:selectUser="selectUser">
 			</v_usersMenu>
 			<v_profileMenu
-				v-if="chat.getChatMenu().value == 'profile' && selectedUser"
+				v-if="chat.getChatMenu().value == 'profile' && channel && selectedUser"
 				v-on:click.stop
-				:user="selectedUser">
+				:user="selectedUser"
+				:channel="channel">
 			</v_profileMenu>
 		</div>
 	</Transition>

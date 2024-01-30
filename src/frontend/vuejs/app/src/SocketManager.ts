@@ -1,16 +1,14 @@
-import { ClientEvents, ServerEvents, type User } from "@/utils";
+import { ChatEvents, ClientEvents, ServerEvents, type User } from "@/utils";
 import axios from "axios";
 import { Socket, io } from "socket.io-client";
 import notify from "./notify/notify";
 import router from "./router";
 import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
-import { chat, Channel, type MessageData, type ChannelData, type ChatEvents } from "@/chat";
+import { chat, Channel, type MessageData, type ChannelData } from "@/chat";
 import { type GameEvents } from "@/game/types";
 
 export type SocketType = "user" | "game" | "chat";
-
-export type SocketEvent = ChatEvents | GameEvents;
 
 class SocketManager {
 	private readonly userSocket: Socket;
@@ -39,7 +37,6 @@ class SocketManager {
 		});
 
 		this.userSocket.on(ServerEvents.ping, () => {
-			console.log("PONG");
 			this.userSocket.emit(ClientEvents.pong, {});
 		});
 
@@ -113,6 +110,54 @@ class SocketManager {
 			chat.channelUpdate(data);
 		});
 
+		this.chatSocket.on(ChatEvents.kicked, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been kicked from channel: ',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.banned, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been banned from channel: ',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.namedAdmin, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been named admin of channel: ',
+					by: channel.getName(),
+				});
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.muted, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been muted on channel: ',
+					by: channel.getName(),
+				});
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.errorManager, (error: string) => {
+			notify.newNotification("error", {
+				message: error,
+			});
+		});
+
 		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
 			const accept = async () => {
 				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${from.id}`);
@@ -142,6 +187,7 @@ class SocketManager {
 				});
 			}
 		});
+
 	}
 
 	checkGame() {
@@ -216,13 +262,12 @@ class SocketManager {
 		this.gameSocket.emit(ClientEvents.move, direction);
 	}
 
-	emit(socket: SocketType, event: SocketEvent, arg?: any) {
+	emit(socket: SocketType, event: string, arg?: any) {
 		if (socket == "user")
 			this.userSocket.emit(event, arg);
 		else if (socket == "game")
 			this.gameSocket.emit(event, arg);
 		else if (socket == "chat") {
-			console.log("[sending message]", arg)
 			this.chatSocket.emit(event, arg);
 		}
 	}

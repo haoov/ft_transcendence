@@ -16,6 +16,7 @@
 	});
 
 	const addableUsers: User[] = await chat.getAddableUsers(props.channel, socketManager.getUser());
+	console.log("[addable]", addableUsers);
 
 	const usersToAdd: Ref<User[]> = ref([]);
 	
@@ -97,21 +98,32 @@
 	}
 
 	#searchResults {
-		position: absolute;
-		display: flex;
-		flex-direction: column;
-		background-color: var(--c-grey);
-
-		.searchResult {
 			display: flex;
+			flex-direction: column;
+			width: 94%;
+			max-height: 160px;
+			overflow-y: auto;
 			align-items: center;
-			padding: 5px;
-			font-size: small;
-			color: var(--c-black-light);
-			width: 100px;
-			cursor: pointer;
+
+			.searchResult {
+				width: 90%;
+				background-color: var(--c-grey);
+				border-radius: 7px;
+				margin-top: 5px;
+				display: flex;
+				align-items: center;
+				padding: 5px;
+				font-size: small;
+				color: var(--c-black-light);
+				cursor: pointer;
+
+				&:hover {
+					background-color: var(--c-black-light);
+					color: var(--c-grey);
+					border: var(--c-pink) 1px solid;
+				}
+			}
 		}
-	}
 
 	#usersToAdd {
 		display: flex;

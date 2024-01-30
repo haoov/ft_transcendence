@@ -8,6 +8,13 @@ import Jwt2faGuard from "../auth/jwt-2fa/jwt-2fa.guard";
 import { UserGateway } from "src/user/user.gateway";
 import { ChatGateway } from "./chat.gateway";
 import { ChannelDTO, MessageDTO } from "./dto/chat.dto";
+import * as bcrypt from 'bcrypt';
+
+async function ft_encode(str: string): Promise<string> {
+	const saltOrRounds = 10;
+	const hash = await bcrypt.hash(str, saltOrRounds);
+	return hash;
+ }
 
 @UseGuards(Jwt2faGuard)
 @Controller('chat')
@@ -54,6 +61,8 @@ export class ChatController {
 	@Post('/channel')
 	async createChannel(@Body() channelDTO: ChannelDTO) {
 		try {
+			if (channelDTO.mode === 'Protected')
+				channelDTO.password = await ft_encode(channelDTO.password);
 			const channel: Channel = await this.chatService.createChannel(channelDTO);
 			this.chatGateway.newChannel(channel);
 		}
@@ -65,6 +74,8 @@ export class ChatController {
 	@Put('/channel')
 	async updateChannel(@Query('id') channelId: number, @Body() channelDTO: ChannelDTO) {
 		try {
+			if (channelDTO.mode === 'Protected')
+				channelDTO.password = await ft_encode(channelDTO.password);
 			const channel: Channel = await this.chatService.updateChannel(channelId, channelDTO);
 			this.chatGateway.channelUpdate(channel);
 		}
