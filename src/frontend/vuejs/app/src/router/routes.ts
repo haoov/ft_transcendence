@@ -1,8 +1,7 @@
 import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import GameView from "@/game/GameView.vue";
-import ChatView from "@/views/ChatView.vue";
-import Chat2View from "@/views/Chat2View.vue";
+import ChatView from "@/views/Chat2View.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import SettingView from "@/views/SettingView.vue";
 import PageNotFoundView from "@/views/PageNotFoundView.vue";
@@ -33,11 +32,6 @@ const routes = [
 		path: "/chat",
 		name: "chat",
 		component: ChatView,
-	},
-	{
-		path: "/chat2",
-		name: "chat2",
-		component: Chat2View,
 	},
 	{
 		path: "/settings",

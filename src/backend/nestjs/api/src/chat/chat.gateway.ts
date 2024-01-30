@@ -95,6 +95,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	newChannel(channel: Channel): void {
+		console.log(channel);
 		for (const user of channel.users) {
 			const sockets: Socket[] = this.userSockets.get(user.id);
 			if (sockets) {
