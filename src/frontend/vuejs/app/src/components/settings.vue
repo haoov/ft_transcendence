@@ -136,6 +136,9 @@ async function fetchMe() {
 			me.value = data.data;
 			usernameSet.value = data.data.username;
 			selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
+		})
+		.catch( (err) => {
+			console.log(err);
 		});
 }
 
@@ -267,6 +270,9 @@ function logout() {
 		.then(() => {
 			window.location.href = "/";
 		})
+		.catch((err) => {
+			notify.newNotification("error", {message: "An error occured!"})
+		});
 }
 
 onMounted(async () => {

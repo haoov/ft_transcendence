@@ -34,7 +34,6 @@ class SocketManager {
 		});
 
 		this.userSocket.on(ServerEvents.ping, () => {
-			console.log("PONG");
 			this.userSocket.emit(ClientEvents.pong, {});
 		});
 
@@ -123,7 +122,7 @@ class SocketManager {
 			const channel = chat.getChannel(data.id);
 			if (channel) {
 				notify.newNotification("infos", {
-					message: 'You have been ban from channel: ',
+					message: 'You have been banned from channel: ',
 					by: channel.getName(),
 				});
 				chat.removeChannel(channel.getId());
@@ -137,19 +136,24 @@ class SocketManager {
 					message: 'You have been named admin of channel: ',
 					by: channel.getName(),
 				});
-				chat.removeChannel(channel.getId());
 			}
 		});
 
-		this.chatSocket.on(ChatEvents.muteUser, (data: ChannelData) => {
+		this.chatSocket.on(ChatEvents.muted, (data: ChannelData) => {
 			const channel = chat.getChannel(data.id);
 			if (channel) {
 				notify.newNotification("infos", {
-					message: 'You have been muted of channel: ',
+					message: 'You have been muted on channel: ',
 					by: channel.getName(),
 				});
-				chat.removeChannel(channel.getId());
 			}
+		});
+
+		this.chatSocket.on(ChatEvents.alreadyMuted, (data: any) => {
+			notify.newNotification("error", {
+				message: data.userId + " is already muted", // replace by username
+				by: "on channel " + data.channelId,
+			});
 		});
 
 		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
@@ -181,6 +185,7 @@ class SocketManager {
 				});
 			}
 		});
+
 	}
 
 	checkGame() {

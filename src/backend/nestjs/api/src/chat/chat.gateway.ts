@@ -41,21 +41,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 // 	private listActiveChannel: Map<number, string> = new Map<number, string>();
 // 	private usersSocketList : Map<number, Socket> = new Map<number, Socket>();
 
-// 	handleConnection(socket: Socket) {
-// 		let lastActiveChannel : string;
-// 		//socket.emit('NewConnection');
-// 		socket.on('userConnected', async (user: any) => {
-// 			this.usersSocketList.set(user.id, socket);
-// 			const listChannel = await this.chatService.getCurrentUserChannels(user.id);
-// 			for (const channel of listChannel) {
-// 				socket.join(channel.id.toString());
-// 			}
-// 			lastActiveChannel = this.listActiveChannel.get(user.id);
-// 			const id = lastActiveChannel ? lastActiveChannel.toString() : "0";
-// 			socket.emit('lastActiveChannel', id);
-// 		});
-// 	}
-
 // 	handleDisconnect(socket: Socket) {
 // 		this.usersSocketList.forEach((value: Socket, key: number) => {
 // 			if (value === socket) {
@@ -69,16 +54,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 // 		const channelid = data.channelId;
 // 		const userId = data.currentUserId;
 // 		this.listActiveChannel.set(userId, channelid);
-// 	}
-
-// 	@SubscribeMessage('newMessage')
-// 	async onNewMessage(@MessageBody() message: any) {
-// 		const sender = await this.userService.getUserById(message.senderId);
-// 		const msg = await this.chatService.createMessage(message);
-// 		this.server.to(message.channelId.toString()).emit('newMessage', buildMsg(
-// 			sender,
-// 			msg
-// 		));
 // 	}
 
 // 	// @SubscribeMessage('createNewChannel')
@@ -159,13 +134,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 @WebSocketGateway({ namespace: 'chat' })
 export class ChatGateway implements OnGatewayConnection {
 
-	@WebSocketServer() server: Server;
+	@WebSocketServer() 
+	server: Server;
 	private readonly userSockets: Map<number, Socket[]>;
+	private listMutedUsers : Map<number, number[]>;
 
 	constructor(
 		@InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>,
 		 private readonly chatService: ChatService,) {
 		this.userSockets = new Map<number, Socket[]>();
+		this.listMutedUsers = new Map<number, number[]>();
 	}
 
 	handleConnection(@ConnectedSocket() client: Socket) {
@@ -234,13 +212,18 @@ export class ChatGateway implements OnGatewayConnection {
 	}
 
 	newMessage(message: Message, channel: Channel): void {
+		// Check if user is muted
+		const muted = this.listMutedUsers.get(channel.id);
+		if (muted && muted.includes(message.sender.id)) {
+			const sockets: Socket[] = this.userSockets.get(message.sender.id);
+			if (sockets) {
+				for (const socket of sockets) {
+					socket.emit('muted', channel);
+				}
+			}
+			return;
+		}
 		for (const user of channel.users) {
-			// const sockets: Socket[] = this.userSockets.get(user.id);
-			// if (sockets) {
-			// 	for (const socket of sockets) {
-			// 		socket.emit('newMessage', message);
-			// 	}
-			// }
 			this.server.to(channel.id.toString()).emit('newMessage', message);
 		}
 	}
@@ -295,4 +278,36 @@ export class ChatGateway implements OnGatewayConnection {
 		}
 	}
 
+	@SubscribeMessage('muteUser')
+	async onMuteUser(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+		try {
+			const channelId = data.channelId;
+			const userId = data.userId;
+			const channel: Channel = await this.chatService.getChannelById(channelId);
+		
+			let mutedUsers = this.listMutedUsers.get(channelId);
+			if (!mutedUsers) {
+			  mutedUsers = [];
+			}
+			if (!mutedUsers.includes(userId)) {
+				mutedUsers.push(userId);
+				this.listMutedUsers.set(channelId, mutedUsers);
+				const sockets: Socket[] = this.userSockets.get(userId);
+				if (sockets) {
+					for (const socket of sockets) {
+						socket.emit('muted', channel);
+					}
+				}
+				setTimeout(() => {
+					mutedUsers = this.listMutedUsers.get(channelId).filter(id => id != userId);
+					this.listMutedUsers.set(channelId, mutedUsers);
+				}, 15 * 60 * 1000); // 15 minutes en millisecondes
+			}
+			else {
+				client.emit('alreadyMuted', data);
+			}
+		  } catch (error) {
+				throw error;
+		  }
+	}
 }

@@ -44,7 +44,7 @@ export class GameService {
 		}
 		catch (err) {
 			// Cas d'erreurs
-			console.log("error in game")
+			console.log("Cannot create game")
 		}
 		return null;
 	}
