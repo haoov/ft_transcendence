@@ -137,16 +137,12 @@ class Chat {
 		);
 	}
 
-	async deleteChannel(channel: Channel): Promise<boolean> {
-		return await axios.delete(`${apiChat}/channel?id=${channel.getId()}`).then(
-			() => true,
-			(err) => {
-				notify.newNotification("error", {
-					message: err.response.data.message
-				});
-				return false;
-			}
-		);
+	async deleteChannel(channel: Channel): Promise<void> {
+		await axios.delete(`${apiChat}/channel?id=${channel.getId()}`)
+	}
+
+	async leaveChannel(channel: Channel): Promise<void> {
+		await axios.delete(`${apiChat}/channel/leave?id=${channel.getId()}`);
 	}
 
 	updateChannel(channel: Channel, updatedParams: ChannelParams): void {
@@ -168,6 +164,12 @@ class Chat {
 	channelUpdate(data: ChannelData) {
 		const index = this.userChannels.findIndex((c) => c.getId() == data.id);
 		if (index != -1) {
+			if (data.users.findIndex((u) => u.id == socketManager.getUser().id)) {
+				this.userChannels.splice(index, 1);
+				const activeIndex = this.activeChannels.findIndex((c) => c.getId() == data.id);
+				if (activeIndex != -1)
+					this.activeChannels.splice(activeIndex, 1);
+			}
 			const updatedChannel = new Channel(data);
 			updatedChannel.setMessages(this.userChannels[index].getMessages());
 			this.userChannels.splice(index, 1, updatedChannel);
