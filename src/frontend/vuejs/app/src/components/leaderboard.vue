@@ -10,6 +10,7 @@ import { type UserStat, type User, type GameStat, ServerEvents } from "@/utils";
 import { computed, inject, onMounted, ref } from "vue";
 import { socketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
+import { chat } from "@/chat";
 
 const router = useRouter();
 const players = ref<UserStat[]>([]);
@@ -193,9 +194,17 @@ function inviteToPlay(player: UserStat) {
 	}
 }
 
-function sendMessage(id : number) {
+function sendMessage(player: any) {
 	router.push(`/chat`);
-	$data.sendDirectMessage(id);
+	const user : User = {
+		id: player.id,
+		username: player.username,
+		email: player.email,
+		avatar:player.avatar,
+		status: player.status,
+		twofa_enabled: false,
+	};
+	chat.sendPrivateMessage(user);
 }
 
 onMounted(async () => {
@@ -335,7 +344,7 @@ onMounted(async () => {
 											<a v-if="player.id!=me?.id && !player.blocking" class="u-mr--8">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play" v-on:click="inviteToPlay(player)">
 											</a>
-											<a v-if="player.id!=me?.id && !player.blocking" @click="sendMessage(player.id)" target="_blank">
+											<a v-if="player.id!=me?.id && !player.blocking" @click="sendMessage(player)" target="_blank">
 												<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 											</a>
 										</div>

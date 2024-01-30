@@ -83,7 +83,7 @@ export class GameRenderer {
 	/*------------------------------------*/
 	/*      CONSTRUCTOR / INIT PHASE      */
 	/*------------------------------------*/
-	constructor(id: string, init: InitParams) {
+	constructor(id: string, init: InitParams, width: number, height: number) {
 		//init scene camera and renderer
 		this.container = document.getElementById(id) as HTMLDivElement;
 		this.scene = new th.Scene();
@@ -93,7 +93,7 @@ export class GameRenderer {
 		this.renderer = new th.WebGLRenderer();
 		this.renderer.shadowMap.enabled = true;
 		this.renderer.shadowMap.type = th.PCFSoftShadowMap;
-		this.renderer.setSize(init.window.WIDTH, init.window.HEIGHT);
+		this.renderer.setSize(width, height);
 		this.container.appendChild(this.renderer.domElement);
 
 		//init textures

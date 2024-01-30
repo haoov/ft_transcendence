@@ -5,11 +5,13 @@ import {
 	type ChannelParams,
 	type ChatMenu,
 	type MessageData,
-	type MessageParams,
 	type ChannelData
 } from "@/chat";
 import { reactive, ref, type Ref } from "vue";
 import type { User, UserRelation } from "@/utils";
+import { ChatEvents } from "@/utils";
+import { socketManager } from "@/SocketManager";
+import notify from "@/notify/notify";
 
 const apiChat: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat`;
 
@@ -64,7 +66,6 @@ class Chat {
 	async loadChannels(userId: number) {
 		const channels = await axios.get(`${apiChat}/channels`)
 		.then((response) => { return response.data });
-		console.log("[channels]", channels);
 		channels.forEach((channel: ChannelData) => {
 			const newChannel = new Channel(channel);
 			this.userChannels.push(newChannel);
@@ -90,12 +91,25 @@ class Chat {
 		}
 	}
 
-	sendMessage(params: MessageParams): void {
-		if (params.text === "" || params.text.length > 512)
+	sendPrivateMessage(User : User) {
+		const currentUser = socketManager.getUser();
+		const channelName = `#${currentUser.id}#${User.id}`;
+		const index = this.userChannels.findIndex((c) => c.getName() == channelName);
+		if (index != -1) {
+			const [channel] = this.userChannels.splice(index, 1);
+			this.userChannels.splice(0, 0, channel);
 			return;
-		const dateRawStamp : string = new Date().toISOString();
-		params.datestamp = dateRawStamp;
-		axios.post(`${apiChat}/message`, params);
+		} else {
+			const params: ChannelParams = {
+				name: channelName,
+				mode: "Private",
+				creatorId: currentUser.id,
+				messages: [],
+				users: [currentUser, User],
+				admins: [currentUser]
+			};
+			this.createChannel(params);
+		}
 	}
 
 	getChatMenu(): Ref<ChatMenu> {
@@ -106,19 +120,44 @@ class Chat {
 		this.chatMenu.value = menu;
 	}
 
-	createChannel(params: ChannelParams): void {
-		console.log("[creating channel]", params);
-		axios.post(`${apiChat}/channel`, params);
+	async createChannel(params: ChannelParams): Promise<boolean> {
+		return await axios.post(`${apiChat}/channel`, params).then(
+			() => true,
+			(err) => {
+				notify.newNotification("error", {
+					message: err.response.data.message
+				});
+				return false;
+			}
+		);
+	}
+
+	async deleteChannel(channel: Channel): Promise<boolean> {
+		return await axios.delete(`${apiChat}/channel?id=${channel.getId()}`).then(
+			() => true,
+			(err) => {
+				notify.newNotification("error", {
+					message: err.response.data.message
+				});
+				return false;
+			}
+		);
 	}
 
 	updateChannel(channel: Channel, updatedParams: ChannelParams): void {
 		if (updatedParams.name === "" || updatedParams.name.length > 32)
+			return;
 		updatedParams.mode = channel.getMode();
 		updatedParams.creatorId = channel.getCreatorId();
 		updatedParams.messages = channel.getMessages();
+		updatedParams.admins = channel.getAdmins();
 		updatedParams.users.push(...channel.getUsers());
-		console.log("[updating channel]", updatedParams);
 		axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams);
+	}
+
+	joinChannel(channel: ChannelData, user: User, password?: string) : void {
+		const pw = password ? password : "";
+		socketManager.emit("chat", ChatEvents.joinChannel, { channelId: channel.id, userId: user.id, password: pw });
 	}
 
 	channelUpdate(data: ChannelData) {
@@ -137,8 +176,7 @@ class Chat {
 		let response: AxiosRequestConfig<User[]>;
 		if (channel) {
 			response = await axios.get(`${apiChat}/channel/addable?id=${channel.getId()}&userId=${user.id}`);
-		}
-		else {
+		} else {
 			response = await axios.get(`${apiChat}/channel/addable?userId=${user.id}`);
 		}
 		if (response.data)

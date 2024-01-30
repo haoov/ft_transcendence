@@ -1,24 +1,27 @@
 <script setup lang="ts">
 	import { chat, type ChannelParams, type ChannelData } from '@/chat'
 	import { socketManager } from '@/SocketManager';
-	import { ref, type Ref } from 'vue';
+	import { reactive, ref, type Ref } from 'vue';
 	import v_selector from '@/components/selector.vue';
 	import v_joinMenu from '@/chat/components/menu/joinMenu.vue';
 	import v_addUsers from '@/chat/components/menu/addUsers.vue';
 	import type { User } from '@/utils';
 
 	const subMenu: Ref<string> = ref('Create');
-	const channelParams: ChannelParams = {
+	const channelParams: ChannelParams = reactive({
 		name: '',
 		mode: 'Public',
 		creatorId: socketManager.getUser().id,
+		password: '',
 		users: [socketManager.getUser()],
-	}
+		admins: [socketManager.getUser()],
+	});
 
 	let channelTOJoin: ChannelData;
 
-	function createChannel() {
-		chat.createChannel(channelParams);
+	async function createChannel() {
+		if (await chat.createChannel(channelParams) == false)
+			return;
 		chat.setChatMenu('none');
 	}
 
@@ -34,6 +37,16 @@
 
 	function channelSelected(channel: ChannelData) {
 		channelTOJoin = channel;
+	}
+
+	function submitButton() {
+		if (subMenu.value == 'Create') {
+			chat.createChannel(channelParams);
+		}
+		else if (subMenu.value == 'Join') {
+			chat.joinChannel(channelTOJoin, socketManager.getUser());
+		}
+		chat.setChatMenu('none');
 	}
 </script>
 
@@ -69,6 +82,16 @@
 					placeholder="Channel Name"
 					v-model="channelParams.name">
 			</label>
+			<label class="inputLabel"
+				v-if="channelParams.mode == 'Protected'">
+				Password :
+				<input id="channelName"
+					class="channelInput"
+					type="text"
+					autocomplete="off"
+					placeholder="Channel Name"
+					v-model="channelParams.password">
+			</label>
 			<Suspense>
 				<v_addUsers
 					:channelParams="channelParams"
@@ -86,7 +109,7 @@
 			</v_joinMenu>
 		</Suspense><!--END JOIN CHANNEL-->
 		<button id="submitButton"
-			v-on:click="createChannel()">
+			v-on:click="submitButton()">
 			{{ subMenu }}
 		</button>
 	</div> <!--END CHANNELS MENU-->
