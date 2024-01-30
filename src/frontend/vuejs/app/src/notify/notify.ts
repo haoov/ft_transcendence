@@ -1,6 +1,6 @@
 import { reactive } from "vue";
 import type { Notification, NotificationParams, NotificationType } from "./interfaces";
-import { success, error, infos } from "../assets/images/notifyIcons";
+import { success, error, infos, warning } from "../assets/images/notifyIcons";
 
 const notifications: Notification[] = reactive<Notification[]>([]);
 
@@ -104,6 +104,30 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 					}
 				}
 			] : undefined;
+			case "warning":
+				notification.message = params?.message || "Infos";
+				notification.type = "infos";
+				notification.by = params?.by;
+				notification.autoClose = (params?.autoClose != undefined ? params.autoClose : true);
+				notification.timeout = params?.timeout || 3000;
+				notification.timeOutBar = params?.timeOutBar || false;
+				notification.icon = warning;
+				notification.buttons = params?.buttons ? [
+					{
+						text: params?.buttons?.[0].text || "ok",
+						action: () => {
+							params?.buttons?.[0].action();
+							removeNotification(notification.id);
+						}
+					},
+					{
+						text: params?.buttons?.[1].text || "cancel",
+						action: () => {
+							params?.buttons?.[1].action();
+							removeNotification(notification.id);
+						}
+					}
+				] : undefined;
 			break;
 		default: break;
 	}
