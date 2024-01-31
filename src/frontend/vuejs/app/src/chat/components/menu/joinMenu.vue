@@ -145,6 +145,13 @@
 					color: var(--c-grey);
 					border: var(--c-pink) 1px solid;
 				}
+				
+				.channelResult {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				width: 100%;
+			}
 			}
 
 			.selected {
