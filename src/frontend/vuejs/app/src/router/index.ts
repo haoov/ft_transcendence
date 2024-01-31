@@ -13,12 +13,7 @@ router.beforeEach((to) => {
 		axios(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth`, {
 			method: "get",
 		}).then(
-			async () => {
-				if (socketManager.getUser().id == undefined) {
-					console.log("init socket");
-					socketManager.initSocket();
-				}
-			},
+			async () => {},
 			() => {
 				router.push("/login");
 			}

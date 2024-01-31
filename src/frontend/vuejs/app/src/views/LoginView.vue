@@ -1,6 +1,7 @@
 <script setup lang="ts">
 	import mainTitle from '../components/mainTitle.vue'
 	import auth from '../components/42auth.vue'
+	import v_notify from '../notify/components/notify.vue'
 </script>
 
 <template>
@@ -9,6 +10,7 @@
 		<div class="login wrapper">
 				<auth></auth>
 		</div>
+		<v_notify></v_notify>
 	</div>
 </template>
 

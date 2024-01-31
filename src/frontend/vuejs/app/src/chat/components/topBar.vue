@@ -73,7 +73,8 @@ import notify from '@/notify/notify';
 			<Transition id="showActions"
 				name="showActions">
 				<div id="actionsList"
-					v-if="actionsMenu">
+					v-if="actionsMenu"
+					v-on:mouseleave="actionsMenu = false">
 					<div id="userButton"
 						v-on:click="setMenu('users')">
 						Users
