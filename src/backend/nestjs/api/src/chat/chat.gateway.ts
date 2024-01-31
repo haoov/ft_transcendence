@@ -40,7 +40,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			console.log("chat disconnection");
 		}
 	}
-    
+
 	@SubscribeMessage('joinChannel')
 	async onJoinChannel(@MessageBody() channel: any) {
 		const idChannel = channel.channelId;
