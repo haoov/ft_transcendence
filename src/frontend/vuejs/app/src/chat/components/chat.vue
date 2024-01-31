@@ -7,6 +7,7 @@
 
 	const currentChannel: Ref<Channel | undefined> = ref<any>(chat.getChannels()[0]);
 	watch(chat.getChannels(), () => {
+		console.log('[CHANNELS CHANGED]', chat.getChannels());
 		if (currentChannel.value) {
 			const channel = chat.getChannel(currentChannel.value.getId());
 			if (channel)
@@ -14,6 +15,7 @@
 			else
 				currentChannel.value = chat.getChannels()[0];
 		}
+		console.log('[NEW CURRENT CHANNEL]', currentChannel.value);
 	})
 </script>
 
@@ -21,7 +23,7 @@
 	<!--CHAT-->
 	<div id="chat">
 		<v_sideBar
-			v-on:setCurrentChannel="(channel) => {currentChannel = channel}">
+			v-on:setCurrentChannel="(channel) => {currentChannel = channel; console.log('[channel changed]', currentChannel)}">
 		</v_sideBar>
 		<v_channel :channel="currentChannel"></v_channel>
 	</div><!--CHAT END-->

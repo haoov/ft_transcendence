@@ -173,6 +173,9 @@ export class ChatService {
 
 	async createChannel(channelDTO: ChannelDTO): Promise<Channel> {
 		let newChannel: Channel;
+		if (channelDTO.name.length == 0 || channelDTO.name.length > 32)
+			throw new ForbiddenException("Invalid channel name");
+		channelDTO.name = channelDTO.name.trim();
 		const channels: Channel[] = await this.channelRepository.find();
 		if (channelDTO.mode != "Secret") {
 			if (await this.channelRepository.findOne({
@@ -193,6 +196,20 @@ export class ChatService {
 		return updatedChannel;
 	}
 
+	async leaveChannel(channelId: number, userId: number): Promise<void> {
+		let channel: Channel= await this.channelRepository.createQueryBuilder("channel")
+		.where("channel.id = :channelId", { channelId })
+		.leftJoinAndSelect("channel.users", "users").getOne();
+		if (channel.creatorId == userId)
+			throw new ForbiddenException("You can't leave your own channel");
+		else if (channel.users.find((u) => u.id == userId)) {
+			channel.users.splice(channel.users.findIndex((u) => u.id == userId), 1);
+			channel = await this.channelRepository.save(channel);
+		}
+		else
+			throw new ForbiddenException("You are not in this channel");
+	}
+
 	async deleteChannel(channelId: number, userId: number): Promise<void> {
 		const channel: Channel = await this.channelRepository.createQueryBuilder("channel")
 		.where("channel.id = :channelId", { channelId })
@@ -200,7 +217,8 @@ export class ChatService {
 		if (channel.admins.find((a) => a.id == userId)) {
 			await this.channelRepository.remove(channel);
 		}
-		else throw new ForbiddenException("You must be administrator");
+		else
+			throw new ForbiddenException("You must be administrator");
 	}
 
 	async getUserChannels(userId: number): Promise<Channel[]> {
