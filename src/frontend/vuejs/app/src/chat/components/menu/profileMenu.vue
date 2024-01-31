@@ -8,6 +8,7 @@
 	import offline from '@/assets/images/status-offline-32.png';
 	import online from '@/assets/images/status-online-32.png';
 	import playing from '@/assets/images/status-playing-32.png';
+	import returnIcon from '@/assets/images/return-arrow-50.png';
 	import { socketManager } from '@/SocketManager';
 	import router from '@/router';
 	import { Channel, chat } from '@/chat';
@@ -30,14 +31,15 @@
 			channelId: props.channel.getId(),
 			userId: userRef.value.id,
 		});
+		chat.setChatMenu('none');
 	}
 	
 	function mute() {
-		console.log('Mute User');
 		socketManager.emit('chat', ChatEvents.muteUser, {
 			channelId: props.channel.getId(),
 			userId: userRef.value.id,
 		});
+		chat.setChatMenu('none');
 	}
 
 	function kick() {
@@ -45,6 +47,7 @@
 			channelId: props.channel.getId(),
 			userId: userRef.value.id,
 		});
+		chat.setChatMenu('none');
 	}
 
 	function ban() {
@@ -52,11 +55,12 @@
 			channelId: props.channel.getId(),
 			userId: userRef.value.id,
 		});
+		chat.setChatMenu('none');
 	}
 
 	function profile() {
-		router.push(`/${userRef.value.username}`);
 		chat.setChatMenu('none');
+		router.push(`/${userRef.value.username}`);
 	}
 
 	function play() {
@@ -65,20 +69,27 @@
 	}
 
 	async function block() {
-		chat.setChatMenu('none');
 		await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block?id=${userRef.value.id}`)
 			.catch( (err) => { console.log(err) });
 	}
 
 	async function unblock() {
-		chat.setChatMenu('none');
 		await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/unblock?id=${userRef.value.id}`)
 			.catch( (err) => { console.log(err) });
 	}
 
 	function message() {
-		console.log('message')
 		chat.setChatMenu('none');
+		router.push(`/chat`);
+		const user : User = {
+			id: userRef.value.id,
+			username: userRef.value.username,
+			email: userRef.value.email,
+			avatar:userRef.value.avatar,
+			status: userRef.value.status,
+			twofa_enabled: false,
+		};
+		chat.sendPrivateMessage(user);
 	}
 
 	function displayActions(action: string) {
@@ -185,13 +196,16 @@
 <template>
 	<div id="profileMenu"
 		v-if="user">
+		<img v-if="channel.getMode() != 'Private'" id="return-button" @click="chat.setChatMenu('users')" :src="returnIcon" title="Return"/>
+		<!-- <div style="display: flex; width: 370px; position: absolute; justify-content: flex-end;">
+		</div> -->
 		<div id="user">
 			<div id="userInfos">
 				<div id="avatarContainer">
 					<img id="avatar" :src="userRef.avatar">
 					<img v-if="userRef.id == me.id || (userRef.friend == true && !userRef.blocking)" id="avatar-icon" :src="statusIcon"/>
 				</div>
-				<div id="username">{{ userRef.username }}</div>
+				<div id="username" @click="profile()">{{ userRef.username }}</div>
 			</div>
 			<div id="userActions">
 				<div v-for="action in authorizedUserAction"
@@ -217,6 +231,7 @@
 
 <style scoped>
 	#profileMenu {
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -226,6 +241,20 @@
 		border-radius: 0.8rem;
 		box-shadow: 0 0 0 1px var(--c-black-light);
 		background-color: var(--c-surface);
+
+		#return-button {
+			position: absolute;
+			top:1rem;
+			left: 1rem;
+			height: 15px;
+			width: 15px;
+			cursor: pointer;
+			transition: scale 0.1s ease-in-out;
+		}
+
+		#return-button:hover {
+			scale: 1.1;
+		}
 
 		#user {
 			display: flex;
@@ -250,12 +279,21 @@
 				#avatar-icon {
 					position: absolute;
 					bottom: 0.5rem;
-					right: 0.5rem;
+					right: 0.2rem;
 					width: 2rem;
 					height: 2rem;
 				}
 				#username {
 					font-weight: 700;
+					cursor: pointer;
+					&:hover {
+						border-radius: 3px;
+						background-color: var(--c-black-light);
+						box-shadow: 0 0 0 0.4rem var(--c-black-light);
+					}
+					&:active {
+						transform: scale(0.9);
+					}
 				}
 			}
 
