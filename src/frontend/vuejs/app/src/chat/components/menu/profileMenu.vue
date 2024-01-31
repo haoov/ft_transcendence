@@ -78,8 +78,17 @@
 	}
 
 	function message() {
-		console.log('message')
 		chat.setChatMenu('none');
+		router.push(`/chat`);
+		const user : User = {
+			id: userRef.value.id,
+			username: userRef.value.username,
+			email: userRef.value.email,
+			avatar:userRef.value.avatar,
+			status: userRef.value.status,
+			twofa_enabled: false,
+		};
+		chat.sendPrivateMessage(user);
 	}
 
 	function displayActions(action: string) {

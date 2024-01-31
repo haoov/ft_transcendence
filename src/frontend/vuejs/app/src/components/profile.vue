@@ -11,6 +11,7 @@ import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
 import { socketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
+import { chat } from "@/chat";
 
 const route = useRoute();
 let username = route.params.username;
@@ -18,7 +19,6 @@ const me = ref<User>();
 const user = ref<User>();
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
-const $data : any = inject('$data');
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser: User) => {
 	if (user.value?.id == newUser.id || me.value?.id == newUser.id) {
@@ -188,7 +188,17 @@ function showActions() : boolean {
 
 function sendMessage(id : number | undefined) {
 	router.push(`/chat`);
-	$data.sendDirectMessage(id);
+	if (user.value) {
+		const userToMessage : User = {
+			id: user.value.id,
+			username: user.value.username,
+			email: user.value.email,
+			avatar:user.value.avatar,
+			status: user.value.status,
+			twofa_enabled: false,
+		};
+		chat.sendPrivateMessage(userToMessage);
+	}
 }
 
 function inviteToPlay() {
