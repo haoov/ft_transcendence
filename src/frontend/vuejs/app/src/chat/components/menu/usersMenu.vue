@@ -14,9 +14,13 @@
 	const usersToDisplay = computed(() => {
 		if (!search.value)
 			return userRelations.value;
-		return userRelations.value.filter((userRelation: UserRelation) => {
-			return userRelation.username.toLowerCase().startsWith(search.value.toLowerCase());
-		});
+		return userRelations.value
+			.filter((userRelation: UserRelation) => {
+				return userRelation.username.toLowerCase().startsWith(search.value.toLowerCase());
+			})
+			.sort((a: UserRelation, b: UserRelation) => {
+				return a.username.toLowerCase().localeCompare(b.username.toLowerCase());
+			});
 	});
 
 	socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
