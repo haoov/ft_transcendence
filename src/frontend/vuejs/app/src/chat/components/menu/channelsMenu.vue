@@ -1,7 +1,7 @@
 <script setup lang="ts">
 	import { chat, type ChannelParams, type ChannelData } from '@/chat'
 	import { socketManager } from '@/SocketManager';
-	import { reactive, ref, type Ref } from 'vue';
+	import { computed, reactive, ref, type Ref } from 'vue';
 	import v_selector from '@/components/selector.vue';
 	import v_joinMenu from '@/chat/components/menu/joinMenu.vue';
 	import v_addUsers from '@/chat/components/menu/addUsers.vue';
@@ -17,9 +17,12 @@
 		admins: [socketManager.getUser()],
 	});
 
-	let channelTOJoin: ChannelData;
-
 	async function createChannel() {
+		if (channelParams.mode == 'Private') {
+			chat.sendPrivateMessage(channelParams.users[1]);
+			chat.setChatMenu('none');
+			return;
+		}
 		if (await chat.createChannel(channelParams) == false)
 			return;
 		chat.setChatMenu('none');
@@ -35,19 +38,21 @@
 			channelParams.users.splice(index, 1);
 	}
 
-	function channelSelected(channel: ChannelData) {
-		channelTOJoin = channel;
-	}
+	const disableButton = computed(() => {
+		if (channelParams.mode == 'Public' || channelParams.mode == 'Secret') {
+			if (channelParams.name.length == 0)
+				return true;
+		}
+		if (channelParams.mode == 'Protected') {
+			if (channelParams.name.length == 0 || !channelParams.password)
+				return true;
+		}
+		if (channelParams.mode == 'Private' && channelParams.users.length < 2) {
+				return true;
+		}
+		return false;
+	});
 
-	function submitButton() {
-		if (subMenu.value == 'Create') {
-			chat.createChannel(channelParams);
-		}
-		else if (subMenu.value == 'Join') {
-			chat.joinChannel(channelTOJoin, socketManager.getUser());
-		}
-		chat.setChatMenu('none');
-	}
 </script>
 
 <template>
@@ -73,46 +78,62 @@
 				:preSelected="channelParams.mode"
 				@select="(value) => {channelParams.mode = value}">
 			</v_selector>
-			<label class="inputLabel">
-				Channel Name :
-				<input id="channelName"
-					class="channelInput"
-					type="text"
-					autocomplete="off"
-					placeholder="Channel Name"
-					v-model="channelParams.name">
-			</label>
-			<label class="inputLabel"
-				v-if="channelParams.mode == 'Protected'">
-				Password :
-				<input id="channelName"
-					class="channelInput"
-					type="text"
-					autocomplete="off"
-					placeholder="Channel Name"
-					v-model="channelParams.password">
-			</label>
-			<Suspense>
-				<v_addUsers
+			<div v-if="channelParams.mode != 'Private'" class="channelInfos">
+				<label class="inputLabel">
+					Channel Name :
+					<input id="channelName"
+						class="channelInput"
+						type="text"
+						autocomplete="off"
+						placeholder="Channel Name"
+						v-model="channelParams.name">
+				</label>
+				<label class="inputLabel"
+					v-if="channelParams.mode == 'Protected'">
+					Password :
+					<input id="channelName"
+						class="channelInput"
+						type="password"
+						autocomplete="off"
+						placeholder="Channel Name"
+						v-model="channelParams.password">
+				</label>
+				<Suspense>
+					<v_addUsers
+					:privateChannel="false"
 					:channelParams="channelParams"
 					:channel="undefined"
 					v-on:add="addUser"
 					v-on:remove="removeUser">
-				</v_addUsers>
-			</Suspense>
-		</div> <!--END NEW CHANNEL-->
+					</v_addUsers>
+				</Suspense>
+			</div>
+			<div v-if="channelParams.mode == 'Private'" class="channelInfos">
+				<Suspense>
+					<v_addUsers
+					:privateChannel="true"
+					:channelParams="channelParams"
+					:channel="undefined"
+					v-on:add="addUser"
+					v-on:remove="removeUser">
+					></v_addUsers>
+				</Suspense>
+			</div>
+		</div> 
+		<!--END NEW CHANNEL-->
 		<!--JOIN CHANNEL-->
 		<Suspense>
-			<v_joinMenu
-				v-if="subMenu == 'Join'"
-				v-on:selectChannel="channelSelected">
-			</v_joinMenu>
-		</Suspense><!--END JOIN CHANNEL-->
+			<v_joinMenu v-if="subMenu == 'Join'"></v_joinMenu>
+		</Suspense>
+		<!--END JOIN CHANNEL-->
 		<button id="submitButton"
-			v-on:click="submitButton()">
-			{{ subMenu }}
+			:disabled="disableButton"
+			v-if="subMenu == 'Create'"
+			v-on:click="createChannel()">
+			Create
 		</button>
-	</div> <!--END CHANNELS MENU-->
+	</div>
+	<!--END CHANNELS MENU-->
 </template>
 
 <style scoped>
@@ -165,6 +186,12 @@
 		}
 	}
 
+	.channelInfos {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+
 	.inputLabel {
 		display: flex;
 		flex-direction: column;
@@ -183,10 +210,25 @@
 	}
 
 	#submitButton {
-		background-color: var(--c-black-light);
-		border: 1px solid var(--c-black-light);
+		color: #fff;
+		background-color: var(--c-pink);
+		border: 1px solid var(--c-pink);
 		padding: 12px 16px;
 		cursor: pointer;
 		border-radius: 6px;
+		width: 25%;
+
+		&:hover:not(:disabled) {
+			transform: scale(1.05);
+		}
+		&:disabled {
+			background-color: var(--c-black-light);
+			border: 1px solid var(--c-black-light);
+			cursor: not-allowed;
+			transform: none !important;
+		}
+		&:active {
+			transform: scale(0.9);
+		}
 	}
 </style>

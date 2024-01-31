@@ -14,6 +14,7 @@ import { socketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
 
 const apiChat: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat`;
+const apiUser: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/user`;
 
 class Chat {
 	private readonly userChannels:  Channel[];
@@ -32,11 +33,12 @@ class Chat {
 	}
 
 	removeChannel(id: number) {
-		const index = this.userChannels.findIndex(
-			(channel) => channel.getId() == id
-		);
+		let index = this.userChannels.findIndex((channel) => channel.getId() == id);
 		if (index != -1)
 			this.userChannels.splice(index, 1);
+		index = this.activeChannels.findIndex((channel) => channel.getId() == id);
+		if (index != -1)
+			this.activeChannels.splice(index, 1);
 	}
 
 	getUserChannels(): Channel[] {
@@ -91,21 +93,26 @@ class Chat {
 		}
 	}
 
-	sendPrivateMessage(User : User) {
+	async sendPrivateMessage(user : User) : Promise<void> {
 		const currentUser = socketManager.getUser();
-		const channelName = `#${currentUser.id}#${User.id}`;
+		const ids = [currentUser.id.toString(), user.id.toString()];
+		const sortedids = ids.sort();
+		const channelName = '#' + sortedids.join('#');
 		const index = this.userChannels.findIndex((c) => c.getName() == channelName);
 		if (index != -1) {
 			const [channel] = this.userChannels.splice(index, 1);
 			this.userChannels.splice(0, 0, channel);
 			return;
 		} else {
+			const userFinded : User = await axios.get(`${apiUser}?id=${user.id}`)
+			.then((response) => { return response.data });
+			console.log(userFinded);
 			const params: ChannelParams = {
 				name: channelName,
 				mode: "Private",
 				creatorId: currentUser.id,
 				messages: [],
-				users: [currentUser, User],
+				users: [currentUser, userFinded],
 				admins: [currentUser]
 			};
 			this.createChannel(params);
@@ -121,27 +128,44 @@ class Chat {
 	}
 
 	async createChannel(params: ChannelParams): Promise<boolean> {
-		return await axios.post(`${apiChat}/channel`, params).then(
-			() => true,
-			(err) => {
-				notify.newNotification("error", {
-					message: err.response.data.message
-				});
-				return false;
-			}
-		);
+		return await axios.post(`${apiChat}/channel`, params)
+		.then(() => true)
+		.catch((err) => {
+			notify.newNotification("error", {
+				message: err.response.data.message
+			});
+			return false;
+		});
 	}
 
-	async deleteChannel(channel: Channel): Promise<boolean> {
-		return await axios.delete(`${apiChat}/channel?id=${channel.getId()}`).then(
-			() => true,
-			(err) => {
+	async deleteChannel(channel: Channel): Promise<void> {
+		await axios.delete(`${apiChat}/channel?id=${channel.getId()}`)
+		.then(() => {
+				this.removeChannel(channel.getId());
+				notify.newNotification("success", {
+					message: "Channel deleted",
+					by: `${channel.getName()}`
+				});
+			})
+			.catch((err) => {
 				notify.newNotification("error", {
 					message: err.response.data.message
 				});
-				return false;
-			}
-		);
+			
+			})
+	}
+
+	async leaveChannel(channel: Channel): Promise<void> {
+		await axios.delete(`${apiChat}/channel/leave?id=${channel.getId()}`)
+		.then(() => {
+				this.removeChannel(channel.getId());
+			})
+		.catch((err) => {
+			console.log(err.response.data);
+			notify.newNotification("error", {
+				message: err.response.data.message
+			});
+		});
 	}
 
 	updateChannel(channel: Channel, updatedParams: ChannelParams): void {
@@ -155,17 +179,16 @@ class Chat {
 		axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams);
 	}
 
-	joinChannel(channel: ChannelData, user: User, password?: string) : void {
-		const pw = password ? password : "";
-		socketManager.emit("chat", ChatEvents.joinChannel, { channelId: channel.id, userId: user.id, password: pw });
+	joinChannel(channelId: number, user: User, password?: string) : void {
+		socketManager.emit("chat", ChatEvents.joinChannel, { channelId: channelId, userId: user.id, password: password });
 	}
 
 	channelUpdate(data: ChannelData) {
 		const index = this.userChannels.findIndex((c) => c.getId() == data.id);
 		if (index != -1) {
 			const updatedChannel = new Channel(data);
-			updatedChannel.setMessages(this.userChannels[index].getMessages());
 			this.userChannels.splice(index, 1, updatedChannel);
+			updatedChannel.setMessages(this.userChannels[index].getMessages());
 		} else {
 			const newChannel = new Channel(data);
 			this.userChannels.push(newChannel);
@@ -199,6 +222,21 @@ class Chat {
 			return response.data;
 		else
 			return [];
+	}
+
+	updateUser(user: User) {
+		this.userChannels.forEach((channel) => {
+			const index = channel.getUsers().findIndex((u) => u.id == user.id);
+			if (index != -1) {
+				channel.getUsers().splice(index, 1, user);
+			}
+		});
+		this.activeChannels.forEach((channel) => {
+			const index = channel.getUsers().findIndex((u) => u.id == user.id);
+			if (index != -1) {
+				channel.getUsers().splice(index, 1, user);
+			}
+		});
 	}
 }
 

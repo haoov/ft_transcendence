@@ -5,6 +5,7 @@ import ChatView from "@/views/Chat2View.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import SettingView from "@/views/SettingView.vue";
 import PageNotFoundView from "@/views/PageNotFoundView.vue";
+import { socketManager } from "@/SocketManager";
 
 
 const routes = [
@@ -12,6 +13,11 @@ const routes = [
 		path: "/",
 		name: "home",
 		component: HomeView,
+		beforeEnter: async () => {
+			if (socketManager.getUser().id == undefined) {
+				await socketManager.initSocket();
+			}
+		},
 	},
 	{
 		path: "/login",
@@ -21,22 +27,42 @@ const routes = [
 	{
 		path: "/:username",
 		name: "profile",
-		component: ProfileView
+		component: ProfileView,
+		beforeEnter: async () => {
+			if (socketManager.getUser().id == undefined) {
+				await socketManager.initSocket();
+			}
+		},
 	},
 	{
 		path: "/game",
 		name: "game",
 		component: GameView,
+		beforeEnter: async () => {
+			if (socketManager.getUser().id == undefined) {
+				await socketManager.initSocket();
+			}
+		},
 	},
 	{
 		path: "/chat",
 		name: "chat",
 		component: ChatView,
+		beforeEnter: async () => {
+			if (socketManager.getUser().id == undefined) {
+				await socketManager.initSocket();
+			}
+		},
 	},
 	{
 		path: "/settings",
 		name: "settings",
 		component: SettingView,
+		beforeEnter: async () => {
+			if (socketManager.getUser().id == undefined) {
+				await socketManager.initSocket();
+			}
+		},
 	},
 	{
 		path: "/error",

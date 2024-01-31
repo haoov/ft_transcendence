@@ -8,12 +8,11 @@
 	import { onBeforeRouteLeave } from 'vue-router';
 	import gameData from '@/game/gameData';
 
-	const width: Ref<number> = ref(window.innerWidth * 0.8);
+	const width: Ref<number> = ref(window.innerWidth * 0.8 > 1280 ? 1280 : window.innerWidth * 0.8);
 	const height: Ref<number> = ref(width.value * 0.5625);
 
 	function resize() {
 		if (window.innerWidth * 0.8 > 1280) {
-			console.log("resize error");
 			return ;
 		}
 		console.log("resize");
@@ -82,7 +81,6 @@
 	})
 
 	onBeforeRouteLeave(() => {
-		console.log("leaving game");
 		if (gameData.started()) {
 			socketManager.forfeit();
 		}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { chat, type Channel } from '@/chat';
+	import { type Channel } from '@/chat';
 	import { socketManager } from '@/SocketManager';
 
 	const props = defineProps<{channel: Channel}>();

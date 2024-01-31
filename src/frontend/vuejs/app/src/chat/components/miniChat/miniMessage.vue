@@ -105,7 +105,7 @@
 		width: 0px;
 		height: 0px;
 		bottom: -4px;
-		left: 4px;
+		left: 5px;
 		border-top: 4px solid var(--c-white);
 		border-bottom: 4px solid transparent;
 		border-right: 4px solid transparent;
@@ -118,7 +118,7 @@
 		width: 0px;
 		height: 0px;
 		bottom: -4px;
-		right: 4px;
+		right: 5px;
 		border-top: 4px solid var(--c-pink-3);
 		border-bottom: 4px solid transparent;
 		border-left: 4px solid transparent;

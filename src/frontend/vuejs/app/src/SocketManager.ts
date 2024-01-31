@@ -47,6 +47,7 @@ class SocketManager {
 				if (data.status == "waiting")
 				gameData.setGameState("waiting");
 			}
+			chat.updateUser(data);
 		});
 
 		this.userSocket.on(ServerEvents.gameReady, (data: User) => {
@@ -110,6 +111,10 @@ class SocketManager {
 		this.chatSocket.on("channelUpdated", (data: ChannelData) => {
 			chat.channelUpdate(data);
 		});
+
+		this.chatSocket.on("channelDeleted", (data: number) => {
+			chat.removeChannel(data);
+		})
 
 		this.chatSocket.on(ChatEvents.kicked, (data: ChannelData) => {
 			const channel = chat.getChannel(data.id);

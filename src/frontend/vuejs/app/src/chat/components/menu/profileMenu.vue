@@ -196,7 +196,7 @@
 <template>
 	<div id="profileMenu"
 		v-if="user">
-		<img id="return-button" @click="chat.setChatMenu('users')" :src="returnIcon" title="Return"/>
+		<img v-if="channel.getMode() != 'Private'" id="return-button" @click="chat.setChatMenu('users')" :src="returnIcon" title="Return"/>
 		<!-- <div style="display: flex; width: 370px; position: absolute; justify-content: flex-end;">
 		</div> -->
 		<div id="user">

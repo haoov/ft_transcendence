@@ -10,6 +10,7 @@
 	import offline from '@/assets/images/status-offline-32.png';
 	import online from '@/assets/images/status-online-32.png';
 	import playing from '@/assets/images/status-playing-32.png';
+	import notify from '@/notify/notify';
 
 	const props = defineProps<{channel: Channel}>();
 	const actionsMenu: Ref<boolean> = ref<boolean>(false);
@@ -66,10 +67,48 @@
 	}
 
 	async function deleteChannel() {
-		if (props.channel == undefined)
-			return;
-		if (await chat.deleteChannel(props.channel) == false)
-			return;
+		notify.newNotification("warning", {
+			message: "Are you shure ?",
+			by: `Delete channel ${props.channel?.getTitle(socketManager.getUser())}`,
+			autoClose: false,
+			buttons: [
+				{
+					text: "Yes",
+					action: () => {
+						if (props.channel == undefined)
+							return;
+						chat.deleteChannel(props.channel);
+					}
+				},
+				{
+					text: "No",
+					action: () => {}
+				}
+			]
+		});
+		actionsMenu.value = false;
+	}
+
+	async function leaveChannel() {
+		notify.newNotification("warning", {
+			message: "Are you shure ?",
+			by: `Leave channel ${props.channel?.getTitle(socketManager.getUser())}`,
+			autoClose: false,
+			buttons: [
+				{
+					text: "Yes",
+					action: () => {
+						if (props.channel == undefined)
+							return;
+						chat.leaveChannel(props.channel);
+					}
+				},
+				{
+					text: "No",
+					action: () => {}
+				}
+			]
+		});
 		actionsMenu.value = false;
 	}
 </script>
@@ -90,7 +129,8 @@
 			<Transition id="showActions"
 				name="showActions">
 				<div id="actionsList"
-					v-if="actionsMenu">
+					v-if="actionsMenu"
+					v-on:mouseleave="actionsMenu = false">
 					<div id="userButton"
 						v-on:click="setMenu('users')">
 						Users
@@ -99,7 +139,10 @@
 						v-on:click="setMenu('settings')">
 						Edit
 					</div>
-					<div>Leave</div>
+					<div
+						v-on:click="leaveChannel()">
+						Leave
+					</div>
 					<div
 						v-on:click="deleteChannel()">
 						Delete

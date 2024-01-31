@@ -61,13 +61,15 @@
 		justify-content: space-between;
 		align-items: flex-start;
 		height: 100%;
-		width: 300px;
+		width: 250px;
 		padding: 10px;
 		box-sizing: border-box;
 		gap: 10px;
 		border-right: 1px solid var(--c-black-light);
 
 		#searchChannel {
+			width: 100%;
+
 			#searchInput {
 				width: 100%;
 				height: 30px;
@@ -88,6 +90,7 @@
 				max-height: 700px;
 				box-sizing: border-box;
 				overflow: scroll;
+				overflow-x: hidden;
 			}
 		}
 	}

@@ -95,6 +95,17 @@ export class ChatController {
 		}
 	}
 
+	@Delete('/channel/leave')
+	async leaveChannel(@Req() request: Request, @Query('id') channelId: number) {
+		try {
+			await this.chatService.leaveChannel(channelId, request.user['id']);
+			await this.chatGateway.channelLeft(channelId);
+		}
+		catch (err) {
+			throw err;
+		}
+	}
+
 	@Get('/channel/relations')
 	async getChannelRelations(@Req() request: Request, @Query('id') channelId: number): Promise<UserRelation[]> {
 		const blockingList = await this.userService.getBlockingList(request.user['id']);
