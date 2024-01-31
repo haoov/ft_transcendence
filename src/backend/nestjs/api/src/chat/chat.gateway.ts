@@ -117,6 +117,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	async channelLeft(channelId: number): Promise<void> {
+		const channel: Channel = await this.chatService.getChannel(channelId);
+		this.server.to(channelId.toString()).emit("channelUpdated", channel);
+	}
+
 	@SubscribeMessage('setAdmin')
 	async onSetAdmin(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
 		const channelId = data.channelId;
