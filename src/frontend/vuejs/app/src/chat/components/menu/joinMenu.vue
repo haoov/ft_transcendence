@@ -31,7 +31,7 @@
 	}
 
 	function submitEvent() {
-		if (!result.value) {
+		if (!Object.keys(result).length) {
 			notify.newNotification('error', {message:'You must select a channel to join'});
 		}
 		chat.joinChannel(result.value.id, socketManager.getUser(), password.value);
@@ -94,6 +94,7 @@
 		</div>
 	</div>
 		<button id="submitButton"
+			:disabled="!(result && Object.keys(result).length > 0)"
 			v-on:click="submitEvent()">
 			Join
 		</button>
@@ -214,18 +215,27 @@
 			}
 		}
 
+
 		#submitButton {
-			background-color: var(--c-black-light);
-			border: 1px solid var(--c-black-light);
+			color: #fff;
+			background-color: var(--c-pink);
+			border: 1px solid var(--c-pink);
 			padding: 12px 16px;
 			cursor: pointer;
 			border-radius: 6px;
 			width: 25%;
 
 			&:hover:not(:disabled) {
-				background-color: var(--c-grey-light);
-				color: var(--c-black-light);
-				border: 1px solid var(--c-pink);
+				transform: scale(1.05);
+			}
+			&:disabled {
+				background-color: var(--c-black-light);
+				border: 1px solid var(--c-black-light);
+				cursor: not-allowed;
+				transform: none !important;
+			}
+			&:active {
+				transform: scale(0.9);
 			}
 		}
 	}
