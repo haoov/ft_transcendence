@@ -90,6 +90,14 @@ class SocketManager {
 				]});
 		});
 
+		this.gameSocket.on("alreadyInGame", (data: User) => {
+			notify.newNotification("error", {
+				message: 'User already in game',
+				by: data.username,
+			});
+			gameData.setGameState("noGame");
+		})
+
 		this.userSocket.on(ServerEvents.gameResponse, (response: {accepted: boolean, opponent: User}) => {
 			if (!response.accepted) {
 				notify.newNotification("error", {
