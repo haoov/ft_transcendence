@@ -1,6 +1,7 @@
 <script setup lang="ts">
 	import NavigationBar from "@/components/navigationBar.vue";
 	import Game from "./components/game.vue"
+	import v_notify from "@/notify/components/notify.vue";
 
 </script>
 
@@ -8,6 +9,7 @@
 	<div class="game body">
 		<NavigationBar></NavigationBar>
 		<Suspense><Game></Game></Suspense>
+		<v_notify></v_notify>
 	</div>
 </template>
 

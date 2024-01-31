@@ -8,7 +8,7 @@
 <template>
 	<div id="notification">
 		<div id="notification-infos">
-			<img v-if="data.icon" id="icon" :src="data.icon">
+			<img v-if="data.icon" id="notification-icon" :src="data.icon">
 			<div id="notification-content">
 				<span id="text">{{ data.message }}</span>
 				<span class="sub-text" v-if="data.by">{{ data.by }}</span>
@@ -37,11 +37,13 @@
 		align-items: center;
 		justify-content: center;
 		padding: 5px;
+		padding-right: 10px;
 		background: var(--c-surface);
 		border-radius: 0.8rem;
 		box-shadow: 0 0 0 1px var(--c-black-light);
 		margin-top: 10px;
-		width: 200px;
+		width: max-content;
+		min-width: 180px;
 		min-height: 50px;
 	}
 
@@ -52,12 +54,14 @@
 		justify-content: center;
 	}
 
-	#icon {
+	#notification-icon {
 		grid-row: 1;
 		width: 20px;
 		height: 20px;
 		border-radius: 50%;
 		margin-right: 10px;
+		margin-left: 10px;
+		background: transparent;
 	}
 
 	#notification-content {

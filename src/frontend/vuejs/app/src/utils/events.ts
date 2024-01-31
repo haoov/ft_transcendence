@@ -11,6 +11,10 @@ export enum ClientEvents {
 	gameForfeit = "gameForfeit",
 	gameInvite = "gameInvite",
 	gameResponse = "gameResponse",
+	checkGame = "checkGame",
+	addFriend = "addFriend",
+	friendResponse = "friendResponse",
+	pong = "pong",
 };
 export enum ServerEvents {
 	started = "started",
@@ -25,4 +29,39 @@ export enum ServerEvents {
 	updateStatus = "updateStatus",
 	gameInvite = "gameInvite",
 	dataChanged = "dataChanged",
+	gameResponse = "gameResponse",
+	addFriend = "addFriend",
+	friendResponse = "friendResponse",
+	ping = "ping",
+};
+export enum ChatEvents {
+	// Events On
+	lastActiveChannel = "lastActiveChannel",
+	userAdded = "userAdded",
+	newChannelCreated ="newChannelCreated",
+	channelDeleted ="channelDeleted",
+	channelUpdated = "channelUpdated",
+	kicked = "kicked",
+	banned = "banned",
+	namedAdmin = "namedAdmin",
+	channelJoined = "channelJoined",
+	newMessageReceived = "newMessageReceived",
+	miniChatMessage = "miniChatMessage",
+	errorManager = "errorManager",
+	muted = "muted",
+	alreadyMuted = "alreadyMuted", // If an admin try to mute a user already muted
+
+	// Events Emit
+	newMessageSend = "newMessageSend",
+	createNewChannel = "createNewChannel",
+	addUserToChannel = "addUserToChannel",
+	setActiveChannel = "setActiveChannel",
+	deleteChannel = "deleteChannel",
+	updateChannel = "updateChannel",
+	joinChannel = "joinChannel",
+	leaveChannel = "leaveChannel",
+	setAdmin = "setAdmin",
+	muteUser = "muteUser",
+	kickUser = "kickUser",
+	banUser = "banUser",
 };

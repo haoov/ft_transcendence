@@ -2,18 +2,17 @@ import axios from "axios";
 import { GameRenderer, type InitParams } from "./gameRenderer";
 import type { GamePlayer, GameState } from "./interfaces";
 import {
-	defaultAvatar,
 	fireIcon,
 	iceIcon,
 	smallIcon,
 	bigIcon
 } from "@/assets/images/gameIcons";
+import raquetIcon from "@/assets/images/racket-50.png";
 import { ref, type Ref } from "vue";
-import { ServerEvents, type User } from "@/utils";
-import { socketManager } from "@/SocketManager";
+import { type User } from "@/utils";
 import type { Camera, Scene } from "three";
 
-console.log(socketManager);
+const apiGame = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/game`;
 
 class GameData {
 	private displayMenu: Ref<boolean>;
@@ -21,6 +20,7 @@ class GameData {
 	private readonly player1: Ref<GamePlayer>;
 	private readonly player2: Ref<GamePlayer>;
 	private winner: string;
+	private opponent: string;
 	private initParams: InitParams | null;
 	private gameRenderer: GameRenderer | null;
 	private gameState: Ref<GameState>;
@@ -32,7 +32,7 @@ class GameData {
 		this.difficulty = ref("easy");
 		this.player1 = ref({
 			username: "Player1",
-			avatar: defaultAvatar,
+			avatar: raquetIcon,
 			score: 0,
 			spells: [
 				{ type: "fire", icon: fireIcon, on: false },
@@ -43,7 +43,7 @@ class GameData {
 		});
 		this.player2 = ref({
 			username: "Player2",
-			avatar: defaultAvatar,
+			avatar: raquetIcon,
 			score: 0,
 			spells: [
 				{ type: "fire", icon: fireIcon, on: false },
@@ -53,23 +53,17 @@ class GameData {
 			],
 		});
 		this.winner = "";
+		this.opponent = "";
 		this.gameState = ref("noGame");
-		socketManager.addEventListener("user", ServerEvents.dataChanged, (data: User) => {
-			if (data.username == socketManager.getUser().username) {
-				if (data.status == "waiting")
-					this.gameState.value = "waiting";
-			}
-		});
 	}
 
-	async createRenderer(id: string) {
-		await axios.get<InitParams>(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/game/params`).then(
+	async createRenderer(id: string, width: number, height: number) {
+		await axios.get<InitParams>(`${apiGame}/params`).then(
 			(response) => {
-				console.log("creating renderer");
 				this.initParams = response.data;
-				this.gameRenderer= new GameRenderer(id, this.initParams);
+				this.gameRenderer= new GameRenderer(id, this.initParams, width, height);
 			}
-		);
+		).catch(err => {});
 	}
 
 	startGame(users: User[], params: any) {
@@ -82,7 +76,7 @@ class GameData {
 		}
 		else {
 			this.player2.value.username = "Computer" + ": " + this.difficulty.value;
-			this.player2.value.avatar = defaultAvatar;
+			this.player2.value.avatar = raquetIcon;
 		}
 		this.gameRenderer?.createField(
 			this.initParams!.params.FIELD_WIDTH,
@@ -92,8 +86,9 @@ class GameData {
 		this.gameState.value = "started";
 	};
 
-	updateGame(data: any) {
-		console.log("game updated");
+	updateGame(data: any, width: number, height: number) {
+		this.gameRenderer?.renderer?.setSize(width, height);
+		this.gameRenderer?.camera?.updateProjectionMatrix();
 		this.gameRenderer?.update(data);
 		this.player1.value.score = data.p1Score;
 		this.player2.value.score = data.p2Score;
@@ -145,14 +140,27 @@ class GameData {
 		return this.winner;
 	}
 
+	getOpponent(): string {
+		return this.opponent;
+	}
+
+	setOpponent(opponent: string) {
+		this.opponent = opponent;
+	}
+
 	render() {
 		this.gameRenderer?.renderer?.render(
 			this.gameRenderer.scene as Scene,
 			this.gameRenderer.camera as Camera);
 	}
 
-	getCurrentPlayer(): Ref<GamePlayer> {
-		if (socketManager.getUser().username == this.player1.value.username)
+	resize(width: number, height: number) {
+		this.gameRenderer?.renderer?.setSize(width, height);
+		this.gameRenderer?.camera?.updateProjectionMatrix();
+	}
+
+	getCurrentPlayer(username: string): Ref<GamePlayer> {
+		if (username == this.player1.value.username)
 			return this.player1;
 		else
 			return this.player2;

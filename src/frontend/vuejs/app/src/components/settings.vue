@@ -1,6 +1,9 @@
 <template>
 	<div class="l-wrapper">
 		<div class="l-grid" :style="dynamicHeight">
+			<div style="display: flex; width: 370px; position: absolute; justify-content: flex-end;">
+				<img id="logout_button" @click="logout()" :src="logoutIcon" title="Logout"/>
+			</div>
 			<div class ="u-justify--center u-display--flex">
 				<div class="c-avatar-container" @click="uploadFile">
 					<img class="c-avatar" :src="avatarSrc"/>
@@ -57,7 +60,7 @@
 			<div class ="u-justify--center u-display--flex">
 				<button id="saveButton" :disabled="disableSave" @click="updateProfile()">Save</button>
 			</div>
-			<div class="c-warning" v-if="(usernameSet.length > 15)">Username must be 15 characters or less.</div>
+			<div class="c-warning" v-if="!isUsernameValid()">Username has invalid format.</div>
 		</div>		
 	</div>
 </template>
@@ -67,23 +70,24 @@
 import axios from "axios";
 import type { User } from "@/utils";
 import { computed, onMounted, ref } from "vue";
-import { toast, type ToastType } from 'vue3-toastify';
-import "vue3-toastify/dist/index.css"
+import notify from "@/notify/notify";
+import logoutIcon from "@/assets/images/logout.png";
 
 // CSS
 const dynamicHeight = computed(() => {
 	if (twoFaChangedToEnabled.value)
-		return "height: 720px";
+		return "height: 730px";
 	else
-		return "height: 470px";
+		return "height: 480px";
 });
 const disableSave = computed(() => {
 	if ((twoFaChangedToEnabled.value && !twoFaCode.value))
 		return true;
-	else
-		return ((!usernameSet.value || usernameSet.value == me.value.username || usernameSet.value.length > 15)
-			&& !avatarSet.value)
-			&& !twoFaChanged.value;
+	if (!isUsernameValid())
+		return true;
+	return ((!usernameSet.value || usernameSet.value == me.value.username)
+		&& !avatarSet.value
+		&& !twoFaChanged.value);
 });
 
 // DATA
@@ -94,8 +98,6 @@ const me = ref<User>(({
 	twofa_enabled: false,
 	email: "",
 	status: "",
-	games_won: [],
-	games_lost: []
 }));
 
 // Username
@@ -135,7 +137,8 @@ async function fetchMe() {
 			me.value = data.data;
 			usernameSet.value = data.data.username;
 			selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
-		});
+		})
+		.catch( (err) => {});
 }
 
 
@@ -159,12 +162,12 @@ async function	updateUsername() {
 		.then( (data) => {
 			me.value = data.data;
 			usernameSet.value = data.data.username;
-			sendToast("success", "Username has been updated!");
+			notify.newNotification("success", {message: "Username has been updated!"})
 		})
 		.catch( (err) => {
 			if (err.response.status == 409) {
 				usernameSet.value = me.value.username;
-				sendToast("error", "Username is already in use!");
+				notify.newNotification("error", {message: "Username is already in use!"})
 			}
 		});
 }
@@ -177,11 +180,11 @@ async function	updateAvatar() {
 		.then( async (data) => { 
 			avatarSet.value = null;
 			me.value.avatar = data.data.avatar;
-			sendToast("success", "Avatar has been updated!");
+			notify.newNotification("success", {message: "Avatar has been updated!"})
 		})
 		.catch( (err) => {
 			avatarSet.value = null;
-			sendToast("error", "Invalid format avatar!");
+			notify.newNotification("error", {message: "Invalid format avatar!"})
 		});
 }
 
@@ -195,13 +198,11 @@ async function	update2FA(to: string) {
 				me.value.twofa_enabled = true;
 				twoFaCode.value = "";
 				qrCode.value = "";
-				sendToast("success", "2FA has been enabled!");
+				notify.newNotification("success", {message: "2FA has been enabled!"})
 			})
 			.catch( (err) => {
 				twoFaCode.value = "";
-				qrCode.value = "";
-				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
-				sendToast("error", "Invalid code!");
+				notify.newNotification("error", {message: "Invalid code!"})
 			});
 	}
 	else if (to == "Disabled") {
@@ -211,13 +212,13 @@ async function	update2FA(to: string) {
 				me.value.twofa_enabled = false;
 				twoFaCode.value = "";
 				qrCode.value = "";
-				sendToast("success", "2FA has been disabled!");
+				notify.newNotification("success", {message: "2FA has been disabled!"})
 			})
 			.catch( (err) => {
 				twoFaCode.value = "";
 				qrCode.value = "";
 				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
-				sendToast("error", "An error occured!");
+				notify.newNotification("error", {message: "An error occured!"})
 			});
 	}
 }
@@ -234,30 +235,41 @@ function selectFile(event: Event) {
 	avatarSet.value = target.files ? target.files[0] : null;
 };
 
-function sendToast(type: ToastType, message: string) {
-	toast(message, {
-		"theme": "dark",
-		"type": type,
-		"position": "bottom-center",
-		"hideProgressBar": true,
-		"transition": "slide",
-		"dangerouslyHTMLString": true,
-	})
-}
-
 async function getQRcode(option: string) {
 	selectedOption.value = option;
-	if (selectedOption.value === "Enabled" && !me.value.twofa_enabled) {
+	if (selectedOption.value === "Enabled" && !me.value.twofa_enabled && !qrCode.value) {
 		await axios
 			.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/2fa/generate`)
 			.then( (data) => { 
 				qrCode.value = data.data;
 			})
 			.catch( (err) => {
-				sendToast("error", "An error occured!");
+				notify.newNotification("error", {message: "An error occured!"})
 				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
 			});
 	}
+}
+
+function isUsernameValid() {
+	if (!usernameSet.value)
+		return false;
+	if (usernameSet.value.length < 3 || usernameSet.value.length > 15)
+		return false;
+	if (!usernameSet.value.match(/^[\x21-\x7D]+$/))
+		return false;
+	if (!usernameSet.value[0].match(/^[a-zA-Z]+$/))
+		return false;
+	return true;
+}
+
+function logout() {
+	axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/auth/logout`)
+		.then(() => {
+			window.location.href = "/";
+		})
+		.catch((err) => {
+			notify.newNotification("error", {message: "An error occured!"})
+		});
 }
 
 onMounted(async () => {
@@ -281,7 +293,6 @@ onMounted(async () => {
 	background: var(--c-surface);
 	width: 100%;
 	height: 450px;
-	margin-bottom: 1.6rem;
 	box-shadow: 0px 0px 0px 1px var(--c-black-light);
 	box-sizing: border-box;
 	padding: 1.6rem;
@@ -349,7 +360,7 @@ onMounted(async () => {
 
 .formField input {
 		width: 60%;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		padding: 0.5rem 1rem;
 		color: #fff;
 		font-family: inherit;
@@ -363,7 +374,7 @@ onMounted(async () => {
 .formField .forbidden {
 		width: 60%;
 		font-size: small;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		padding: 0.5rem 1rem;
 		color: var(--c-grey);
 		font-family: Overpass;
@@ -389,13 +400,13 @@ onMounted(async () => {
 .radio-inputs {
 	display: flex;
     flex-wrap: wrap;
-    border-radius: 0.5rem;
+    border-radius: 0.8rem;
     box-sizing: border-box;
 	background-color: var(--c-black-light);
     box-shadow: 0 0 0 1px #0000000f;
     padding: 0.25rem;
     font-size: small;
-    width: 18.8rem;
+    width: 18.8em;
     margin-left: 6rem;
 	margin-top: 0.5rem;
 }
@@ -476,6 +487,7 @@ onMounted(async () => {
 	font-family: Overpass;
 	font-size: 1.1rem;
 	font-style: italic;
+	color: red;
 }
 
 .u-display--flex {
@@ -485,4 +497,14 @@ onMounted(async () => {
 	justify-content: center;
 }
 
+#logout_button {
+	height: 20px;
+	width: 20px;
+	cursor: pointer;
+	transition: scale 0.1s ease-in-out;
+}
+
+#logout_button:hover {
+	scale: 1.1;
+}
 </style>

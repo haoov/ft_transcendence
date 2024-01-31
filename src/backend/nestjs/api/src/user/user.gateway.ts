@@ -1,4 +1,4 @@
-import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
 import { Socket } from 'socket.io'
 import { User } from 'src/user/user.interface';
 import { clientEvents, serverEvents } from '../game/enum/events.enum';
@@ -13,23 +13,23 @@ import { Inject, forwardRef } from '@nestjs/common';
 export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private usersSockets: Map<number, Socket[]>;
 	
-	constructor(	private readonly userService: UserService,
-								@Inject(forwardRef(() => GameGateway)) private readonly gameGateway: GameGateway) {
+	constructor(private readonly userService: UserService) {
 		this.usersSockets = new Map<number, Socket[]>();
 	}
 
-	handleConnection(client: Socket) {
-		client.on(clientEvents.connected, async (user: User) => {
-			client.data.user = user;
-			const socketIds: Socket[] = this.usersSockets.get(user.id);
-			if (socketIds)
-				socketIds.push(client);
-			else
-				this.usersSockets.set(user.id, [client]);
-			const updatedUser = await this.userService.updateUserStatus(user, userStatus.online);
-			this.dataChanged(updatedUser);
-			console.log("user connection: " + user.username);
-		});
+	handleConnection() {}
+
+	@SubscribeMessage('userConnected')
+	async onUserConnected(@ConnectedSocket() client: Socket, @MessageBody() user: User) {
+		client.data.user = user;
+		const socketIds: Socket[] = this.usersSockets.get(user.id);
+		if (socketIds)
+			socketIds.push(client);
+		else
+			this.usersSockets.set(user.id, [client]);
+		const updatedUser = await this.userService.updateUserStatus(user, userStatus.online);
+		this.dataChanged(updatedUser);
+		console.log("user connection: " + user.username);
 	}
 
 	async handleDisconnect(client: Socket) {
@@ -51,12 +51,45 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage(clientEvents.gameInvite)
 	async gameInvite(client: Socket, opponentID: number) {
-		const opponent: User = await this.userService.getUserById(opponentID);
 		const sockets: Socket[] = this.usersSockets.get(opponentID);
 		if (sockets) {
 			sockets.forEach(socket => {
 				socket.emit(serverEvents.gameInvite, client.data.user);
 			});
+		}
+	}
+
+	@SubscribeMessage(clientEvents.gameResponse)
+	gameResponse(client: Socket, response: {accepted: boolean, opponent: User}) {
+		const sockets: Socket[] = this.usersSockets.get(response.opponent.id);
+		if (sockets) {
+			if (!response.accepted) {
+				sockets.forEach((socket) => {
+					socket.emit(serverEvents.gameResponse, {accepted: false, opponent: client.data.user});
+				})
+			}
+		}
+	}
+
+	@SubscribeMessage(clientEvents.addFriend)
+	addFriend(client: Socket, friendID: number) {
+		const sockets: Socket[] = this.usersSockets.get(friendID);
+		if (sockets) {
+			sockets.forEach(socket => {
+				socket.emit(serverEvents.addFriend, client.data.user);
+			});
+		}
+	}
+
+	@SubscribeMessage(clientEvents.friendResponse)
+	friendResponse(client: Socket, response: {accepted: boolean, opponent: User}) {
+		const sockets: Socket[] = this.usersSockets.get(response.opponent.id);
+		if (sockets) {
+			if (response.accepted) {
+				sockets.forEach((socket) => {
+					socket.emit(serverEvents.friendResponse, {accepted: true, opponent: client.data.user});
+				})
+			}
 		}
 	}
 
@@ -75,6 +108,24 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				socket.emit(serverEvents.dataChanged, user);
 			});
 		});
+	}
+
+	blocked(user: User, blocked: User) {
+		const sockets: Socket[] = this.usersSockets.get(user.id);
+		if (sockets) {
+			sockets.forEach(socket => {
+				socket.emit("blocked", blocked);
+			});
+		}
+	}
+
+	unblocked(user: User, unblocked: User) {
+		const sockets: Socket[] = this.usersSockets.get(user.id);
+		if (sockets) {
+			sockets.forEach(socket => {
+				socket.emit("unblocked", unblocked);
+			});
+		}
 	}
 
 }

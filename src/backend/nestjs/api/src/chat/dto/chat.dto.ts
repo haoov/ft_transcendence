@@ -1,18 +1,32 @@
+import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { User } from "src/user/user.interface";
+import { Message } from "../chat.interface";
 
 export class MessageDTO {
-	senderId: number;
+	@IsNotEmpty()
+	sender: User;
+	@IsInt()
 	channelId: number;
-	message: string;
-	datestamp: Date;
-	timestamp: number;
+	@IsNotEmpty()
+	text: string;
+	@IsNotEmpty()
+	datestamp: string;
 }
 
 export class ChannelDTO {
-	id: number;
+	@IsString()
 	name: string;
+	@IsInt()
 	creatorId: number;
-	modeChanel: string;
+	@IsNotEmpty()
+	mode: string;
+	@IsOptional()
 	password: string;
-	users: User [];
+	@IsArray()
+	users: User[];
+	@IsArray()
+	@IsOptional()
+	messages: Message[];
+	@IsArray()
+	admins: User[];
 }

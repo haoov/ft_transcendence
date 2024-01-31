@@ -1,8 +1,10 @@
 import { Socket } from "socket.io";
 import { Pong } from "../data/Pong";
-import { GameParams } from "../interfaces/gameParams";
+import { GameMap, GameParams } from "../interfaces/gameParams";
 import { User } from "src/user/user.interface";
 import { Game } from "../interfaces/game.interface";
+
+const maps: GameMap[] = ["space", "tennis", "classic"];
 
 const computer = {
 	id: 0, 
@@ -12,9 +14,11 @@ const computer = {
 	email: "",
 	games_won: [],
 	games_lost: [],
+	friends: [],
 	twofa_enabled: false,
 	twofa_auth: false,
-	twofa_secret: ""
+	twofa_secret: "",
+	users_blocked: [],
 };
 
 export class Room {
@@ -35,6 +39,10 @@ export class Room {
 		this.closed = false;
 		this.sockets = [];
 		this.params = params.gameParams;
+		if (params.gameParams.map == "random")
+			this.params.map = maps[Math.floor(Math.random() * maps.length)];
+		else
+			this.params.map = params.gameParams.map;
 		this.game = new Pong(params.gameParams);
 	}
 
@@ -52,6 +60,10 @@ export class Room {
 	}
 
 	addSocket(socket: Socket): void {
+		if (this.sockets.find((s) => {return (s.id == socket.id);})) {
+			console.log("socket " + socket.id + " already in room: " + this.name);
+			return;
+		}
 		console.log("adding socket " + socket.id + " to room: " + this.name);
 		socket.data.room = this.name;
 		this.sockets.push(socket);
@@ -69,8 +81,9 @@ export class Room {
 
 	addUser(user: User): void {
 		if (!this.isFull()) {
+			console.log("adding user " + user.username + " to room: " + this.name);
 			this.users.push(user);
-		this.checkFull();
+			this.checkFull();
 		}
 	}
 
@@ -152,9 +165,9 @@ export class Room {
 		this.game.useSpell(side, type);
 	}
 
-	quitGame(socket: Socket): void {
-		console.log(socket.data.user.username + " quitGame");
-		if (socket.data.user.id == this.users[0].id)
+	quitGame(user: User): void {
+		console.log(user.username + " quitGame");
+		if (user.id == this.users[0].id)
 			this.game.getPlayers()[1].topScore();
 		else
 			this.game.getPlayers()[0].topScore();

@@ -1,17 +1,27 @@
 <script setup lang="ts">
 	import { inject } from 'vue';
-	import { type SocketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 	import CustumButton from '@/components/custumButton.vue';
 	import gameData from '../gameData';
 
 	defineProps(["p1", "p2", "state"]);
 	const emit = defineEmits(["leaveGame"]);
 
-	const socketManager: SocketManager = inject('socketManager') as SocketManager;
-
 	function leaveGame() {
 		socketManager.forfeit();
 		gameData.setGameState("noGame");
+	}
+
+	function iconClass(id: number) {
+		let playerAvatar: string;
+		if (id == 1)
+			playerAvatar = gameData.getPlayer1().value.avatar;
+		else
+			playerAvatar = gameData.getPlayer2().value.avatar;
+		if (playerAvatar.includes("http"))
+			return "avatar player";
+		else
+			return "avatar";
 	}
 </script>
 
@@ -20,18 +30,18 @@
 <div class="score-container">
 		<div class="score-div p2">
 			<span class="score p2">{{ gameData.getPlayer2().value.score }}</span>
-			<img class="avatar" :src="gameData.getPlayer2().value.avatar">
+			<img :class="iconClass(2)" :src="gameData.getPlayer2().value.avatar">
 			<span class="username">{{ gameData.getPlayer2().value.username }}</span>
 		</div>
 		<CustumButton
 			v-if="gameData.getGameState().value == 'started'"
 			class="leave"
 			v-on:click="leaveGame()">
-			Leave game
+			Leave
 		</CustumButton>
 		<div class="score-div p1">
 			<span class="username">{{ gameData.getPlayer1().value.username }}</span>
-			<img class="avatar" :src="gameData.getPlayer1().value.avatar">
+			<img :class="iconClass(1)" :src="gameData.getPlayer1().value.avatar">
 			<span class="score p1">{{ gameData.getPlayer1().value.score }}</span>
 		</div>
 	</div>
@@ -40,9 +50,8 @@
 
 <style scoped>
 	.score-container {
-		align-self: flex-start;
 		display: flex;
-		width: 720px;
+		width: 66%;
 		border-radius: 5rem;
 		background: linear-gradient(to left,var(--c-white),10%, transparent);
 		padding: 0px 10px 0px 10px;
@@ -78,10 +87,13 @@
 	}
 
 	.avatar {
-		width: 50px;
-		height: 50px;
-		border-radius: 50%;
+		width: 40px;
+		height: 40px;
 		object-fit: cover;
+	}
+
+	.avatar.player {
+		border-radius: 50%;
 	}
 
 	.username {

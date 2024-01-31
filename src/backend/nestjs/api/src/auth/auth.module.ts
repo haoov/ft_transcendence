@@ -20,10 +20,10 @@ import { Jwt2faStrategy } from "./jwt-2fa/jwt-2fa.strategy";
 		TypeOrmModule.forFeature([UserEntity]),
 		JwtModule.register({
 			secret: process.env.JWT_ACCESS_TOKEN,
-			signOptions: { expiresIn: 3600 },
+			signOptions: { expiresIn: 86400 },
 		}),
 	],
-	controllers: [AuthController],
+	controllers: [ AuthController ],
 	providers: [
 		AuthService, 
 		SessionSerializer,

@@ -10,7 +10,20 @@ export interface User {
 	twofa_enabled: boolean;
 	games_won: Game[]
 	games_lost: Game[]
+	friends: User[]
+	users_blocked: User[]
 }
+
+export interface UserRelation {
+	id: number;
+	username: string;
+	avatar: string;
+	status: string;
+	email: string;
+	blocking: boolean;
+	blocked: boolean;
+	friend: boolean | string;
+  }
 
 export interface Body2faDTO {
 	twofaCode: string
