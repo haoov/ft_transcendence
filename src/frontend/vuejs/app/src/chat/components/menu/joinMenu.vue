@@ -3,6 +3,7 @@
 	import { chat, type Channel, type ChannelData } from '@/chat';
 	import notify from '@/notify/notify';
 	import { computed, ref, type Ref } from 'vue';
+	import cancelIcon from '@/assets/images/cancelIcon.png';
 
 	const joignableChannels: ChannelData[] = await chat.getJoinableChannels(socketManager.getUser());
 	const password: Ref<string> = ref('');
@@ -41,7 +42,7 @@
 
 <template>
 	<div id="joinMenu">
-		<div>
+		<div id="coreDiv">
 			<label id="inputLabel">
 				Search channel :
 				<div class="inputContainer">
@@ -70,23 +71,26 @@
 						</span>
 					</div>
 				</div>
-			<div v-if="result && Object.keys(result).length > 0" class="selected">
-				<span>
-					{{ result.name }}
-				</span>
-			</div>
-			<div v-if="result.mode == 'Protected'" class="passwordDiv">
-				<label class="inputLabel">
-				Password :
-				<input id="channelName"
-					class="channelInput"
-					type="password"
-					autocomplete="off"
-					placeholder="Channel Name"
-					v-model="password"
-				>
-				</label>
-			</div>
+				<div v-if="result && Object.keys(result).length > 0" class="selectedDiv">
+					<label class="inputLabel" for="selected" id="inputLabel"> Selected :</label>
+					<div class="selected" name="selected">
+						<span>
+							{{ result.name }}
+						</span>
+						<img id="removeIcon" :src="cancelIcon" v-on:click="cancelSelection()">
+					</div>
+				</div>
+		</div>
+		<div v-if="result.mode == 'Protected'" class="passwordDiv">
+			<label class="inputLabel" for="password" id="inputLabel"> Password :</label>
+			<input id="passwordInput"
+				name="password"
+				class="channelInput"
+				type="password"
+				autocomplete="off"
+				placeholder="password"
+				v-model="password"
+			>
 		</div>
 	</div>
 		<button id="submitButton"
@@ -97,6 +101,22 @@
 </template>
 
 <style scoped>
+	#coreDiv {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		gap: 20px;
+	}
+
+	.selectedDiv {
+		width: 100%;
+	}
+
+	#cancelIcon {
+		width: 20px;
+		height: 20px;
+	}
+
 	#joinMenu {
 		display: flex;
 		flex-direction: column;
@@ -147,11 +167,11 @@
 				}
 				
 				.channelResult {
-				display: flex;
-				flex-direction: row;
-				justify-content: space-between;
-				width: 100%;
-			}
+					display: flex;
+					flex-direction: row;
+					justify-content: space-between;
+					width: 100%;
+				}
 			}
 
 			.selected {
@@ -163,9 +183,34 @@
 				margin-top: 5px;
 				display: flex;
 				align-items: center;
+				justify-content: space-between;
 				padding: 5px;
 				font-size: small;
 				cursor: pointer;
+			}
+		}
+
+		.passwordDiv {
+			width: 100%;
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+			
+			#inputLabel {
+				display: flex;
+				flex-direction: column;
+				gap: 5px;
+				font-size: 1.4rem;
+				color: var(--c-grey-light);
+			}
+			
+			#passwordInput {
+				width: 80%;
+				padding: 3% 7%;
+				border-radius: 8px;
+				color: var(--c-white);
+				background-color: transparent;
+				border: 1px solid var(--c-grey);
 			}
 		}
 

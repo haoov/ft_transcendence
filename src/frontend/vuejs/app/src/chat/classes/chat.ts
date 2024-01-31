@@ -96,21 +96,24 @@ class Chat {
 		}
 	}
 
-	sendPrivateMessage(User : User) {
+	async sendPrivateMessage(user : User) : Promise<void> {
 		const currentUser = socketManager.getUser();
-		const channelName = `#${currentUser.id}#${User.id}`;
+		const usernames = [currentUser.username, user.username];
+		const sortedUsernames = usernames.sort();
+		const channelName = '#' + sortedUsernames.join('#');
 		const index = this.userChannels.findIndex((c) => c.getName() == channelName);
 		if (index != -1) {
 			const [channel] = this.userChannels.splice(index, 1);
 			this.userChannels.splice(0, 0, channel);
 			return;
 		} else {
+			const userFinded : User = await axios.get(`${apiChat}/user?id=${user.id}`)
 			const params: ChannelParams = {
 				name: channelName,
 				mode: "Private",
 				creatorId: currentUser.id,
 				messages: [],
-				users: [currentUser, User],
+				users: [currentUser, userFinded],
 				admins: [currentUser]
 			};
 			this.createChannel(params);
@@ -129,8 +132,9 @@ class Chat {
 		return await axios.post(`${apiChat}/channel`, params).then(
 			() => true,
 			(err) => {
+				console.log(err.response.data);
 				notify.newNotification("error", {
-					message: err.response.data.message
+					message: err.response.data.message[0]
 				});
 				return false;
 			}

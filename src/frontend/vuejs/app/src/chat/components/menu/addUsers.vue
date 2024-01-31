@@ -6,6 +6,7 @@
 	import cancelIcon from '@/assets/images/cancelIcon.png';
 
 	const props = defineProps<{
+		privateChannel: boolean,
 		channelParams: ChannelParams | undefined,
 		channel: Channel | undefined,
 	}>();
@@ -16,7 +17,6 @@
 	});
 
 	const addableUsers: User[] = await chat.getAddableUsers(props.channel, socketManager.getUser());
-	console.log("[addable]", addableUsers);
 
 	const usersToAdd: Ref<User[]> = ref([]);
 	
@@ -60,7 +60,7 @@
 						v-on:click="removeUser(user)">
 				</div>
 			</div>
-			<div class="inputContainer">
+			<div class="inputContainer" v-if="!privateChannel || usersToAdd.length == 0">
 				<img id="searchIcon">
 				<input id="searchUsers"
 					type="text"
@@ -69,7 +69,7 @@
 					v-model="search">
 			</div>
 		</label>
-		<div id="searchResults">
+		<div id="searchResults" v-if="!privateChannel || usersToAdd.length == 0">
 			<div
 				class="searchResult"
 				v-for="user in searchResults"
@@ -86,6 +86,7 @@
 		flex-direction: column;
 		gap: 5px;
 		font-size: small;
+		margin-top: 2.5%;
 
 		#searchUsers {
 			width: 80%;
@@ -134,7 +135,8 @@
 			font-size: small;
 			color: var(--c-grey-light);
 			background-color: var(--c-black-light);
-			padding: 3px;
+			padding: 5px;
+			border-radius: 50px;
 
 			#removeIcon {
 				width: 15px;
