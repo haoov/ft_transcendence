@@ -81,8 +81,9 @@ export class Room {
 
 	addUser(user: User): void {
 		if (!this.isFull()) {
+			console.log("adding user " + user.username + " to room: " + this.name);
 			this.users.push(user);
-		this.checkFull();
+			this.checkFull();
 		}
 	}
 

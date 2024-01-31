@@ -104,6 +104,7 @@ export class GameGateway
 				client.emit(serverEvents.gameReady);
 				//wait for opponent to be ready
 				setTimeout(() => {
+					console.log("[AFTER TIMEOUT PARAMS SELECTED]")
 					if (openRoom.isOpen()) {
 						openRoom.quitGame(openRoom.getUsers()[0]);
 						this.endGame(openRoom);
@@ -158,6 +159,7 @@ export class GameGateway
 
 	@SubscribeMessage(clientEvents.stopWaiting)
 	async stopWaiting(client: Socket) {
+		console.log("[STOP WAITING]");
 		const room = this.findRoom(client);
 		if (room) {
 			if (room.isClosed()) {
@@ -177,6 +179,7 @@ export class GameGateway
 
 	@SubscribeMessage(clientEvents.gameForfeit)
 	gameForfeit(client: Socket) {
+		console.log("[FORFEIT]");
 		const room: Room = this.findRoom(client);
 		if (room) {
 			room.quitGame(client.data.user);
@@ -188,6 +191,11 @@ export class GameGateway
 	@SubscribeMessage(clientEvents.gameResponse)
 	gameResponse(client: Socket, response: {accepted: boolean, opponent: User}) {
 		if (response.accepted) {
+			const privateRoom: Room = this.findRoomByUser(response.opponent)
+			if (privateRoom) {
+				client.emit("alreadyInGame", response.opponent);
+				return;
+			}
 			const waintingRoom = this.findRoom(client);
 			if (waintingRoom) {
 				this.deleteRoom(waintingRoom);
@@ -195,7 +203,8 @@ export class GameGateway
 			const room: Room = this.createPrivateRoom(client.data.user, response.opponent);
 			this.userGateway.gameReady(room, client.data.user);
 			setTimeout(() => {
-				if (room.isOpen()) {
+				if (room.isOpen() && room.isFull()) {
+					console.log("[AFTER TIMEOUT GAME RESPONSE]")
 					room.quitGame(room.getUsers()[0]);
 					this.endGame(room);
 					this.deleteRoom(room);
@@ -217,6 +226,14 @@ export class GameGateway
 		return this.rooms.find((room) => {
 			return (room.getUsers().find((user) => {
 				return (user.id == client.data.user.id);
+			}));
+		});
+	}
+
+	findRoomByUser(user: User): Room | undefined {
+		return this.rooms.find((room) => {
+			return (room.getUsers().find((u) => {
+				return (u.id == user.id);
 			}));
 		});
 	}

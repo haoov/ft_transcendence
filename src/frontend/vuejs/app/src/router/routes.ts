@@ -16,7 +16,6 @@ const routes = [
 		beforeEnter: async () => {
 			if (socketManager.getUser().id == undefined) {
 				await socketManager.initSocket();
-				console.log("init socket");
 			}
 		},
 	},
@@ -32,7 +31,6 @@ const routes = [
 		beforeEnter: async () => {
 			if (socketManager.getUser().id == undefined) {
 				await socketManager.initSocket();
-				console.log("init socket");
 			}
 		},
 	},
@@ -43,7 +41,6 @@ const routes = [
 		beforeEnter: async () => {
 			if (socketManager.getUser().id == undefined) {
 				await socketManager.initSocket();
-				console.log("init socket");
 			}
 		},
 	},
@@ -54,7 +51,6 @@ const routes = [
 		beforeEnter: async () => {
 			if (socketManager.getUser().id == undefined) {
 				await socketManager.initSocket();
-				console.log("init socket");
 			}
 		},
 	},
@@ -65,7 +61,6 @@ const routes = [
 		beforeEnter: async () => {
 			if (socketManager.getUser().id == undefined) {
 				await socketManager.initSocket();
-				console.log("init socket");
 			}
 		},
 	},

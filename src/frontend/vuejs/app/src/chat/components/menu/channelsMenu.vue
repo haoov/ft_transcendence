@@ -38,6 +38,21 @@
 			channelParams.users.splice(index, 1);
 	}
 
+	const disableButton = computed(() => {
+		if (channelParams.mode == 'Public' || channelParams.mode == 'Secret') {
+			if (channelParams.name.length == 0)
+				return true;
+		}
+		if (channelParams.mode == 'Protected') {
+			if (channelParams.name.length == 0 || !channelParams.password)
+				return true;
+		}
+		if (channelParams.mode == 'Private' && channelParams.users.length < 2) {
+				return true;
+		}
+		return false;
+	});
+
 </script>
 
 <template>
@@ -112,6 +127,7 @@
 		</Suspense>
 		<!--END JOIN CHANNEL-->
 		<button id="submitButton"
+			:disabled="disableButton"
 			v-if="subMenu == 'Create'"
 			v-on:click="createChannel()">
 			Create
@@ -194,16 +210,25 @@
 	}
 
 	#submitButton {
-		background-color: var(--c-black-light);
-		border: 1px solid var(--c-black-light);
+		color: #fff;
+		background-color: var(--c-pink);
+		border: 1px solid var(--c-pink);
 		padding: 12px 16px;
 		cursor: pointer;
 		border-radius: 6px;
+		width: 25%;
 
 		&:hover:not(:disabled) {
-			background-color: var(--c-grey-light);
-			color: var(--c-black-light);
-			border: 1px solid var(--c-pink);
+			transform: scale(1.05);
+		}
+		&:disabled {
+			background-color: var(--c-black-light);
+			border: 1px solid var(--c-black-light);
+			cursor: not-allowed;
+			transform: none !important;
+		}
+		&:active {
+			transform: scale(0.9);
 		}
 	}
 </style>

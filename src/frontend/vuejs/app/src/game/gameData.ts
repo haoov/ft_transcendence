@@ -60,7 +60,6 @@ class GameData {
 	async createRenderer(id: string, width: number, height: number) {
 		await axios.get<InitParams>(`${apiGame}/params`).then(
 			(response) => {
-				console.log("creating renderer");
 				this.initParams = response.data;
 				this.gameRenderer= new GameRenderer(id, this.initParams, width, height);
 			}

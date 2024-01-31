@@ -192,10 +192,9 @@ class Chat {
 		const index = this.userChannels.findIndex((c) => c.getId() == data.id);
 		if (index != -1) {
 			const updatedChannel = new Channel(data);
-			updatedChannel.setMessages(this.userChannels[index].getMessages());
 			this.userChannels.splice(index, 1, updatedChannel);
-		}
-		else {
+			updatedChannel.setMessages(this.userChannels[index].getMessages());
+		} else {
 			const newChannel = new Channel(data);
 			this.userChannels.push(newChannel);
 		}
