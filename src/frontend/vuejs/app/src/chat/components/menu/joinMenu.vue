@@ -10,9 +10,7 @@
 	const result: Ref<ChannelData> = ref({} as ChannelData);
 
 	const searchResults = computed((): ChannelData[] => {
-		if (search.value == result.value.name) {
-			return [result.value];
-		} else if (search.value.length == 0) { 
+		if (search.value.length == 0 || search.value == result.value.name) { 
 			return [];
 		} else {
 			return joignableChannels.filter((channel: ChannelData) => {
@@ -61,7 +59,8 @@
 					v-for="channel in searchResults"
 					v-on:click="selectChannel(channel)"
 				>
-						{{ channel.name }}
+					<div class = "channelResult">
+						<p>{{ channel.name }}</p>
 						<span v-if="channel.mode === 'Protected'">
 							<svg fill="#7c7979" height="10px" width="10px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 330 330" xml:space="preserve" stroke="#7c7979">
 							<g id="SVGRepo_bgCarrier" stroke-width="0"/>
@@ -69,14 +68,15 @@
 							<g id="SVGRepo_iconCarrier"> <g id="XMLID_509_"> <path id="XMLID_510_" d="M65,330h200c8.284,0,15-6.716,15-15V145c0-8.284-6.716-15-15-15h-15V85c0-46.869-38.131-85-85-85 S80,38.131,80,85v45H65c-8.284,0-15,6.716-15,15v170C50,323.284,56.716,330,65,330z M180,234.986V255c0,8.284-6.716,15-15,15 s-15-6.716-15-15v-20.014c-6.068-4.565-10-11.824-10-19.986c0-13.785,11.215-25,25-25s25,11.215,25,25 C190,223.162,186.068,230.421,180,234.986z M110,85c0-30.327,24.673-55,55-55s55,24.673,55,55v45H110V85z"/> </g> </g>
 							</svg>
 						</span>
-				</div>
-				<div class="selected">
-					<span v-if="result.name">
-						{{ result.name }}
-					</span>
 					</div>
-				<label class="inputLabel"
-				v-if="result.mode == 'Protected'">
+				</div>
+			<div v-if="result && Object.keys(result).length > 0" class="selected">
+				<span>
+					{{ result.name }}
+				</span>
+			</div>
+			<div v-if="result.mode == 'Protected'" class="passwordDiv">
+				<label class="inputLabel">
 				Password :
 				<input id="channelName"
 					class="channelInput"
@@ -84,10 +84,11 @@
 					autocomplete="off"
 					placeholder="Channel Name"
 					v-model="password"
-					>
+				>
 				</label>
 			</div>
 		</div>
+	</div>
 		<button id="submitButton"
 			v-on:click="submitEvent()">
 			Join
@@ -145,6 +146,20 @@
 					border: var(--c-pink) 1px solid;
 				}
 			}
+
+			.selected {
+				width: 90%;
+				background-color: var(--c-black-light);
+				color: var(--c-grey);
+				border: var(--c-pink) 1px solid;
+				border-radius: 7px;
+				margin-top: 5px;
+				display: flex;
+				align-items: center;
+				padding: 5px;
+				font-size: small;
+				cursor: pointer;
+			}
 		}
 
 		#submitButton {
@@ -153,6 +168,7 @@
 			padding: 12px 16px;
 			cursor: pointer;
 			border-radius: 6px;
+			width: 25%;
 
 			&:hover:not(:disabled) {
 				background-color: var(--c-grey-light);
