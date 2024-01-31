@@ -132,6 +132,7 @@ class Chat {
 	}
 
 	async createChannel(params: ChannelParams): Promise<boolean> {
+		params.name = params.name.trim();
 		return await axios.post(`${apiChat}/channel`, params).then(
 			() => true,
 			(err) => {
