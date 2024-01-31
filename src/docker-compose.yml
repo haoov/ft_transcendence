@@ -97,7 +97,7 @@ services:
       dockerfile: ./Dockerfile
     image: vuejs
     ports:
-      - 3000:80
+      - 10.12.2.12:3000:80
     networks:
       - ft_transcendence
     environment:

@@ -100,10 +100,7 @@
 					action: () => {
 						if (props.channel == undefined)
 							return;
-						if (props.channel.getUsers().length == 1)
-							chat.deleteChannel(props.channel);
-						else
-							chat.leaveChannel(props.channel);
+						chat.leaveChannel(props.channel);
 					}
 				},
 				{

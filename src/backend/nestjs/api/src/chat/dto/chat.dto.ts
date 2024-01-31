@@ -1,4 +1,4 @@
-import { IsArray, IsInt, IsNotEmpty, IsOptional } from "class-validator";
+import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { User } from "src/user/user.interface";
 import { Message } from "../chat.interface";
 
@@ -14,7 +14,7 @@ export class MessageDTO {
 }
 
 export class ChannelDTO {
-	@IsNotEmpty()
+	@IsString()
 	name: string;
 	@IsInt()
 	creatorId: number;
