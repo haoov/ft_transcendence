@@ -14,6 +14,7 @@ import { socketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
 
 const apiChat: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat`;
+const apiUser: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/user`;
 
 class Chat {
 	private readonly userChannels:  Channel[];
@@ -98,16 +99,18 @@ class Chat {
 
 	async sendPrivateMessage(user : User) : Promise<void> {
 		const currentUser = socketManager.getUser();
-		const usernames = [currentUser.username, user.username];
-		const sortedUsernames = usernames.sort();
-		const channelName = '#' + sortedUsernames.join('#');
+		const ids = [currentUser.id.toString(), user.id.toString()];
+		const sortedids = ids.sort();
+		const channelName = '#' + sortedids.join('#');
 		const index = this.userChannels.findIndex((c) => c.getName() == channelName);
 		if (index != -1) {
 			const [channel] = this.userChannels.splice(index, 1);
 			this.userChannels.splice(0, 0, channel);
 			return;
 		} else {
-			const userFinded : User = await axios.get(`${apiChat}/user?id=${user.id}`)
+			const userFinded : User = await axios.get(`${apiUser}?id=${user.id}`)
+			.then((response) => { return response.data });
+			console.log(userFinded);
 			const params: ChannelParams = {
 				name: channelName,
 				mode: "Private",
