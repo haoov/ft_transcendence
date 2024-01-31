@@ -138,9 +138,7 @@ async function fetchMe() {
 			usernameSet.value = data.data.username;
 			selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
 		})
-		.catch( (err) => {
-			console.log(err);
-		});
+		.catch( (err) => {});
 }
 
 

@@ -44,7 +44,7 @@ export class StatsService {
 	async mapUserStats(users: UserEntity[], userId: number, forFriends: boolean): Promise<UserStat[]> {
 				// Get all special users
 				const blockingList = await this.userSerivce.getBlockingList(userId);
-				const blockedList = (await this.userSerivce.getBlockedUsers(userId)).map((user) => user.id);
+				const blockedList = (await this.userSerivce.getBlockedUsers(userId));
 				let friendList: number[] = [];
 				if (!forFriends)
 					friendList = await this.userSerivce.getFriendAndPendingList(userId);

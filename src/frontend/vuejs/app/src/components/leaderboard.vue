@@ -52,7 +52,8 @@ async function fetchLeaderboard(option: string) {
 		query = '?friends=true';
 	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/leaderboard${query}`)
-		.then(data => { players.value = data.data; });
+		.then(data => { players.value = data.data; })
+		.catch(err => {});
 }
 
 async function fetchMe() {
@@ -63,13 +64,14 @@ async function fetchMe() {
 			// Fetch my stats
 			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/user/${data.data.id}`;
 				axios.get(url1).then( data => {
-				myStats.value = data.data;})
+				myStats.value = data.data;}).catch(err => {})
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
 				myGames.value = data.data;
-				updatePieAnimation();})
-			});
+				updatePieAnimation();}).catch(err => {})
+			})
+		.catch(err => {});
 }
 
 function loadAllImages() {

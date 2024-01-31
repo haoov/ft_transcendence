@@ -110,4 +110,22 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		});
 	}
 
+	blocked(user: User, blocked: User) {
+		const sockets: Socket[] = this.usersSockets.get(user.id);
+		if (sockets) {
+			sockets.forEach(socket => {
+				socket.emit("blocked", blocked);
+			});
+		}
+	}
+
+	unblocked(user: User, unblocked: User) {
+		const sockets: Socket[] = this.usersSockets.get(user.id);
+		if (sockets) {
+			sockets.forEach(socket => {
+				socket.emit("unblocked", unblocked);
+			});
+		}
+	}
+
 }

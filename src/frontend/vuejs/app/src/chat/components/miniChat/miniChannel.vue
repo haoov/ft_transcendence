@@ -12,7 +12,9 @@
 	const input = ref<string>("");
 
 	function sendMessage() {
-		if (input.value == "" || input.value.length > 512) {
+		if (input.value == "")
+			return;
+		if (input.value.length > 512) {
 			notify.newNotification('error', { message:`Message too long (${input.value.length}/512)` });
 			return;
 		}

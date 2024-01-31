@@ -17,7 +17,8 @@ router.beforeEach((to) => {
 			() => {
 				router.push("/login");
 			}
-		);
+		)
+		.catch(err => {});
 	}
 })
 

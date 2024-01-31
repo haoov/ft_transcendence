@@ -186,23 +186,26 @@ export class ChatService {
 		return newChannel;
 	}
 
-	async updateChannel(channelId: number, channelDTO: ChannelDTO): Promise<Channel> {
+	async updateChannel(channelId: number, channelDTO: ChannelDTO):
+		Promise<{channel: Channel, updatedChannel: Channel}> {
 		if (channelDTO.name.length == 0 || channelDTO.name.length > 32)
 			throw new ForbiddenException("Invalid channel name");
 		channelDTO.name = channelDTO.name.trim();
 		const channels: Channel[] = await this.channelRepository.find();
 		if (channelDTO.mode != "Secret") {
-			if (await this.channelRepository.findOne({
+			const existingChannel: Channel = await this.channelRepository.findOne({
 				where: { name: channelDTO.name }
-			})) throw new ForbiddenException("Channel name already taken");
+			})
+			if (existingChannel && existingChannel.id != channelId) 
+				throw new ForbiddenException("Channel name already taken");
+		}
 		let updatedChannel: Channel;
 		const channel: Channel = await this.getChannel(channelId);
 		updatedChannel = await this.channelRepository.save({
 			...channel,
 			...channelDTO
 		});
-		return updatedChannel;
-		}
+		return {channel: channel, updatedChannel: updatedChannel};
 	}
 
 	async leaveChannel(channelId: number, userId: number): Promise<void> {
@@ -230,16 +233,19 @@ export class ChatService {
 			throw new ForbiddenException("You must be administrator");
 	}
 
-	async getUserChannels(userId: number): Promise<Channel[]> {
+	async getUserChannels(userId: number, blocked: number[]): Promise<Channel[]> {
 		let channels: Channel[];
 		try {
 			channels = await this.channelRepository.createQueryBuilder("channel")
 			.leftJoinAndSelect("channel.users", "user")
-			.leftJoinAndSelect("channel.messages", "message")
-			.leftJoinAndSelect("message.sender", "sender")
+			.leftJoinAndSelect("channel.messages", "messages")
+			.leftJoinAndSelect("messages.sender", "sender")
 			.leftJoinAndSelect("channel.admins", "admin")
 			.getMany();
 			this.sortCahnnels(channels);
+			channels.forEach((c) => {
+				c.messages = c.messages.filter((m) => blocked.includes(m.sender.id) == false);
+			})
 			channels = channels.filter((c) => c.users.find((u) => u.id == userId));
 		}
 		catch (err) {

@@ -66,12 +66,30 @@ class Chat {
 	};
 
 	async loadChannels(userId: number) {
-		const channels = await axios.get(`${apiChat}/channels`)
-		.then((response) => { return response.data });
+		const channels: ChannelData[] = await axios.get(`${apiChat}/channels`)
+		.then((response) => { return response.data })
+		.catch(() => {});
 		channels.forEach((channel: ChannelData) => {
 			const newChannel = new Channel(channel);
 			this.userChannels.push(newChannel);
-		});
+		})
+	}
+
+	async loadMessages(unblocked: number) {
+		const channels = await axios.get(`${apiChat}/channels`)
+		.then((response) => { return response.data })
+		.catch(() => []);
+		channels.forEach((channel: ChannelData) => {
+			const newChannel = new Channel(channel);
+			let index = this.userChannels.findIndex((c) => c.getId() == newChannel.getId());
+			if (index != -1) {
+				this.userChannels.splice(index, 1, newChannel);
+			}
+			index = this.activeChannels.findIndex((c) => c.getId() == newChannel.getId());
+			if (index != -1) {
+				this.activeChannels.splice(index, 1, newChannel);
+			}
+		})
 	}
 
 	getChannel(id: number): Channel | undefined {
@@ -105,8 +123,7 @@ class Chat {
 			return;
 		} else {
 			const userFinded : User = await axios.get(`${apiUser}?id=${user.id}`)
-			.then((response) => { return response.data });
-			console.log(userFinded);
+			.then((response) => { return response.data }).catch(() => {});
 			const params: ChannelParams = {
 				name: channelName,
 				mode: "Private",
@@ -201,32 +218,47 @@ class Chat {
 	}
 
 	async getAddableUsers(channel: Channel | undefined, user: User): Promise<User[]> {
-		let response: AxiosRequestConfig<User[]>;
-		if (channel) {
-			response = await axios.get(`${apiChat}/channel/addable?id=${channel.getId()}&userId=${user.id}`);
-		} else {
-			response = await axios.get(`${apiChat}/channel/addable?userId=${user.id}`);
+		try {
+			let response: AxiosRequestConfig<User[]>;
+			if (channel) {
+				response = await axios.get(`${apiChat}/channel/addable?id=${channel.getId()}&userId=${user.id}`);
+			} else {
+				response = await axios.get(`${apiChat}/channel/addable?userId=${user.id}`);
+			}
+			if (response.data)
+				return response.data;
+			else
+				return [];
 		}
-		if (response.data)
-			return response.data;
-		else
+		catch(err) {
 			return [];
+		}
 	}
 
 	async getJoinableChannels(user: User): Promise<ChannelData[]> {
-		const response = await axios.get(`${apiChat}/channels/joinable?id=${user.id}`);
-		if (response.data)
-			return response.data;
-		else
+		try {
+			const response = await axios.get(`${apiChat}/channels/joinable?id=${user.id}`);
+			if (response.data)
+				return response.data;
+			else
+				return [];
+		}
+		catch(err) {
 			return [];
+		}
 	}
 
 	async getChannelRelations(channel: Channel): Promise<UserRelation[]> {
-		const response = await axios.get(`${apiChat}/channel/relations?id=${channel.getId()}`);
-		if (response.data)
-			return response.data;
-		else
+		try {
+			const response = await axios.get(`${apiChat}/channel/relations?id=${channel.getId()}`);
+			if (response.data)
+				return response.data;
+			else
+				return [];
+		}
+		catch(err) {
 			return [];
+		}
 	}
 
 	updateUser(user: User) {
@@ -242,6 +274,12 @@ class Chat {
 				channel.getUsers().splice(index, 1, user);
 			}
 		});
+	}
+
+	removeMessages(blockedId: number) {
+		this.userChannels.forEach((c) => {
+			c.removeMessages(blockedId);
+		})
 	}
 }
 

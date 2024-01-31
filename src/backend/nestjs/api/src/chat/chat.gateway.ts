@@ -16,6 +16,7 @@ import { User } from 'src/user/user.interface';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MessageDTO } from './dto/chat.dto';
+import { UserService } from 'src/user/user.service';
 
 @WebSocketGateway({ namespace: 'chat' })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -25,9 +26,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private listMutedUsers : Map<number, number[]>;
 
 	constructor(
-		@InjectRepository(
-			ChannelEntity) private channelRepository: Repository<ChannelEntity>,
-			private readonly chatService: ChatService,) {
+		@InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>,
+		private readonly chatService: ChatService,
+		private readonly userService: UserService) {
 		this.userSockets = new Map<number, Socket[]>();
 		this.listMutedUsers = new Map<number, number[]>();
 	}
@@ -80,7 +81,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('newMessage')
 	async newMessage(@ConnectedSocket() client: Socket, @MessageBody() MessageDTO: MessageDTO) {
 		const channel: Channel = await this.chatService.getChannel(MessageDTO.channelId);
-        const muted = this.listMutedUsers.get(channel.id);
+    const muted = this.listMutedUsers.get(channel.id);
+		const blocked: number[] = await this.userService.getBlockingList(MessageDTO.sender.id);
 		if (muted && muted.includes(MessageDTO.sender.id)) {
 			const sockets: Socket[] = this.userSockets.get(MessageDTO.sender.id);
 			if (sockets) {
@@ -91,7 +93,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
     const message: Message = await this.chatService.createMessage(MessageDTO);
-		this.server.to(channel.id.toString()).emit('newMessage', message);
+		channel.users.forEach((user) => {
+			const sockets: Socket[] = this.userSockets.get(user.id);
+			if (sockets) {
+				for (const socket of sockets) {
+					if (!blocked.includes(user.id))
+						socket.emit('newMessage', message);
+				}
+			}
+		});
 	}
 
 	newChannel(channel: Channel): void {
@@ -106,12 +116,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	channelUpdate(channel: Channel): void {
+	channelUpdate(channel: Channel, users?: User[]): void {
+		if (users) {
+			for (const user of users) {
+				const sockets: Socket[] = this.userSockets.get(user.id);
+				if (sockets) {
+					for (const socket of sockets) {
+						socket.join(channel.id.toString());
+					}
+				}
+			}
+		}
 		this.server.to(channel.id.toString()).emit('channelUpdated', channel);
 	}
 
-	async channelLeft(channelId: number): Promise<void> {
-		const sockets: Socket[] = this.userSockets.get(channelId);
+	async channelLeft(channelId: number, userId: number): Promise<void> {
+		const sockets: Socket[] = this.userSockets.get(userId);
 		if (sockets) {
 			for (const socket of sockets) {
 				socket.leave(channelId.toString());

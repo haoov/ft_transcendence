@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, HttpException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, Profile } from "passport-42";
 import { AuthService } from "../auth.service";
@@ -18,7 +18,17 @@ export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
 		});
 	}
 
+	handleRequest(err: any, user: any, info: any, context: any, status: any) {
+		console.log('errorGuard', err);
+		if (err || !user) {
+		  throw new HttpException(err.message, err.status);
+		}
+		return user;
+	  }
+
+
 	async validate(accesToken: string, refreshToken: string, profile: Profile): Promise<any> {
+		// callback();	
 		const userInfos: UserAuthDTO = {
 			username: profile.username,
 			avatar: profile._json.image.link,
@@ -29,4 +39,5 @@ export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
 			throw new UnauthorizedException();
 		return userValidated;
 	}
+
 }
