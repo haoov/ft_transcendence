@@ -9,9 +9,10 @@
 	watch(chat.getChannels(), () => {
 		if (currentChannel.value) {
 			const channel = chat.getChannel(currentChannel.value.getId());
-			if (channel && channel != currentChannel.value) {
+			if (channel)
 				currentChannel.value = channel;
-			}
+			else
+				currentChannel.value = chat.getChannels()[0];
 		}
 	})
 </script>

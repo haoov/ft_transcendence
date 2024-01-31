@@ -61,6 +61,7 @@
 		border-radius: 50%;
 		margin-right: 10px;
 		margin-left: 10px;
+		background: transparent;
 	}
 
 	#notification-content {
