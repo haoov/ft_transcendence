@@ -46,6 +46,7 @@ class SocketManager {
 				if (data.status == "waiting")
 				gameData.setGameState("waiting");
 			}
+			chat.updateUser(data);
 		});
 
 		this.userSocket.on(ServerEvents.gameReady, (data: User) => {
