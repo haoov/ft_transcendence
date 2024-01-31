@@ -44,6 +44,7 @@
 			</label>
 			<Suspense>
 				<v_addUsers
+					:privateChannel="false"
 					:channelParams="updatedParams"
 					:channel="channel"
 					v-on:add="(user) => {
