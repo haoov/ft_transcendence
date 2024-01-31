@@ -95,7 +95,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	newChannel(channel: Channel): void {
-		console.log(channel);
 		for (const user of channel.users) {
 			const sockets: Socket[] = this.userSockets.get(user.id);
 			if (sockets) {
@@ -108,24 +107,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	channelUpdate(channel: Channel): void {
-		for (const user of channel.users) {
-			const sockets: Socket[] = this.userSockets.get(user.id);
-			if (sockets) {
-				for (const socket of sockets)
-					socket.emit('channelUpdated', channel);
-			}
-		}
+		this.server.to(channel.id.toString()).emit('channelUpdated', channel);
 	}
 
 	async channelLeft(channelId: number): Promise<void> {
 		const sockets: Socket[] = this.userSockets.get(channelId);
-		const channel: Channel = await this.chatService.getChannel(channelId);
-		this.server.to(channelId.toString()).emit("channelUpdated", channel);
 		if (sockets) {
 			for (const socket of sockets) {
 				socket.leave(channelId.toString());
 			}
 		}
+		const channel: Channel = await this.chatService.getChannel(channelId);
+		this.channelUpdate(channel);
 	}
 
 	@SubscribeMessage('setAdmin')
@@ -145,7 +138,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					socket.emit('namedAdmin', channel);
 				}
 			}
-			this.server.to(channelId.toString()).emit('channelUpdated', channel);
+			this.channelUpdate(channel);
 		}
 	}
 
@@ -171,7 +164,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					socket.leave(channelId.toString());
 				}
 			}
-			this.server.to(channelId.toString()).emit('channelUpdated', channel);
+			this.channelUpdate(channel);
 		}
 	}
 
@@ -193,7 +186,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					socket.leave(channelId.toString());
 				}
 			}
-			this.server.to(channelId.toString()).emit('channelUpdated', channel);
+			this.channelUpdate(channel);
 		}
 	}
 

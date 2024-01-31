@@ -98,8 +98,8 @@ export class ChatController {
 	@Delete('/channel/leave')
 	async leaveChannel(@Req() request: Request, @Query('id') channelId: number) {
 		try {
-			if (await this.chatService.removeUserFromChannel(channelId, request.user['id']))
-				this.chatGateway.channelLeft(channelId);
+			await this.chatService.leaveChannel(channelId, request.user['id']);
+			await this.chatGateway.channelLeft(channelId);
 		}
 		catch (err) {
 			throw err;

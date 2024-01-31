@@ -33,14 +33,10 @@ class Chat {
 	}
 
 	removeChannel(id: number) {
-		let index = this.userChannels.findIndex(
-			(channel) => channel.getId() == id
-		);
+		let index = this.userChannels.findIndex((channel) => channel.getId() == id);
 		if (index != -1)
 			this.userChannels.splice(index, 1);
-		index = this.activeChannels.findIndex(
-			(channel) => channel.getId() == id
-		);
+		index = this.activeChannels.findIndex((channel) => channel.getId() == id);
 		if (index != -1)
 			this.activeChannels.splice(index, 1);
 	}
@@ -132,24 +128,44 @@ class Chat {
 	}
 
 	async createChannel(params: ChannelParams): Promise<boolean> {
-		return await axios.post(`${apiChat}/channel`, params).then(
-			() => true,
-			(err) => {
-				console.log(err.response.data);
-				notify.newNotification("error", {
-					message: err.response.data.message[0]
-				});
-				return false;
-			}
-		);
+		return await axios.post(`${apiChat}/channel`, params)
+		.then(() => true)
+		.catch((err) => {
+			notify.newNotification("error", {
+				message: err.response.data.message
+			});
+			return false;
+		});
 	}
 
 	async deleteChannel(channel: Channel): Promise<void> {
 		await axios.delete(`${apiChat}/channel?id=${channel.getId()}`)
+		.then(() => {
+				this.removeChannel(channel.getId());
+				notify.newNotification("success", {
+					message: "Channel deleted",
+					by: `${channel.getName()}`
+				});
+			})
+			.catch((err) => {
+				notify.newNotification("error", {
+					message: err.response.data.message
+				});
+			
+			})
 	}
 
 	async leaveChannel(channel: Channel): Promise<void> {
-		await axios.delete(`${apiChat}/channel/leave?id=${channel.getId()}`);
+		await axios.delete(`${apiChat}/channel/leave?id=${channel.getId()}`)
+		.then(() => {
+				this.removeChannel(channel.getId());
+			})
+		.catch((err) => {
+			console.log(err.response.data);
+			notify.newNotification("error", {
+				message: err.response.data.message
+			});
+		});
 	}
 
 	updateChannel(channel: Channel, updatedParams: ChannelParams): void {
@@ -170,16 +186,11 @@ class Chat {
 	channelUpdate(data: ChannelData) {
 		const index = this.userChannels.findIndex((c) => c.getId() == data.id);
 		if (index != -1) {
-			if (data.users.findIndex((u) => u.id == socketManager.getUser().id)) {
-				this.userChannels.splice(index, 1);
-				const activeIndex = this.activeChannels.findIndex((c) => c.getId() == data.id);
-				if (activeIndex != -1)
-					this.activeChannels.splice(activeIndex, 1);
-			}
 			const updatedChannel = new Channel(data);
 			updatedChannel.setMessages(this.userChannels[index].getMessages());
 			this.userChannels.splice(index, 1, updatedChannel);
-		} else {
+		}
+		else {
 			const newChannel = new Channel(data);
 			this.userChannels.push(newChannel);
 		}
