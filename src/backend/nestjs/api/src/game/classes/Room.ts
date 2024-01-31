@@ -17,7 +17,8 @@ const computer = {
 	friends: [],
 	twofa_enabled: false,
 	twofa_auth: false,
-	twofa_secret: ""
+	twofa_secret: "",
+	users_blocked: [],
 };
 
 export class Room {
@@ -80,8 +81,9 @@ export class Room {
 
 	addUser(user: User): void {
 		if (!this.isFull()) {
+			console.log("adding user " + user.username + " to room: " + this.name);
 			this.users.push(user);
-		this.checkFull();
+			this.checkFull();
 		}
 	}
 

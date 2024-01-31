@@ -1,15 +1,33 @@
 <script setup lang="ts">
-	import { inject, onMounted } from 'vue';
+	import { onMounted, ref, watch, type Ref, onUnmounted } from 'vue';
 	import { ServerEvents, type User } from '@/utils';
 	import gameMenu from '@/game/components/gameMenu.vue';
 	import score from '@/game/components/score.vue';
 	import spells from '@/game/components/spells.vue';
-	import { type SocketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 	import { onBeforeRouteLeave } from 'vue-router';
 	import gameData from '@/game/gameData';
 
-	const socketManager: SocketManager = inject('socketManager') as SocketManager;
-	let afId: number;
+	const width: Ref<number> = ref(window.innerWidth * 0.8 > 1280 ? 1280 : window.innerWidth * 0.8);
+	const height: Ref<number> = ref(width.value * 0.5625);
+
+	function resize() {
+		if (window.innerWidth * 0.8 > 1280) {
+			return ;
+		}
+		console.log("resize");
+		width.value = window.innerWidth * 0.8;
+		height.value = width.value * 0.5625;
+		gameData.resize(width.value, height.value);
+	};
+
+	onMounted(() => {
+		window.addEventListener("resize", () => {resize();});
+	});
+
+	onUnmounted(() => {
+		window.removeEventListener("resize", () => {resize();});
+	});
 
 	function moveEvents(event: KeyboardEvent) {
 		if (event.key == "w" || event.key == "W")
@@ -29,6 +47,7 @@
 	function animate() {
 		if (gameData.started()) {
 			console.log("animate");
+			socketManager.emit("game", "needUpdate");
 			socketManager.update();
 			gameData.render();
 			requestAnimationFrame(animate);
@@ -36,7 +55,8 @@
 	}
 
 	onMounted(async () => {
-		await gameData.createRenderer("game");
+		
+		await gameData.createRenderer("game", width.value, height.value);
 		document.addEventListener("keydown", moveEvents);
 		socketManager.checkGame();
 		if (!socketManager.hasEventListener("game", ServerEvents.gameReady))
@@ -46,12 +66,12 @@
 		if (!socketManager.hasEventListener("game", ServerEvents.started)) {
 			socketManager.addEventListener("game", ServerEvents.started, (users: User[], data: any) => {
 				gameData.startGame(users, data);
-				afId = requestAnimationFrame(animate);
+				requestAnimationFrame(animate);
 			});
 		}
 		if (!socketManager.hasEventListener("game", ServerEvents.updated)) {
 			socketManager.addEventListener("game", ServerEvents.updated, (data: any) => {
-				gameData.updateGame(data);
+				gameData.updateGame(data, width.value, height.value);
 			});
 		}
 		if (!socketManager.hasEventListener("game", ServerEvents.finished))
@@ -61,7 +81,6 @@
 	})
 
 	onBeforeRouteLeave(() => {
-		console.log("leaving game");
 		if (gameData.started()) {
 			socketManager.forfeit();
 		}
@@ -70,10 +89,16 @@
 </script>
 
 <template>
-	<div class="game-container">
+	<div class="game-container"
+		:width="width"
+		:height="height">
 		<score></score>
 		<div id="game">
-			<gameMenu v-if="gameData.getDisplayMenu().value"></gameMenu>
+			<gameMenu
+				v-if="gameData.getDisplayMenu().value"
+				:width="width"
+				:height="height">
+			</gameMenu>
 		</div>
 		<spells></spells>
 	</div>
@@ -85,8 +110,8 @@
 		muted
 		loop
 		autoplay
-		width="720"
-		height="480"
+		:width="width"
+		:height="height"
 		src="../../assets/videos/space.mp4"
 		style="display: none;"
 	></video>
@@ -107,7 +132,7 @@
 
 	#game {
 		display: flex;
-		width: 720px;
-		height: 480px;
+		align-items: center;
+		justify-content: center;
 	}
-</style>../gameRenderer
+</style>

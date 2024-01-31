@@ -1,13 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { User } from 'src/user/user.interface';
+import { Message } from 'src/chat/chat.interface';
 
 @Entity()
 class ChannelEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
+	@Column() 
 	name: string;
 
 	@Column()
@@ -30,6 +31,10 @@ class ChannelEntity {
 	@ManyToMany(() => UserEntity)
 	@JoinTable()
 	admins: User [];
+
+	@ManyToMany(() => MessageEntity, {cascade: ["remove"]})
+	@JoinTable()
+	messages: Message[];
 }
 
 @Entity()
@@ -37,8 +42,9 @@ class MessageEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
-	senderId: number;
+	@ManyToOne(() => UserEntity)
+	@JoinColumn({ name: 'senderId' })
+	sender: User;
 
 	@Column()
 	channelId: number;
@@ -47,8 +53,7 @@ class MessageEntity {
 	text: string;
 
 	@Column()
-	datestamp: Date;
-
+	datestamp: string;
 }
 
 export { MessageEntity, ChannelEntity };

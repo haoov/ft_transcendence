@@ -1,12 +1,11 @@
 import { User } from '../user/user.interface';
 
-interface MessageRaw {
+interface Message {
 	id: number;
-	senderId: number;
+	sender: User;
 	channelId: number;
 	text: string;
-	datestamp: Date;
-	timestamp: string;
+	datestamp: string;
 }
 
 interface Channel {
@@ -18,6 +17,7 @@ interface Channel {
 	users: User [];
 	bannedUsers: User [];
 	admins: User [];
+	messages: Message[];
 }
 
-export { MessageRaw, Channel };
+export { Message, Channel };

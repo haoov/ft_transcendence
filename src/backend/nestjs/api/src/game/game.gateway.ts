@@ -1,4 +1,4 @@
-import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io'
 import { clientEvents, serverEvents } from './enum/events.enum';
 import { User } from 'src/user/user.interface';
@@ -8,7 +8,6 @@ import { userStatus } from 'src/user/enum/userStatus.enum';
 import { GameParams } from './interfaces/gameParams';
 import { GameService } from './game.service';
 import { UserGateway } from 'src/user/user.gateway';
-import { Inject, forwardRef } from '@nestjs/common';
 
 @WebSocketGateway({ namespace: 'game' })
 export class GameGateway 
@@ -17,8 +16,8 @@ export class GameGateway
 	rooms: Room[];
 	roomId: number;
 
-	constructor(private readonly userService: UserService,
-								@Inject(forwardRef(() => UserGateway)) private readonly userGateway: UserGateway,
+	constructor(	private readonly userService: UserService,
+								private readonly userGateway: UserGateway,
 								private readonly gameService: GameService) {
 		this.rooms = [];
 		this.roomId = 0;
@@ -32,19 +31,19 @@ export class GameGateway
 	 * Handle connection of a user
 	 * @param client socket of the user
 	 */
-	handleConnection(client: Socket) {
-		//wait for connected event from client side
-		client.on(clientEvents.connected, (data: User) => {
-			console.log("game connection: " + data.username);
-			//store user data in socket
-			client.data.user = data;
-			//check if user is already in a room
-			const room: Room = this.findRoom(client);
-			if (room) {
-				//if user is already in a room manage socket
-				this.manageSocket(client, room);
-			}
-		});
+	handleConnection() {}
+
+	@SubscribeMessage('userConnected')
+	onUserConnected(@ConnectedSocket() client: Socket, @MessageBody() user: User) {
+		console.log("game connection: " + user.username);
+		//store user data in socket
+		client.data.user = user;
+		//check if user is already in a room
+		const room: Room = this.findRoom(client);
+		if (room) {
+			//if user is already in a room manage socket
+			this.manageSocket(client, room);
+		}
 	}
 
 	/**
@@ -105,6 +104,7 @@ export class GameGateway
 				client.emit(serverEvents.gameReady);
 				//wait for opponent to be ready
 				setTimeout(() => {
+					console.log("[AFTER TIMEOUT PARAMS SELECTED]")
 					if (openRoom.isOpen()) {
 						openRoom.quitGame(openRoom.getUsers()[0]);
 						this.endGame(openRoom);
@@ -128,7 +128,7 @@ export class GameGateway
 		}
 	}
 
-	@SubscribeMessage(clientEvents.update)
+	@SubscribeMessage("needUpdate")
 	update(client: Socket) {
 		const room: Room = this.findRoom(client);
 		if (room) {
@@ -159,6 +159,7 @@ export class GameGateway
 
 	@SubscribeMessage(clientEvents.stopWaiting)
 	async stopWaiting(client: Socket) {
+		console.log("[STOP WAITING]");
 		const room = this.findRoom(client);
 		if (room) {
 			if (room.isClosed()) {
@@ -178,6 +179,7 @@ export class GameGateway
 
 	@SubscribeMessage(clientEvents.gameForfeit)
 	gameForfeit(client: Socket) {
+		console.log("[FORFEIT]");
 		const room: Room = this.findRoom(client);
 		if (room) {
 			room.quitGame(client.data.user);
@@ -189,6 +191,11 @@ export class GameGateway
 	@SubscribeMessage(clientEvents.gameResponse)
 	gameResponse(client: Socket, response: {accepted: boolean, opponent: User}) {
 		if (response.accepted) {
+			const privateRoom: Room = this.findRoomByUser(response.opponent)
+			if (privateRoom) {
+				client.emit("alreadyInGame", response.opponent);
+				return;
+			}
 			const waintingRoom = this.findRoom(client);
 			if (waintingRoom) {
 				this.deleteRoom(waintingRoom);
@@ -196,7 +203,8 @@ export class GameGateway
 			const room: Room = this.createPrivateRoom(client.data.user, response.opponent);
 			this.userGateway.gameReady(room, client.data.user);
 			setTimeout(() => {
-				if (room.isOpen()) {
+				if (room.isOpen() && room.isFull()) {
+					console.log("[AFTER TIMEOUT GAME RESPONSE]")
 					room.quitGame(room.getUsers()[0]);
 					this.endGame(room);
 					this.deleteRoom(room);
@@ -218,6 +226,14 @@ export class GameGateway
 		return this.rooms.find((room) => {
 			return (room.getUsers().find((user) => {
 				return (user.id == client.data.user.id);
+			}));
+		});
+	}
+
+	findRoomByUser(user: User): Room | undefined {
+		return this.rooms.find((room) => {
+			return (room.getUsers().find((u) => {
+				return (u.id == user.id);
 			}));
 		});
 	}

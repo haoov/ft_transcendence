@@ -8,8 +8,9 @@ import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
 import { type UserStat, type User, type GameStat, ServerEvents } from "@/utils";
 import { computed, inject, onMounted, ref } from "vue";
-import { type SocketManager } from "@/SocketManager";
+import { socketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
+import { chat } from "@/chat";
 
 const router = useRouter();
 const players = ref<UserStat[]>([]);
@@ -22,7 +23,6 @@ const options = ['All', 'Friends'];
 const selectedOption = ref('All');
 
 const $data : any = inject('$data');
-const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 const playersDisplayed = computed(() => {
 		if (search.value.length === 0) {
@@ -52,7 +52,8 @@ async function fetchLeaderboard(option: string) {
 		query = '?friends=true';
 	await axios
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/leaderboard${query}`)
-		.then(data => { players.value = data.data; });
+		.then(data => { players.value = data.data; })
+		.catch(err => {});
 }
 
 async function fetchMe() {
@@ -63,13 +64,14 @@ async function fetchMe() {
 			// Fetch my stats
 			const url1: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/user/${data.data.id}`;
 				axios.get(url1).then( data => {
-				myStats.value = data.data;})
+				myStats.value = data.data;}).catch(err => {})
 			// Fetch my games
 			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
 				myGames.value = data.data;
-				updatePieAnimation();})
-			});
+				updatePieAnimation();}).catch(err => {})
+			})
+		.catch(err => {});
 }
 
 function loadAllImages() {
@@ -194,9 +196,17 @@ function inviteToPlay(player: UserStat) {
 	}
 }
 
-function sendMessage(id : number) {
+function sendMessage(player: any) {
 	router.push(`/chat`);
-	$data.sendDirectMessage(id);
+	const user : User = {
+		id: player.id,
+		username: player.username,
+		email: player.email,
+		avatar:player.avatar,
+		status: player.status,
+		twofa_enabled: false,
+	};
+	chat.sendPrivateMessage(user);
 }
 
 onMounted(async () => {
@@ -336,7 +346,7 @@ onMounted(async () => {
 											<a v-if="player.id!=me?.id && !player.blocking" class="u-mr--8">
 												<img src="../assets/images/racket-50.png" width='18em' height="18em" alt="invite-icon" title="Invite to play" v-on:click="inviteToPlay(player)">
 											</a>
-											<a v-if="player.id!=me?.id && !player.blocking" @click="sendMessage(player.id)" target="_blank">
+											<a v-if="player.id!=me?.id && !player.blocking" @click="sendMessage(player)" target="_blank">
 												<img src="../assets/images/message-50.png" width='20em' height="20em" alt="message-icon" title="Send a message">
 											</a>
 										</div>
@@ -551,15 +561,6 @@ button, select {
 				opacity: 1;
 		}
 }
-
-/* @keyframes donut {
-		0% {
-				stroke-dasharray: 0, 100;
-		}
-		100% {
-				stroke-dasharray: 
-		}
-} */
 
 .donut-data {
 		font-size: 0.2em;
@@ -834,8 +835,8 @@ button, select {
 }
 .c-avatar-icon {
     position: absolute;
-    bottom: 0.2rem;
-    right: 0.1rem;
+    bottom: 0.5rem;
+    right: 0.2rem;
     width: 1.5rem;
     height: 1.5rem;
 }

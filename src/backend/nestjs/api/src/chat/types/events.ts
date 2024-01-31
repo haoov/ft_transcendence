@@ -1,0 +1,1 @@
+export type ChatEvent = "userConnected" | "newMessage"

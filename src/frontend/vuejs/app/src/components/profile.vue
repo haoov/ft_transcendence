@@ -9,8 +9,9 @@ import offline from '../assets/images/status-offline-32.png';
 import online from '../assets/images/status-online-32.png';
 import playing from '../assets/images/status-playing-32.png';
 import blocked from '../assets/images/status-blocked-32.png';
-import { type SocketManager } from "@/SocketManager";
+import { socketManager } from "@/SocketManager";
 import notify from "@/notify/notify";
+import { chat } from "@/chat";
 
 const route = useRoute();
 let username = route.params.username;
@@ -18,8 +19,6 @@ const me = ref<User>();
 const user = ref<User>();
 const userStats = ref<UserStat>();
 const userGames = ref<GameStat[]>([]);
-const $data : any = inject('$data');
-const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 socketManager.addEventListener("user", ServerEvents.dataChanged, async (newUser: User) => {
 	if (user.value?.id == newUser.id || me.value?.id == newUser.id) {
@@ -44,7 +43,7 @@ async function fetchUser() {
 			await axios.get(url1).then( data => {
 				userStats.value = data.data;})
 			// Fetch my games
-			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/home/game-history/${data.data.id}`;
+			const url2: string = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/stats/game-history/${data.data.id}`;
 			axios.get(url2).then( data => {
 				userGames.value = data.data;
 				updatePieAnimation();
@@ -60,27 +59,24 @@ async function fetchMe() {
 		.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`)
 		.then( (data) => {
 			me.value = data.data; })
-		.catch( (err) => {
-			console.log(err);
-		});
+		.catch( (err) => {});
 }
 
 // BLOCK & UNBLOCK FUNCTIONS
 async function blockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/block?id=${user.value?.id}`)
-			.catch( (err) => { console.log(err) });
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block?id=${user.value?.id}`)
+			.catch( (err) => {});
 }
 
 async function unblockUser() {
-	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/chat/unblock?id=${user.value?.id}`)
-			.catch( (err) => { console.log(err) });
+	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/unblock?id=${user.value?.id}`)
+			.catch( (err) => {});
 }
 
 // ADD TO FRIEND & REMOVE FROM FRIENDS
 async function addFriend(user: User | undefined) {
 	await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${user?.id}`)
 		.then( (data) => {
-			console.log(data.data);
 			if (data.data == false && user != undefined && me.value != undefined) {
 				socketManager.addFriend(user.id, me.value.id);
 			}
@@ -190,7 +186,17 @@ function showActions() : boolean {
 
 function sendMessage(id : number | undefined) {
 	router.push(`/chat`);
-	$data.sendDirectMessage(id);
+	if (user.value) {
+		const userToMessage : User = {
+			id: user.value.id,
+			username: user.value.username,
+			email: user.value.email,
+			avatar:user.value.avatar,
+			status: user.value.status,
+			twofa_enabled: false,
+		};
+		chat.sendPrivateMessage(userToMessage);
+	}
 }
 
 function inviteToPlay() {

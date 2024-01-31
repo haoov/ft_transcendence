@@ -12,6 +12,8 @@ import { ref, type Ref } from "vue";
 import { type User } from "@/utils";
 import type { Camera, Scene } from "three";
 
+const apiGame = `http://${import.meta.env.VITE_HOSTNAME}:3000/api/game`;
+
 class GameData {
 	private displayMenu: Ref<boolean>;
 	private difficulty: Ref<string>;
@@ -55,14 +57,13 @@ class GameData {
 		this.gameState = ref("noGame");
 	}
 
-	async createRenderer(id: string) {
-		await axios.get<InitParams>(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/game/params`).then(
+	async createRenderer(id: string, width: number, height: number) {
+		await axios.get<InitParams>(`${apiGame}/params`).then(
 			(response) => {
-				console.log("creating renderer");
 				this.initParams = response.data;
-				this.gameRenderer= new GameRenderer(id, this.initParams);
+				this.gameRenderer= new GameRenderer(id, this.initParams, width, height);
 			}
-		);
+		).catch(err => {});
 	}
 
 	startGame(users: User[], params: any) {
@@ -85,7 +86,9 @@ class GameData {
 		this.gameState.value = "started";
 	};
 
-	updateGame(data: any) {
+	updateGame(data: any, width: number, height: number) {
+		this.gameRenderer?.renderer?.setSize(width, height);
+		this.gameRenderer?.camera?.updateProjectionMatrix();
 		this.gameRenderer?.update(data);
 		this.player1.value.score = data.p1Score;
 		this.player2.value.score = data.p2Score;
@@ -149,6 +152,11 @@ class GameData {
 		this.gameRenderer?.renderer?.render(
 			this.gameRenderer.scene as Scene,
 			this.gameRenderer.camera as Camera);
+	}
+
+	resize(width: number, height: number) {
+		this.gameRenderer?.renderer?.setSize(width, height);
+		this.gameRenderer?.camera?.updateProjectionMatrix();
 	}
 
 	getCurrentPlayer(username: string): Ref<GamePlayer> {

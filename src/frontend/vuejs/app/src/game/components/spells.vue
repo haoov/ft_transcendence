@@ -1,9 +1,7 @@
 <script setup lang="ts">
-	import { inject } from 'vue';
-	import type { SocketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 	import gameData from '../gameData';
 
-	const socketManager: SocketManager = inject("socketManager") as SocketManager;
 	function getSpells() {
 		const username: string = socketManager.getUser().username;
 		return gameData.getCurrentPlayer(username).value.spells;
@@ -26,11 +24,10 @@
 
 <style scoped>
 	.spells {
-		align-self: flex-end;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 720px;
+		width: 66%;
 		height: 50px;
 		border-radius: 5rem;
 		background: linear-gradient(to right,var(--c-white),10%, transparent);

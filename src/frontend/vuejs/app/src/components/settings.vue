@@ -2,7 +2,7 @@
 	<div class="l-wrapper">
 		<div class="l-grid" :style="dynamicHeight">
 			<div style="display: flex; width: 370px; position: absolute; justify-content: flex-end;">
-				<img id="logout_button" @click="logout()" :src="logoutIcon" title="logout"/>
+				<img id="logout_button" @click="logout()" :src="logoutIcon" title="Logout"/>
 			</div>
 			<div class ="u-justify--center u-display--flex">
 				<div class="c-avatar-container" @click="uploadFile">
@@ -83,10 +83,11 @@ const dynamicHeight = computed(() => {
 const disableSave = computed(() => {
 	if ((twoFaChangedToEnabled.value && !twoFaCode.value))
 		return true;
-	else
-		return ((!usernameSet.value || usernameSet.value == me.value.username || !isUsernameValid())
-			&& !avatarSet.value)
-			&& !twoFaChanged.value;
+	if (!isUsernameValid())
+		return true;
+	return ((!usernameSet.value || usernameSet.value == me.value.username)
+		&& !avatarSet.value
+		&& !twoFaChanged.value);
 });
 
 // DATA
@@ -137,9 +138,7 @@ async function fetchMe() {
 			usernameSet.value = data.data.username;
 			selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
 		})
-		.catch( (err) => {
-			console.log(err);
-		});
+		.catch( (err) => {});
 }
 
 
@@ -203,8 +202,6 @@ async function	update2FA(to: string) {
 			})
 			.catch( (err) => {
 				twoFaCode.value = "";
-				qrCode.value = "";
-				selectedOption.value = me.value.twofa_enabled ? "Enabled" : "Disabled";
 				notify.newNotification("error", {message: "Invalid code!"})
 			});
 	}
@@ -296,7 +293,6 @@ onMounted(async () => {
 	background: var(--c-surface);
 	width: 100%;
 	height: 450px;
-	margin-bottom: 1.6rem;
 	box-shadow: 0px 0px 0px 1px var(--c-black-light);
 	box-sizing: border-box;
 	padding: 1.6rem;
@@ -364,7 +360,7 @@ onMounted(async () => {
 
 .formField input {
 		width: 60%;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		padding: 0.5rem 1rem;
 		color: #fff;
 		font-family: inherit;
@@ -378,7 +374,7 @@ onMounted(async () => {
 .formField .forbidden {
 		width: 60%;
 		font-size: small;
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		padding: 0.5rem 1rem;
 		color: var(--c-grey);
 		font-family: Overpass;
@@ -404,7 +400,7 @@ onMounted(async () => {
 .radio-inputs {
 	display: flex;
     flex-wrap: wrap;
-    border-radius: 0.5rem;
+    border-radius: 0.8rem;
     box-sizing: border-box;
 	background-color: var(--c-black-light);
     box-shadow: 0 0 0 1px #0000000f;

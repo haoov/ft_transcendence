@@ -1,13 +1,11 @@
 <script setup lang="ts">
 	import { inject } from 'vue';
-	import { type SocketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 	import CustumButton from '@/components/custumButton.vue';
 	import gameData from '../gameData';
 
 	defineProps(["p1", "p2", "state"]);
 	const emit = defineEmits(["leaveGame"]);
-
-	const socketManager: SocketManager = inject('socketManager') as SocketManager;
 
 	function leaveGame() {
 		socketManager.forfeit();
@@ -39,7 +37,7 @@
 			v-if="gameData.getGameState().value == 'started'"
 			class="leave"
 			v-on:click="leaveGame()">
-			Leave game
+			Leave
 		</CustumButton>
 		<div class="score-div p1">
 			<span class="username">{{ gameData.getPlayer1().value.username }}</span>
@@ -52,9 +50,8 @@
 
 <style scoped>
 	.score-container {
-		align-self: flex-start;
 		display: flex;
-		width: 720px;
+		width: 66%;
 		border-radius: 5rem;
 		background: linear-gradient(to left,var(--c-white),10%, transparent);
 		padding: 0px 10px 0px 10px;

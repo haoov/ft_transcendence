@@ -12,8 +12,10 @@ import { updateUsernameDto } from "./dto/updateUsername.dto";
 @Controller("user")
 @UseGuards(Jwt2faGuard)
 export class UserController {
-	constructor(private readonly userService: UserService,
-				private readonly userGateway: UserGateway) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly userGateway: UserGateway
+	) {}
 
 	@Get()
 	async getUser(@Query("username") username: string, @Query("id") id: number): Promise<User> {
@@ -56,13 +58,43 @@ export class UserController {
 		
 		}
 	}
+
+	@Put("block")
+	async blockUser(@Req() req: Request, @Query("id") id: number) {
+		try {
+			if (!id)
+				throw new NotFoundException("User not found");
+			const user = req.user as User;
+			const blocked: User = await this.userService.blockUser(user.id, id);
+			this.userGateway.dataChanged(user);
+			this.userGateway.blocked(user, blocked);
+		}
+		catch (err) {
+			throw err;
+		}
+	}
+
+	@Put("unblock")
+	async unblockUser(@Req() req: Request, @Query("id") id: number) {
+		try {
+			if (!id)
+				throw new NotFoundException("User not found");
+			const user = req.user as User;
+			const unblocked: User = await this.userService.unblockUser(user.id, id);
+			this.userGateway.dataChanged(user);
+			this.userGateway.unblocked(user, unblocked);
+		}
+		catch (err) {
+			throw err;
+		}
+	}
 	
 	@Get("block")
-	async getBlockedUsers(@Req() req: Request): Promise<User[]> {
+	async getBlockedUsers(@Req() req: Request): Promise<number[]> {
 		try {
 			const user = req.user as User;
 			const blocked = await this.userService.getBlockedUsers(user.id);
-			return blocked.map(({ twofa_secret, ...user_ret }) => user_ret);
+			return blocked;
 		}
 		catch (err) {
 			throw err;
@@ -147,6 +179,20 @@ export class UserController {
 	deleteUser(@Param("username") username: string) {
 		try {
 			this.userService.deleteUser(username);
+		}
+		catch (err) {
+			throw err;
+		}
+	}
+
+	@Put('/update/status')
+	async updateStatus(@Query('id') userId: number, @Query("status") status: string) {
+		try {
+			if (!userId || !status)
+				throw new NotFoundException("User not found");
+			const user = await this.userService.getUserById(userId);
+			await this.userService.updateUserStatus(user, status);
+			this.userGateway.dataChanged(user);
 		}
 		catch (err) {
 			throw err;

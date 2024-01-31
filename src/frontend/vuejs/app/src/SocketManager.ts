@@ -3,11 +3,13 @@ import axios from "axios";
 import { Socket, io } from "socket.io-client";
 import notify from "./notify/notify";
 import router from "./router";
-import { reactive } from "vue";
 import type { GameParams } from "./game/interfaces";
 import gameData from "./game/gameData";
-import chat from "./chat/chat";
-import { Message } from "./chat/classes";
+import { chat, Channel, type MessageData, type ChannelData } from "@/chat";
+import { type GameEvents } from "@/game/types";
+import { ref, type Ref } from "vue";
+
+export type SocketType = "user" | "game" | "chat";
 
 class SocketManager {
 	private readonly userSocket: Socket;
@@ -16,22 +18,27 @@ class SocketManager {
 	private user: User;
 
 	constructor() {
-		this.userSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/users`);
-		this.gameSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/game`);
-		this.chatSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`);
+		this.userSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/users`, {autoConnect: false});
+		this.gameSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/game`, {autoConnect: false});
+		this.chatSocket = io(`http://${import.meta.env.VITE_HOSTNAME}:3000/chat`, {autoConnect: false});
 		this.user = {} as User;
 	}
 
 	async initSocket() {
-		await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((response) => {
-			this.user = reactive(response.data);
-			this.userSocket.emit(ClientEvents.connected, response.data);
-			this.gameSocket.emit(ClientEvents.connected, response.data);
-			this.chatSocket.emit(ClientEvents.connected, response.data);
-		});
+		this.userSocket.connect();
+		this.chatSocket.connect();
+		this.gameSocket.connect();
+		await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then(
+			async (response) => {
+				this.user = response.data;
+				this.userSocket.emit("userConnected", this.user);
+				this.chatSocket.emit("userConnected", this.user);
+				this.gameSocket.emit("userConnected", this.user);
+				await chat.loadChannels(this.user.id);
+		})
+		.catch(() => {});
 
 		this.userSocket.on(ServerEvents.ping, () => {
-			console.log("PONG");
 			this.userSocket.emit(ClientEvents.pong, {});
 		});
 
@@ -41,7 +48,16 @@ class SocketManager {
 				if (data.status == "waiting")
 				gameData.setGameState("waiting");
 			}
+			chat.updateUser(data);
 		});
+		
+		this.userSocket.on("blocked", (blocked: User) => {
+			chat.removeMessages(blocked.id);
+		})
+
+		this.userSocket.on("unblocked", async (unblocked: User) => {
+			await chat.loadMessages(unblocked.id);
+		})
 
 		this.userSocket.on(ServerEvents.gameReady, (data: User) => {
 			if (router.currentRoute.value.path != "/game") {
@@ -83,6 +99,14 @@ class SocketManager {
 				]});
 		});
 
+		this.gameSocket.on("alreadyInGame", (data: User) => {
+			notify.newNotification("error", {
+				message: 'User already in game',
+				by: data.username,
+			});
+			gameData.setGameState("noGame");
+		})
+
 		this.userSocket.on(ServerEvents.gameResponse, (response: {accepted: boolean, opponent: User}) => {
 			if (!response.accepted) {
 				notify.newNotification("error", {
@@ -92,22 +116,80 @@ class SocketManager {
 			}
 		});
 
-		this.chatSocket.on(ChatEvents.miniChatMessage, (data: any) => {
-			const channel = chat.getChannelById(data.message.channelId);
+		this.chatSocket.on("newMessage", (message: MessageData) => {
+			chat.newMessage(message);
+		});
+
+		this.chatSocket.on("newChannelCreated", (data: ChannelData) => {
+			const newChannel = new Channel(data);
+			chat.addChannel(newChannel);
+		});
+
+		this.chatSocket.on("channelUpdated", (data: ChannelData) => {
+			chat.channelUpdate(data);
+		});
+
+		this.chatSocket.on("channelDeleted", (data: number) => {
+			chat.removeChannel(data);
+		})
+
+		this.chatSocket.on(ChatEvents.kicked, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
 			if (channel) {
-				const newMessageSend = new Message(	data.id, data.sender, data.message.text, data.message.time);
-				console.log('[SOCKET MANAGER]', newMessageSend);
-				channel.addMessage(newMessageSend);
+				notify.newNotification("infos", {
+					message: 'You have been kicked from channel: ',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
 			}
+		});
+
+		this.chatSocket.on(ChatEvents.banned, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been banned from channel: ',
+					by: channel.getName(),
+				});
+				chat.removeChannel(channel.getId());
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.namedAdmin, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been named admin of channel: ',
+					by: channel.getName(),
+				});
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.muted, (data: ChannelData) => {
+			const channel = chat.getChannel(data.id);
+			if (channel) {
+				notify.newNotification("infos", {
+					message: 'You have been muted on channel: ',
+					by: channel.getName(),
+				});
+			}
+		});
+
+		this.chatSocket.on(ChatEvents.errorManager, (error: string) => {
+			notify.newNotification("error", {
+				message: error,
+			});
 		});
 
 		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
 			const accept = async () => {
-				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${from.id}`);
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${from.id}`)
+				.catch(() => {});
 				this.userSocket.emit(ClientEvents.friendResponse, {accepted: true, opponent: from});
 			};
 			const decline = async () => {
-				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${from.id}`);
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${from.id}`)
+				.catch(() => {});
 			};
 			notify.newNotification("invite", {
 				message: 'Friend request',
@@ -130,6 +212,7 @@ class SocketManager {
 				});
 			}
 		});
+
 	}
 
 	checkGame() {
@@ -167,7 +250,7 @@ class SocketManager {
 	getUser(): User {
 		return this.user;
 	}
-
+	
 	selectParams(params: GameParams) {
 		this.gameSocket.emit(ClientEvents.gameParams, params);
 	}
@@ -204,71 +287,64 @@ class SocketManager {
 		this.gameSocket.emit(ClientEvents.move, direction);
 	}
 
-	disconnected(): boolean {
-		return this.userSocket.disconnected && this.gameSocket.disconnected;
-	}
-
-	sendMessage(message: any) {
-		// console.log(message);
-		this.chatSocket.emit("newMessageSend", message);
-	}
-
-	createChannel(channel: any) {
-		this.chatSocket.emit(ChatEvents.createNewChannel, channel);
-	}
-
-	deleteChannel(id : number) {
-		this.chatSocket.emit(ChatEvents.deleteChannel, id);
+	emit(socket: SocketType, event: string, arg?: any) {
+		if (socket == "user")
+			this.userSocket.emit(event, arg);
+		else if (socket == "game")
+			this.gameSocket.emit(event, arg);
+		else if (socket == "chat") {
+			this.chatSocket.emit(event, arg);
+		}
 	}
 
 	joinChannel(id: number, pw: string)
 	{
-		const userID = this.user.id;
-		this.chatSocket.emit(ChatEvents.joinChannel,{
-			channelId: id,
-			password: pw,
-			userId: userID,
-		})
+		// const userID = this.user.id;
+		// this.chatSocket.emit(ChatEvents.joinChannel,{
+		// 	channelId: id,
+		// 	password: pw,
+		// 	userId: userID,
+		// })
 	}
 
 	leaveChannel(id: number) {
-		const userID = this.user.id;
-		this.chatSocket.emit(ChatEvents.leaveChannel, {id, userID})
+		// const userID = this.user.id;
+		// this.chatSocket.emit(ChatEvents.leaveChannel, {id, userID})
 	}
 
 	updateChannel(id: number, name: string, mode: string, pw: string, userIds: number []) {
-		const editedChannel = {
-			channelId: id,
-			name: name, 
-			mode: mode,
-			password: pw,
-			userIds: userIds,
-		};
+		// const editedChannel = {
+		// 	channelId: id,
+		// 	name: name, 
+		// 	mode: mode,
+		// 	password: pw,
+		// 	userIds: userIds,
+		// };
 	}
 
 	addUserToChannel(channelId: number, users: User []) {
-		for (const user of users) {
-			const id = user.id;
-			this.chatSocket.emit(ChatEvents.addUserToChannel, {channelId, id});
-		}
+		// for (const user of users) {
+		// 	const id = user.id;
+		// 	this.chatSocket.emit(ChatEvents.addUserToChannel, {channelId, id});
+		// }
 	}
 
 	setActiveChannel(channelId: number) {
-		this.chatSocket.emit(ChatEvents.setActiveChannel,{
-			'channelId':channelId,
-			'currentUserId': this.user.id
-		} );
+		// this.chatSocket.emit(ChatEvents.setActiveChannel,{
+		// 	'channelId':channelId,
+		// 	'currentUserId': this.user.id
+		// } );
 	}
 
 	emitAction(action: string, userID : number, channelID: number)
 	{
-		if (action === 'admin') {
-			this.chatSocket.emit(ChatEvents.setAdmin ,{userId: userID, channelId: channelID});
-		} else if (action === 'kick') {
-			this.chatSocket.emit(ChatEvents.kickUser ,{userId: userID, channelId: channelID});
-		} else if (action === 'ban') {
-			this.chatSocket.emit(ChatEvents.banUser ,{userId: userID, channelId: channelID});
-		}
+		// if (action === 'admin') {
+		// 	this.chatSocket.emit(ChatEvents.setAdmin ,{userId: userID, channelId: channelID});
+		// } else if (action === 'kick') {
+		// 	this.chatSocket.emit(ChatEvents.kickUser ,{userId: userID, channelId: channelID});
+		// } else if (action === 'ban') {
+		// 	this.chatSocket.emit(ChatEvents.banUser ,{userId: userID, channelId: channelID});
+		// }
 	}
 }
 
