@@ -207,6 +207,21 @@ class Chat {
 		else
 			return [];
 	}
+
+	updateUser(user: User) {
+		this.userChannels.forEach((channel) => {
+			const index = channel.getUsers().findIndex((u) => u.id == user.id);
+			if (index != -1) {
+				channel.getUsers().splice(index, 1, user);
+			}
+		});
+		this.activeChannels.forEach((channel) => {
+			const index = channel.getUsers().findIndex((u) => u.id == user.id);
+			if (index != -1) {
+				channel.getUsers().splice(index, 1, user);
+			}
+		});
+	}
 }
 
 const chat = new Chat();

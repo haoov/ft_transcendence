@@ -1,12 +1,16 @@
 <script setup lang="ts">
 	import Profile from '@/components/profile.vue';
 	import navigationBar from '@/components/navigationBar.vue';
+	import v_miniChat from '@/chat/components/miniChat/miniChat.vue';
+	import v_notify from '@/notify/components/notify.vue';
 </script>
 
 <template>
     <div class="profile-body">
-		<navigationBar></navigationBar>
+			<navigationBar></navigationBar>
     	<Suspense><Profile></Profile></Suspense>
+			<v_miniChat></v_miniChat>
+			<v_notify></v_notify>
     </div>
 </template>
 

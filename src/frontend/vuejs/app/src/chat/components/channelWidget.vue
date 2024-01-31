@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { chat, type Channel } from '@/chat';
+	import { type Channel } from '@/chat';
 	import { socketManager } from '@/SocketManager';
 
 	const props = defineProps<{channel: Channel}>();
@@ -11,7 +11,7 @@
 			id="channelWidgetIcon"
 			:src="channel.getIcon(socketManager.getUser())">
 		<div id="channelInfos">
-			<span id="channelName">{{ channel.getName() }}</span>
+			<span id="channelName">{{ channel.getTitle(socketManager.getUser()) }}</span>
 			<span id="lastMessage">
 				{{ channel.getMessages()[channel.getMessages().length - 1]?.getText() }}
 			</span>
