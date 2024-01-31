@@ -44,14 +44,15 @@
 	<div id="joinMenu">
 		<div id="coreDiv">
 			<label id="inputLabel">
-				Search channel :
+				{{ result && Object.keys(result).length > 0 ? 'Selected channel' : 'Search channel :'}}
 				<div class="inputContainer">
 					<img id="searchIcon">
-					<input id="searchChannel"
+					<input :id="result && Object.keys(result).length > 0 ? 'searchChannelSelected' : 'searchChannel'"
 						type="text"
 						autocomplete="off"
 						placeholder="Search..."
 						v-model="search">
+					<img v-if="result && Object.keys(result).length > 0" id="removeIcon" :src="cancelIcon" v-on:click="cancelSelection()">
 				</div>
 			</label>
 			<div id="searchResults">
@@ -69,15 +70,6 @@
 							<g id="SVGRepo_iconCarrier"> <g id="XMLID_509_"> <path id="XMLID_510_" d="M65,330h200c8.284,0,15-6.716,15-15V145c0-8.284-6.716-15-15-15h-15V85c0-46.869-38.131-85-85-85 S80,38.131,80,85v45H65c-8.284,0-15,6.716-15,15v170C50,323.284,56.716,330,65,330z M180,234.986V255c0,8.284-6.716,15-15,15 s-15-6.716-15-15v-20.014c-6.068-4.565-10-11.824-10-19.986c0-13.785,11.215-25,25-25s25,11.215,25,25 C190,223.162,186.068,230.421,180,234.986z M110,85c0-30.327,24.673-55,55-55s55,24.673,55,55v45H110V85z"/> </g> </g>
 							</svg>
 						</span>
-					</div>
-				</div>
-				<div v-if="result && Object.keys(result).length > 0" class="selectedDiv">
-					<label class="inputLabel" for="selected" id="inputLabel"> Selected :</label>
-					<div class="selected" name="selected">
-						<span>
-							{{ result.name }}
-						</span>
-						<img id="removeIcon" :src="cancelIcon" v-on:click="cancelSelection()">
 					</div>
 				</div>
 		</div>
@@ -137,6 +129,26 @@
 				color: var(--c-white);
 				background-color: transparent;
 				border: 1px solid var(--c-grey);
+			}
+
+			#searchChannelSelected {
+				width: 80%;
+				padding: 3% 7%;
+				border-radius: 8px;
+				color: var(--c-white);
+				background-color: var(--c-black-light);
+				border: 1px solid var(--c-pink);
+			}
+
+			.inputContainer {
+				position: relative;
+			}
+
+			#removeIcon {
+				position: absolute;
+				top: 5px;
+				right: 25px;
+				cursor: pointer;
 			}
 		}
 
