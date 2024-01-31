@@ -71,7 +71,8 @@ class Chat {
 		channels.forEach((channel: ChannelData) => {
 			const newChannel = new Channel(channel);
 			this.userChannels.push(newChannel);
-		});
+		})
+		.catch(() => {});
 	}
 
 	getChannel(id: number): Channel | undefined {
@@ -105,8 +106,7 @@ class Chat {
 			return;
 		} else {
 			const userFinded : User = await axios.get(`${apiUser}?id=${user.id}`)
-			.then((response) => { return response.data });
-			console.log(userFinded);
+			.then((response) => { return response.data }).catch(() => {});
 			const params: ChannelParams = {
 				name: channelName,
 				mode: "Private",
@@ -176,7 +176,7 @@ class Chat {
 		updatedParams.messages = channel.getMessages();
 		updatedParams.admins = channel.getAdmins();
 		updatedParams.users.push(...channel.getUsers());
-		axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams);
+		axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams).catch(() => {});
 	}
 
 	joinChannel(channelId: number, user: User, password?: string) : void {
@@ -196,32 +196,47 @@ class Chat {
 	}
 
 	async getAddableUsers(channel: Channel | undefined, user: User): Promise<User[]> {
-		let response: AxiosRequestConfig<User[]>;
-		if (channel) {
-			response = await axios.get(`${apiChat}/channel/addable?id=${channel.getId()}&userId=${user.id}`);
-		} else {
-			response = await axios.get(`${apiChat}/channel/addable?userId=${user.id}`);
+		try {
+			let response: AxiosRequestConfig<User[]>;
+			if (channel) {
+				response = await axios.get(`${apiChat}/channel/addable?id=${channel.getId()}&userId=${user.id}`);
+			} else {
+				response = await axios.get(`${apiChat}/channel/addable?userId=${user.id}`);
+			}
+			if (response.data)
+				return response.data;
+			else
+				return [];
 		}
-		if (response.data)
-			return response.data;
-		else
+		catch(err) {
 			return [];
+		}
 	}
 
 	async getJoinableChannels(user: User): Promise<ChannelData[]> {
-		const response = await axios.get(`${apiChat}/channels/joinable?id=${user.id}`);
-		if (response.data)
-			return response.data;
-		else
+		try {
+			const response = await axios.get(`${apiChat}/channels/joinable?id=${user.id}`);
+			if (response.data)
+				return response.data;
+			else
+				return [];
+		}
+		catch(err) {
 			return [];
+		}
 	}
 
 	async getChannelRelations(channel: Channel): Promise<UserRelation[]> {
-		const response = await axios.get(`${apiChat}/channel/relations?id=${channel.getId()}`);
-		if (response.data)
-			return response.data;
-		else
+		try {
+			const response = await axios.get(`${apiChat}/channel/relations?id=${channel.getId()}`);
+			if (response.data)
+				return response.data;
+			else
+				return [];
+		}
+		catch(err) {
 			return [];
+		}
 	}
 
 	updateUser(user: User) {

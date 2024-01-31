@@ -20,7 +20,7 @@ class GameSocket {
 		await axios.get(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/me`).then((response) => {
 			this.user.value = response.data;
 			this.socket.emit(ClientEvents.connected, response.data);
-		});
+		}).catch(err => {});
 		this.socket.on(ServerEvents.updateStatus, (status: string) => {
 			console.log("update status: " + status);
 			if (this.userStatus.value != "finished")

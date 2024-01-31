@@ -35,7 +35,8 @@ class SocketManager {
 				this.chatSocket.emit("userConnected", this.user);
 				this.gameSocket.emit("userConnected", this.user);
 				await chat.loadChannels(this.user.id);
-		});
+		})
+		.catch(() => {});
 
 		this.userSocket.on(ServerEvents.ping, () => {
 			this.userSocket.emit(ClientEvents.pong, {});
@@ -89,6 +90,14 @@ class SocketManager {
 					{action: decline}
 				]});
 		});
+
+		this.gameSocket.on("alreadyInGame", (data: User) => {
+			notify.newNotification("error", {
+				message: 'User already in game',
+				by: data.username,
+			});
+			gameData.setGameState("noGame");
+		})
 
 		this.userSocket.on(ServerEvents.gameResponse, (response: {accepted: boolean, opponent: User}) => {
 			if (!response.accepted) {
@@ -166,11 +175,13 @@ class SocketManager {
 
 		this.userSocket.on(ServerEvents.addFriend, (from: User) => {
 			const accept = async () => {
-				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${from.id}`);
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/add?id=${from.id}`)
+				.catch(() => {});
 				this.userSocket.emit(ClientEvents.friendResponse, {accepted: true, opponent: from});
 			};
 			const decline = async () => {
-				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${from.id}`);
+				await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/friend/delete?id=${from.id}`)
+				.catch(() => {});
 			};
 			notify.newNotification("invite", {
 				message: 'Friend request',
