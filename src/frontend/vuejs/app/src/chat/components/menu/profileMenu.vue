@@ -205,7 +205,7 @@
 					<img id="avatar" :src="userRef.avatar">
 					<img v-if="userRef.id == me.id || (userRef.friend == true && !userRef.blocking)" id="avatar-icon" :src="statusIcon"/>
 				</div>
-				<div id="username">{{ userRef.username }}</div>
+				<div id="username" @click="profile()">{{ userRef.username }}</div>
 			</div>
 			<div id="userActions">
 				<div v-for="action in authorizedUserAction"
@@ -279,12 +279,21 @@
 				#avatar-icon {
 					position: absolute;
 					bottom: 0.5rem;
-					right: 0.5rem;
+					right: 0.2rem;
 					width: 2rem;
 					height: 2rem;
 				}
 				#username {
 					font-weight: 700;
+					cursor: pointer;
+					&:hover {
+						border-radius: 3px;
+						background-color: var(--c-black-light);
+						box-shadow: 0 0 0 0.4rem var(--c-black-light);
+					}
+					&:active {
+						transform: scale(0.9);
+					}
 				}
 			}
 
