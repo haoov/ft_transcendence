@@ -62,6 +62,12 @@ const routes = [
 		path: "/settings",
 		name: "settings",
 		component: SettingView,
+		beforeEnter: async () => {
+			if (socketManager.getUser().id == undefined) {
+				await socketManager.initSocket();
+				console.log("init socket");
+			}
+		},
 	},
 	{
 		path: "/error",

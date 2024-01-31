@@ -560,15 +560,6 @@ button, select {
 		}
 }
 
-/* @keyframes donut {
-		0% {
-				stroke-dasharray: 0, 100;
-		}
-		100% {
-				stroke-dasharray: 
-		}
-} */
-
 .donut-data {
 		font-size: 0.2em;
 		line-height: 1;
@@ -842,8 +833,8 @@ button, select {
 }
 .c-avatar-icon {
     position: absolute;
-    bottom: 0.2rem;
-    right: 0.1rem;
+    bottom: 0.5rem;
+    right: 0.2rem;
     width: 1.5rem;
     height: 1.5rem;
 }

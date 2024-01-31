@@ -42,6 +42,7 @@
 				type="text"
 				name="2FA Code"
 				autocomplete="off"
+				placeholder="2FA Code"
 			/>
 		</div>
 		<v_button id="signIn" @click="signIn()">Sign in</v_button>
