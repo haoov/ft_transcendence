@@ -222,4 +222,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				throw error;
 		  }
 	}
+
+	async sendError(id: number, error: string) {
+		const sockets: Socket[] = this.userSockets.get(id);
+		for (const socket of this.userSockets.values()) {
+			socket.forEach((s) => {s.emit('errorManager', error)});
+		}
+	}
 }

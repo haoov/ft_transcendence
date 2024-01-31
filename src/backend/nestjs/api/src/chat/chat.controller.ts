@@ -72,7 +72,7 @@ export class ChatController {
 	}
 
 	@Put('/channel')
-	async updateChannel(@Query('id') channelId: number, @Body() channelDTO: ChannelDTO) {
+	async updateChannel(@Req() request: Request, @Query('id') channelId: number, @Body() channelDTO: ChannelDTO) {
 		try {
 			if (channelDTO.mode === 'Protected')
 				channelDTO.password = await ft_encode(channelDTO.password);
@@ -80,7 +80,8 @@ export class ChatController {
 			this.chatGateway.channelUpdate(channel);
 		}
 		catch (err) {
-			console.log(err);
+			// this.chatGateway.sendError(request.user['id'], err);
+			throw err;
 		}
 	}
 
