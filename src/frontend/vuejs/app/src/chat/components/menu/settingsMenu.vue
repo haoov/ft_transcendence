@@ -3,16 +3,25 @@
 	import cancelIcon from '@/assets/images/cancelIcon.png';
 	import { socketManager } from '@/SocketManager';
 	import v_addUsers from '@/chat/components/menu/addUsers.vue';
+	import { computed, reactive } from 'vue';
 
 	const props = defineProps<{channel: Channel | undefined}>();
 
-	const updatedParams: ChannelParams = {
+	const updatedParams: ChannelParams = reactive({
 		name: props.channel?.getTitle(socketManager.getUser()) || '',
 		mode: 'Public',
 		creatorId: 0,
 		users: [],
 		admins: [],
-	};
+	});
+
+	const disableButton = computed(() => {
+		if (!updatedParams.name)
+			return true;
+		if (updatedParams.name == props.channel?.getTitle(socketManager.getUser()) && !updatedParams.users.length)
+			return true;
+		return false;
+	})
 
 	function updateChannel() {
 		if (props.channel) {
@@ -58,6 +67,7 @@
 		</div>
 		<div id="footer">
 			<button id="saveButton"
+				:disabled="disableButton"
 				v-on:click="updateChannel()">
 				Save
 			</button>
@@ -135,12 +145,23 @@
 
 	#footer {
 		#saveButton {
-			background-color: var(--c-black-light);
-			border: 1px solid var(--c-black-light);
+			background-color: var(--c-pink);
+			border: 1px solid var(--c-pink);
 			padding: 12px 16px;
 			cursor: pointer;
 			border-radius: 6px;
-			font-size: small;
+			&:hover:not(:disabled) {
+			transform: scale(1.05);
+			}
+			&:disabled {
+				background-color: var(--c-black-light);
+				border: 1px solid var(--c-black-light);
+				cursor: not-allowed;
+				transform: none !important;
+			}
+			&:active {
+				transform: scale(0.9);
+			}
 		}
 	}
 
