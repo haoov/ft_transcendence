@@ -1,15 +1,27 @@
 <script setup lang="ts">
 	import { chat, Channel } from '@/chat';
 	import cancelIcon from '@/assets/images/cancelIcon.png';
-	import { reactive, ref, type Ref } from 'vue';
+	import { computed, reactive, ref, type Ref } from 'vue';
 	import v_userWidget from '../userWidget.vue';
 	import { ServerEvents, type User, type UserRelation } from '@/utils';
-import { socketManager } from '@/SocketManager';
+	import { socketManager } from '@/SocketManager';
 
 	const props = defineProps<{channel: Channel | undefined}>();
 	const emit = defineEmits({selectUser: (user: UserRelation) => user});
 	const search: Ref<string> = ref('');
 	const userRelations = ref<UserRelation[]>(props.channel ? await chat.getChannelRelations(props.channel) : []);
+
+	const usersToDisplay = computed(() => {
+		if (!search.value)
+			return userRelations.value;
+		return userRelations.value
+			.filter((userRelation: UserRelation) => {
+				return userRelation.username.toLowerCase().startsWith(search.value.toLowerCase());
+			})
+			.sort((a: UserRelation, b: UserRelation) => {
+				return a.username.toLowerCase().localeCompare(b.username.toLowerCase());
+			});
+	});
 
 	socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
 		props.channel ? userRelations.value = await chat.getChannelRelations(props.channel) : [];
@@ -40,7 +52,7 @@ import { socketManager } from '@/SocketManager';
 				tag="div"
 				name="users">
 				<v_userWidget
-					v-for="user in userRelations"
+					v-for="user in usersToDisplay"
 					:user="user"
 					v-on:click="emit('selectUser', user)">
 				</v_userWidget>

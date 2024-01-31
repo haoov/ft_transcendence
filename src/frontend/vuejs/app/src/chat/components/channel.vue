@@ -25,7 +25,11 @@
 
 <template>
 	<div id="channel">
-		<v_topBar :channel="channel"></v_topBar>
+		<Suspense>
+			<v_topBar
+			v-if="channel"
+			:channel="channel"></v_topBar>
+		</Suspense>
 		<div id="messages-container">
 			<TransitionGroup
 				v-if="channel"

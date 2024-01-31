@@ -118,8 +118,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async channelLeft(channelId: number): Promise<void> {
+		const sockets: Socket[] = this.userSockets.get(channelId);
 		const channel: Channel = await this.chatService.getChannel(channelId);
 		this.server.to(channelId.toString()).emit("channelUpdated", channel);
+		if (sockets) {
+			for (const socket of sockets) {
+				socket.leave(channelId.toString());
+			}
+		}
 	}
 
 	@SubscribeMessage('setAdmin')

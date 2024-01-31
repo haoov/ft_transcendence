@@ -158,7 +158,6 @@ export class ChatService {
 				) return false;
 				else return true;
 			});
-			console.log(users);
 		}
 		else {
 			users = users.filter((u) => {
@@ -259,6 +258,7 @@ export class ChatService {
 				username: user.username,
 				avatar: user.avatar,
 				status: user.status,
+				email: user.email,
 				blocking: blockingList.includes(user.id),
 				blocked: blockedList.includes(user.id),
 				friend: friendList.includes(user.id),
