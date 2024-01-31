@@ -13,7 +13,6 @@
 
 	function resize() {
 		if (window.innerWidth * 0.8 > 1280) {
-			console.log("resize error");
 			return ;
 		}
 		console.log("resize");
@@ -82,7 +81,6 @@
 	})
 
 	onBeforeRouteLeave(() => {
-		console.log("leaving game");
 		if (gameData.started()) {
 			socketManager.forfeit();
 		}
