@@ -4,6 +4,7 @@
 	import cancelIcon from '@/assets/images/cancelIcon.png';
 	import { type Channel, type MessageParams } from '@/chat';
 	import { socketManager } from '@/SocketManager';
+	import notify from '@/notify/notify';
 	import { chat } from '@/chat';
 
 	let display: Ref<boolean> = ref(false);
@@ -11,8 +12,10 @@
 	const input = ref<string>("");
 
 	function sendMessage() {
-		if (input.value == "" || input.value.length > 512)
+		if (input.value == "" || input.value.length > 512) {
+			notify.newNotification('error', { message:`Message too long (${input.value.length}/512)` });
 			return;
+		}
 		const messageParams: MessageParams = {
 			sender: socketManager.getUser(),
 			channelId: props.channel.getId(),

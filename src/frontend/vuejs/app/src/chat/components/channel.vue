@@ -3,6 +3,7 @@
 	import { Channel } from '../classes';
 	import v_message from './message.vue';
 	import v_topBar from './topBar.vue';
+	import notify from '@/notify/notify';
 	import { chat, type MessageParams } from '@/chat';
 	import { socketManager } from '@/SocketManager';
 
@@ -10,8 +11,10 @@
 	const input: Ref<string> = ref<string>("");
 
 	function sendMessage() {
-		if (input.value == "" || input.value.length > 512)
+		if (input.value == "" || input.value.length > 512) {
+			notify.newNotification('error', { message:`Message too long (${input.value.length}/512)` });
 			return;
+		}
 		const messageParams: MessageParams = {
 			sender: socketManager.getUser(),
 			channelId: props.channel?.getId() || 0,
