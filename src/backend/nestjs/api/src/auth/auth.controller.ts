@@ -18,15 +18,25 @@ export class AuthController {
 
 	@Get()
 	@UseGuards(Jwt2faGuard)
-	checkAuth(@Req() req: Request){
-		return { "status": "ok" };
+	checkAuth(){
+		return { "is_logged": true };
 	}
 
 	@Get("login")
 	@UseGuards(Intra42Guard)
 	async login(@Res() res: Response): Promise<Response> {
    		return res.status(200).send({
-			"status": "login"
+			"login_status": true
+		});
+	}
+
+	@Get("logout")
+	@UseGuards(JwtAuthGuard)
+	logout(@Res() res: Response) {
+		res.setHeader('Set-Cookie', this.authService.getCookieForLogout());
+		res.clearCookie("connect.sid");
+   		return res.status(200).send({
+			"login_status": false
 		});
 	}
 
@@ -132,27 +142,5 @@ export class AuthController {
 		} catch (err) { 
 			throw err;
 		}
-	}
-
-	@Get('2fa/reset')
-	@UseGuards(JwtAuthGuard)
-	async reset(@Req() req: Request) {
-		try {
-			const user: User = req.user as User;
-			await this.userService.set2faMode(user.id, false);
-			return { "2fa_status": "reset" };
-		} catch (err) {
-			throw err;
-		}
-	}
-
-	@Get("logout")
-	@UseGuards(JwtAuthGuard)
-	logout(@Req() req: Request, @Res() res: Response) {
-		res.setHeader('Set-Cookie', this.authService.getCookieForLogout());
-		res.clearCookie("connect.sid");
-   		return res.status(200).send({
-			"status": "logout"
-		});
 	}
 }

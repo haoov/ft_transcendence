@@ -15,7 +15,6 @@
 		if (window.innerWidth * 0.8 > 1280) {
 			return ;
 		}
-		console.log("resize");
 		width.value = window.innerWidth * 0.8;
 		height.value = width.value * 0.5625;
 		gameData.resize(width.value, height.value);

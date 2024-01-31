@@ -8,7 +8,8 @@ import { toDataURL } from 'qrcode'
 import { JwtService } from "@nestjs/jwt";
 import { TokenPayload, UserValidate } from "./auth.interface";
 import { UserEntity } from "src/postgreSQL/entities";
-import { use } from "passport";
+
+const EXPIRE = 86400;
 
 @Injectable()
 export class AuthService {
@@ -31,7 +32,6 @@ export class AuthService {
 	getCookieWithJwtToken(id: number) {
 		const payload: TokenPayload = { id };
 		const token = this.jwtService.sign(payload);
-		const EXPIRE = 86400;
 		return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${EXPIRE}`;
 	}
 
@@ -41,7 +41,6 @@ export class AuthService {
 
 	getCookieWithJwtAccessToken(id: number, twofaAuth = false) {
 		const payload: TokenPayload = { id, twofaAuth };
-		const EXPIRE = 86400;
 		const token = this.jwtService.sign(payload, {
 			secret: process.env.JWT_ACCESS_TOKEN_SECRET,
 			expiresIn: EXPIRE,

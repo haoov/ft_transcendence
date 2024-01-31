@@ -60,6 +60,8 @@ services:
     
       - OTP_NAME=${OTP_NAME}
       - JWT_ACCESS_TOKEN=${JWT_ACCESS_TOKEN}
+
+      - SESSION_SECRET=${SESSION_SECRET}
     depends_on:
       postgresql:
         condition: service_healthy
@@ -111,8 +113,8 @@ services:
     image: dpage/pgadmin4
     restart: always
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
-      - PGADMIN_DEFAULT_PASSWORD=root
+      - PGADMIN_DEFAULT_EMAIL={PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD={PGADMIN_DEFAULT_PASSWORD}
     ports:
       - 5050:80
     networks:

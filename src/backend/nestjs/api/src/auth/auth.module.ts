@@ -23,7 +23,7 @@ import { Jwt2faStrategy } from "./jwt-2fa/jwt-2fa.strategy";
 			signOptions: { expiresIn: 86400 },
 		}),
 	],
-	controllers: [AuthController],
+	controllers: [ AuthController ],
 	providers: [
 		AuthService, 
 		SessionSerializer,

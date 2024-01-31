@@ -3,6 +3,7 @@ PATH		=	$(PROJDIR)/src
 SRC			=	$(CURDIR)
 HOSTNAME	=	$(shell hostname)
 LOCAL_ADDR 	= 	$(shell ip route get 1 | awk '{print $$7}' | tr -d '\n')
+LOCAL_ADDRESS 	= 	$(shell grep LOCAL_ADDRESS ./src/.env | cut -d '=' -f 2 | tr -d '[:space:]')
 
 ifneq (,$(findstring 42paris,$(HOSTNAME)))
     SUDO =	
@@ -21,6 +22,9 @@ set_local_addr :
 		/bin/sed -i 's/\(LOCAL_ADDRESS\).*/\1=$(LOCAL_ADDR)/g' .env; \
 		/bin/sed -i 's/\(VITE_HOSTNAME\).*/\1=$(LOCAL_ADDR)/g' $(PATH)/frontend/vuejs/app/.env; \
 		/bin/sed -i 's/.*\(3000:80\)/      - $(LOCAL_ADDR):3000:80/g' docker-compose.yml; \
+
+#		sed -i 's/\(VITE_HOSTNAME\).*/\1=$(LOCAL_ADDRESS)/g' $(SRC)/frontend/vuejs/app/.env; \
+#		sed -i 's/.*\(3000:80\)/      - $(LOCAL_ADDR):3000:80/g' $(SRC)/docker-compose.yml; \
 	fi
 	@echo "Server ip address set to $(LOCAL_ADDR)"
 
