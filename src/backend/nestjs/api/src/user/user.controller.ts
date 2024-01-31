@@ -61,16 +61,30 @@ export class UserController {
 
 	@Put("block")
 	async blockUser(@Req() req: Request, @Query("id") id: number) {
-		const user = req.user as User;
-		await this.userService.blockUser(user.id, id);
-		this.userGateway.dataChanged(user);
+		try {
+			if (!id)
+				throw new NotFoundException("User not found");
+			const user = req.user as User;
+			await this.userService.blockUser(user.id, id);
+			this.userGateway.dataChanged(user);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 
 	@Put("unblock")
 	async unblockUser(@Req() req: Request, @Query("id") id: number) {
-		const user = req.user as User;
-		await this.userService.unblockUser(user.id, id);
-		this.userGateway.dataChanged(user);
+		try {
+			if (!id)
+				throw new NotFoundException("User not found");
+			const user = req.user as User;
+			await this.userService.unblockUser(user.id, id);
+			this.userGateway.dataChanged(user);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 	
 	@Get("block")

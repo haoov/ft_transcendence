@@ -70,12 +70,12 @@
 
 	async function block() {
 		await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/block?id=${userRef.value.id}`)
-			.catch( (err) => { console.log(err) });
+			.catch( (err) => {});
 	}
 
 	async function unblock() {
 		await axios.put(`http://${import.meta.env.VITE_HOSTNAME}:3000/api/user/unblock?id=${userRef.value.id}`)
-			.catch( (err) => { console.log(err) });
+			.catch( (err) => {});
 	}
 
 	function message() {

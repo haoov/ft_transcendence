@@ -63,7 +63,7 @@ class GameData {
 				this.initParams = response.data;
 				this.gameRenderer= new GameRenderer(id, this.initParams, width, height);
 			}
-		);
+		).catch(err => {});
 	}
 
 	startGame(users: User[], params: any) {
