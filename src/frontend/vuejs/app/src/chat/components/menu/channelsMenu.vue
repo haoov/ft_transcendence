@@ -18,6 +18,11 @@
 	});
 
 	async function createChannel() {
+		if (channelParams.mode == 'Private') {
+			chat.sendPrivateMessage(channelParams.users[1]);
+			chat.setChatMenu('none');
+			return;
+		}
 		if (await chat.createChannel(channelParams) == false)
 			return;
 		chat.setChatMenu('none');
@@ -58,47 +63,61 @@
 				:preSelected="channelParams.mode"
 				@select="(value) => {channelParams.mode = value}">
 			</v_selector>
-			<label class="inputLabel">
-				Channel Name :
-				<input id="channelName"
-					class="channelInput"
-					type="text"
-					autocomplete="off"
-					placeholder="Channel Name"
-					v-model="channelParams.name">
-			</label>
-			<label class="inputLabel"
-				v-if="channelParams.mode == 'Protected'">
-				Password :
-				<input id="channelName"
-					class="channelInput"
-					type="password"
-					autocomplete="off"
-					placeholder="Channel Name"
-					v-model="channelParams.password">
-			</label>
-			<Suspense>
-				<v_addUsers
+			<div v-if="channelParams.mode != 'Private'" class="channelInfos">
+				<label class="inputLabel">
+					Channel Name :
+					<input id="channelName"
+						class="channelInput"
+						type="text"
+						autocomplete="off"
+						placeholder="Channel Name"
+						v-model="channelParams.name">
+				</label>
+				<label class="inputLabel"
+					v-if="channelParams.mode == 'Protected'">
+					Password :
+					<input id="channelName"
+						class="channelInput"
+						type="password"
+						autocomplete="off"
+						placeholder="Channel Name"
+						v-model="channelParams.password">
+				</label>
+				<Suspense>
+					<v_addUsers
+					:privateChannel="false"
 					:channelParams="channelParams"
 					:channel="undefined"
 					v-on:add="addUser"
 					v-on:remove="removeUser">
-				</v_addUsers>
-			</Suspense>
-		</div> <!--END NEW CHANNEL-->
+					</v_addUsers>
+				</Suspense>
+			</div>
+			<div v-if="channelParams.mode == 'Private'" class="channelInfos">
+				<Suspense>
+					<v_addUsers
+					:privateChannel="true"
+					:channelParams="channelParams"
+					:channel="undefined"
+					v-on:add="addUser"
+					v-on:remove="removeUser">
+					></v_addUsers>
+				</Suspense>
+			</div>
+		</div> 
+		<!--END NEW CHANNEL-->
 		<!--JOIN CHANNEL-->
 		<Suspense>
-			<v_joinMenu
-				v-if="subMenu == 'Join'"
-			>
-			</v_joinMenu>
-		</Suspense><!--END JOIN CHANNEL-->
+			<v_joinMenu v-if="subMenu == 'Join'"></v_joinMenu>
+		</Suspense>
+		<!--END JOIN CHANNEL-->
 		<button id="submitButton"
 			v-if="subMenu == 'Create'"
 			v-on:click="createChannel()">
 			Create
 		</button>
-	</div> <!--END CHANNELS MENU-->
+	</div>
+	<!--END CHANNELS MENU-->
 </template>
 
 <style scoped>
@@ -149,6 +168,12 @@
 		100% {
 			text-decoration-color: var(--c-pink);
 		}
+	}
+
+	.channelInfos {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
 	}
 
 	.inputLabel {
