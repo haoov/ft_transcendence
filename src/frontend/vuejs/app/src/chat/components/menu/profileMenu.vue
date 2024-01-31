@@ -8,6 +8,7 @@
 	import offline from '@/assets/images/status-offline-32.png';
 	import online from '@/assets/images/status-online-32.png';
 	import playing from '@/assets/images/status-playing-32.png';
+	import returnIcon from '@/assets/images/return-arrow-50.png';
 	import { socketManager } from '@/SocketManager';
 	import router from '@/router';
 	import { Channel, chat } from '@/chat';
@@ -195,6 +196,9 @@
 <template>
 	<div id="profileMenu"
 		v-if="user">
+		<img id="return-button" @click="chat.setChatMenu('users')" :src="returnIcon" title="Return"/>
+		<!-- <div style="display: flex; width: 370px; position: absolute; justify-content: flex-end;">
+		</div> -->
 		<div id="user">
 			<div id="userInfos">
 				<div id="avatarContainer">
@@ -227,6 +231,7 @@
 
 <style scoped>
 	#profileMenu {
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -236,6 +241,20 @@
 		border-radius: 0.8rem;
 		box-shadow: 0 0 0 1px var(--c-black-light);
 		background-color: var(--c-surface);
+
+		#return-button {
+			position: absolute;
+			top:1rem;
+			left: 1rem;
+			height: 15px;
+			width: 15px;
+			cursor: pointer;
+			transition: scale 0.1s ease-in-out;
+		}
+
+		#return-button:hover {
+			scale: 1.1;
+		}
 
 		#user {
 			display: flex;
