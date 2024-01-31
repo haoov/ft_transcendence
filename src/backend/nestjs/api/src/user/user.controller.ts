@@ -65,8 +65,9 @@ export class UserController {
 			if (!id)
 				throw new NotFoundException("User not found");
 			const user = req.user as User;
-			await this.userService.blockUser(user.id, id);
+			const blocked: User = await this.userService.blockUser(user.id, id);
 			this.userGateway.dataChanged(user);
+			this.userGateway.blocked(user, blocked);
 		}
 		catch (err) {
 			throw err;
@@ -79,8 +80,9 @@ export class UserController {
 			if (!id)
 				throw new NotFoundException("User not found");
 			const user = req.user as User;
-			await this.userService.unblockUser(user.id, id);
+			const unblocked: User = await this.userService.unblockUser(user.id, id);
 			this.userGateway.dataChanged(user);
+			this.userGateway.unblocked(user, unblocked);
 		}
 		catch (err) {
 			throw err;
@@ -88,11 +90,11 @@ export class UserController {
 	}
 	
 	@Get("block")
-	async getBlockedUsers(@Req() req: Request): Promise<User[]> {
+	async getBlockedUsers(@Req() req: Request): Promise<number[]> {
 		try {
 			const user = req.user as User;
 			const blocked = await this.userService.getBlockedUsers(user.id);
-			return blocked.map(({ twofa_secret, ...user_ret }) => user_ret);
+			return blocked;
 		}
 		catch (err) {
 			throw err;
@@ -185,8 +187,15 @@ export class UserController {
 
 	@Put('/update/status')
 	async updateStatus(@Query('id') userId: number, @Query("status") status: string) {
-		const user = await this.userService.getUserById(userId);
-		await this.userService.updateUserStatus(user, status);
-		this.userGateway.dataChanged(user);
+		try {
+			if (!userId || !status)
+				throw new NotFoundException("User not found");
+			const user = await this.userService.getUserById(userId);
+			await this.userService.updateUserStatus(user, status);
+			this.userGateway.dataChanged(user);
+		}
+		catch (err) {
+			throw err;
+		}
 	}
 }

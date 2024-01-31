@@ -221,16 +221,19 @@ export class ChatService {
 			throw new ForbiddenException("You must be administrator");
 	}
 
-	async getUserChannels(userId: number): Promise<Channel[]> {
+	async getUserChannels(userId: number, blocked: number[]): Promise<Channel[]> {
 		let channels: Channel[];
 		try {
 			channels = await this.channelRepository.createQueryBuilder("channel")
 			.leftJoinAndSelect("channel.users", "user")
-			.leftJoinAndSelect("channel.messages", "message")
-			.leftJoinAndSelect("message.sender", "sender")
+			.leftJoinAndSelect("channel.messages", "messages")
+			.leftJoinAndSelect("messages.sender", "sender")
 			.leftJoinAndSelect("channel.admins", "admin")
 			.getMany();
 			this.sortCahnnels(channels);
+			channels.forEach((c) => {
+				c.messages = c.messages.filter((m) => blocked.includes(m.sender.id) == false);
+			})
 			channels = channels.filter((c) => c.users.find((u) => u.id == userId));
 		}
 		catch (err) {

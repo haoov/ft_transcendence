@@ -66,13 +66,30 @@ class Chat {
 	};
 
 	async loadChannels(userId: number) {
-		const channels = await axios.get(`${apiChat}/channels`)
-		.then((response) => { return response.data });
+		const channels: ChannelData[] = await axios.get(`${apiChat}/channels`)
+		.then((response) => { return response.data })
+		.catch(() => {});
 		channels.forEach((channel: ChannelData) => {
 			const newChannel = new Channel(channel);
 			this.userChannels.push(newChannel);
 		})
-		.catch(() => {});
+	}
+
+	async loadMessages(unblocked: number) {
+		const channels = await axios.get(`${apiChat}/channels`)
+		.then((response) => { return response.data })
+		.catch(() => []);
+		channels.forEach((channel: ChannelData) => {
+			const newChannel = new Channel(channel);
+			let index = this.userChannels.findIndex((c) => c.getId() == newChannel.getId());
+			if (index != -1) {
+				this.userChannels.splice(index, 1, newChannel);
+			}
+			index = this.activeChannels.findIndex((c) => c.getId() == newChannel.getId());
+			if (index != -1) {
+				this.activeChannels.splice(index, 1, newChannel);
+			}
+		})
 	}
 
 	getChannel(id: number): Channel | undefined {
@@ -252,6 +269,12 @@ class Chat {
 				channel.getUsers().splice(index, 1, user);
 			}
 		});
+	}
+
+	removeMessages(blockedId: number) {
+		this.userChannels.forEach((c) => {
+			c.removeMessages(blockedId);
+		})
 	}
 }
 

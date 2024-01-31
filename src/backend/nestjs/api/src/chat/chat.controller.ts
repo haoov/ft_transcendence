@@ -29,7 +29,8 @@ export class ChatController {
 	@Get('/channels')
 	async getUserChannels(@Req() request: Request): Promise<Channel[]> {
 		try {
-			return await this.chatService.getUserChannels(request.user['id']);
+			const blocked: number[] = await this.userService.getBlockedUsers(request.user['id']);
+			return await this.chatService.getUserChannels(request.user['id'], blocked);
 		}
 		catch (err) {
 			throw err;
@@ -99,7 +100,7 @@ export class ChatController {
 	async leaveChannel(@Req() request: Request, @Query('id') channelId: number) {
 		try {
 			await this.chatService.leaveChannel(channelId, request.user['id']);
-			await this.chatGateway.channelLeft(channelId);
+			await this.chatGateway.channelLeft(channelId, request.user['id']);
 		}
 		catch (err) {
 			throw err;
@@ -108,9 +109,14 @@ export class ChatController {
 
 	@Get('/channel/relations')
 	async getChannelRelations(@Req() request: Request, @Query('id') channelId: number): Promise<UserRelation[]> {
-		const blockingList = await this.userService.getBlockingList(request.user['id']);
-		const blockedList = (await this.userService.getBlockedUsers(request.user['id'])).map((user) => user.id);
-		const friendList = await this.userService.getMutualFriendList(request.user['id']);
-		return await this.chatService.getChannelRelations(channelId, blockingList, blockedList, friendList);
+		try {
+			const blockingList = await this.userService.getBlockingList(request.user['id']);
+			const blockedList = (await this.userService.getBlockedUsers(request.user['id']));
+			const friendList = await this.userService.getMutualFriendList(request.user['id']);
+			return await this.chatService.getChannelRelations(channelId, blockingList, blockedList, friendList);
+		}
+		catch(err) {
+			throw err;
+		}
 	}
 }

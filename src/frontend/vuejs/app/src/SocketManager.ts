@@ -50,6 +50,14 @@ class SocketManager {
 			}
 			chat.updateUser(data);
 		});
+		
+		this.userSocket.on("blocked", (blocked: User) => {
+			chat.removeMessages(blocked.id);
+		})
+
+		this.userSocket.on("unblocked", async (unblocked: User) => {
+			await chat.loadMessages(unblocked.id);
+		})
 
 		this.userSocket.on(ServerEvents.gameReady, (data: User) => {
 			if (router.currentRoute.value.path != "/game") {

@@ -12,7 +12,7 @@ volumes:
     name: nestjs_api
     driver: local
     driver_opts:
-      device: ./backend/nestjs/api
+      device: ./src/backend/nestjs/api
       o: bind
       type: none
   
@@ -21,7 +21,7 @@ volumes:
     # name: postgresql_data
     # driver: local
     # driver_opts:
-    #   device: ./backend/postgresql/data
+    #   device: ./src/backend/postgresql/data
     #   o: bind
     #   type: none
   #!comment end
@@ -36,7 +36,7 @@ services:
   nestjs:
     container_name: nestjs
     build:
-      context: ./backend/nestjs
+      context: ./src/backend/nestjs
       dockerfile: Dockerfile
     image: nestjs
     expose:
@@ -93,11 +93,11 @@ services:
   vuejs:
     container_name: vuejs
     build:
-      context: ./frontend/vuejs
+      context: ./src/frontend/vuejs
       dockerfile: ./Dockerfile
     image: vuejs
     ports:
-      - 10.12.2.11:3000:80
+      - 3000:80
     networks:
       - ft_transcendence
     environment:

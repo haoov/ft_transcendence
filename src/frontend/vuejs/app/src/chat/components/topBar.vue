@@ -201,6 +201,7 @@
 		#actions {
 			position: relative;
 			display: inline-block;
+			z-index: 1;
 
 			#actionsIcon {
 				width: 30px;

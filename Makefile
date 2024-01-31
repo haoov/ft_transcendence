@@ -1,5 +1,6 @@
 PROJDIR		=	$(realpath $(CURDIR))
-SRC			=	$(CURDIR)/src
+PATH		=	$(PROJDIR)/src
+SRC			=	$(CURDIR)
 HOSTNAME	=	$(shell hostname)
 LOCAL_ADDR 	= 	$(shell ip route get 1 | awk '{print $$7}' | tr -d '\n')
 
@@ -17,31 +18,31 @@ set_local_addr :
 		exit 1; \
 	else \
 		echo "Setting server ip address..."; \
-		sed -i 's/\(LOCAL_ADDRESS\).*/\1=$(LOCAL_ADDR)/g' $(SRC)/.env; \
-		sed -i 's/\(VITE_HOSTNAME\).*/\1=$(LOCAL_ADDR)/g' $(SRC)/frontend/vuejs/app/.env; \
-		sed -i 's/.*\(3000:80\)/      - $(LOCAL_ADDR):3000:80/g' $(SRC)/docker-compose.yml; \
+		/bin/sed -i 's/\(LOCAL_ADDRESS\).*/\1=$(LOCAL_ADDR)/g' .env; \
+		/bin/sed -i 's/\(VITE_HOSTNAME\).*/\1=$(LOCAL_ADDR)/g' $(PATH)/frontend/vuejs/app/.env; \
+		/bin/sed -i 's/.*\(3000:80\)/      - $(LOCAL_ADDR):3000:80/g' docker-compose.yml; \
 	fi
 	@echo "Server ip address set to $(LOCAL_ADDR)"
 
 set_localhost :
-	@sed -i 's/\(LOCAL_ADDRESS\).*/\1=localhost/g' $(SRC)/.env
-	@sed -i 's/\(VITE_HOSTNAME\).*/\1=localhost/g' $(SRC)/frontend/vuejs/app/.env
-	@sed -i 's/.*\(3000:80\)/      - 3000:80/g' $(SRC)/docker-compose.yml
+	@/bin/sed -i 's/\(LOCAL_ADDRESS\).*/\1=localhost/g' .env
+	@/bin/sed -i 's/\(VITE_HOSTNAME\).*/\1=localhost/g' $(PATH)/frontend/vuejs/app/.env
+	@/bin/sed -i 's/.*\(3000:80\)/      - 3000:80/g' docker-compose.yml
 	@echo "Server ip address set to localhost"
 
 build :
-	@cd $(SRC) && $(SUDO) docker compose build
+	@$(SUDO) /bin/docker compose build
 
 run :
-	@cd $(SRC) && $(SUDO) docker compose up -d
+	@$(SUDO) /bin/docker compose up -d
 
 stop :
-	@cd $(SRC) && $(SUDO) docker compose stop
+	@$(SUDO) /bin/docker compose stop
 
 clean:
-	@cd $(SRC) && $(SUDO) docker compose down -v
-	@docker system prune -f
-	@$(SUDO) rm -rf src/backend/nestjs/api/src/user/avatar-uploads/*
+	@$(SUDO) /bin/docker compose down -v
+	@$(SUDO) /bin/docker system prune -f
+	@$(SUDO) /bin/rm -rf src/backend/nestjs/api/src/user/avatar-uploads/*
 
 re: clean all
 

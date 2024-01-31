@@ -1,6 +1,7 @@
 import { reactive } from "vue";
 import type { Notification, NotificationParams, NotificationType } from "./interfaces";
-import { success, error, infos, warning } from "../assets/images/notifyIcons";
+import { success, error, infos } from "../assets/images/notifyIcons";
+import warning from "../assets/images/notifyIcons/warning.png";
 
 const notifications: Notification[] = reactive<Notification[]>([]);
 
@@ -104,6 +105,7 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 					}
 				}
 			] : undefined;
+				break;
 			case "warning":
 				notification.message = params?.message || "Infos";
 				notification.type = "infos";
@@ -128,7 +130,7 @@ function newNotification(type: NotificationType, params?: NotificationParams): v
 						}
 					}
 				] : undefined;
-			break;
+				break;
 		default: break;
 	}
 	notifications.splice(0, 0, notification);

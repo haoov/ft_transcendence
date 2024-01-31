@@ -58,6 +58,12 @@ export class Channel {
 		this.messages.push(...messages);
 	}
 
+	removeMessage(messageId: number) {
+		const index = this.messages.findIndex(message => message.getId() == messageId);
+		if (index != -1)
+			this.messages.splice(index, 1);
+	}
+
 	getUsers(): User[] {
 		return this.users;
 	}
@@ -99,5 +105,15 @@ export class Channel {
 
 	getBans(): User[] {
 		return this.bans;
+	}
+
+	removeMessages(blockedId: number) {
+		let i = 0;
+		while (i < this.messages.length) {
+			if (this.messages[i].getSender().id == blockedId)
+				this.messages.splice(i, 1);
+			else
+				i++;
+		}
 	}
 }
