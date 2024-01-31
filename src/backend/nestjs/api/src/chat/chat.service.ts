@@ -186,14 +186,26 @@ export class ChatService {
 		return newChannel;
 	}
 
-	async updateChannel(channelId: number, channelDTO: ChannelDTO): Promise<Channel> {
+	async updateChannel(channelId: number, channelDTO: ChannelDTO):
+		Promise<{channel: Channel, updatedChannel: Channel}> {
+		if (channelDTO.name.length == 0 || channelDTO.name.length > 32)
+			throw new ForbiddenException("Invalid channel name");
+		channelDTO.name = channelDTO.name.trim();
+		const channels: Channel[] = await this.channelRepository.find();
+		if (channelDTO.mode != "Secret") {
+			const existingChannel: Channel = await this.channelRepository.findOne({
+				where: { name: channelDTO.name }
+			})
+			if (existingChannel && existingChannel.id != channelId) 
+				throw new ForbiddenException("Channel name already taken");
+		}
 		let updatedChannel: Channel;
 		const channel: Channel = await this.getChannel(channelId);
 		updatedChannel = await this.channelRepository.save({
 			...channel,
 			...channelDTO
 		});
-		return updatedChannel;
+		return {channel: channel, updatedChannel: updatedChannel};
 	}
 
 	async leaveChannel(channelId: number, userId: number): Promise<void> {

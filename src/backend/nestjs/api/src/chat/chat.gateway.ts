@@ -116,7 +116,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	channelUpdate(channel: Channel): void {
+	channelUpdate(channel: Channel, users?: User[]): void {
+		if (users) {
+			for (const user of users) {
+				const sockets: Socket[] = this.userSockets.get(user.id);
+				if (sockets) {
+					for (const socket of sockets) {
+						socket.join(channel.id.toString());
+					}
+				}
+			}
+		}
 		this.server.to(channel.id.toString()).emit('channelUpdated', channel);
 	}
 
@@ -231,5 +241,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		  } catch (error) {
 				throw error;
 		  }
+	}
+
+	async sendError(id: number, error: string) {
+		const sockets: Socket[] = this.userSockets.get(id);
+		for (const socket of this.userSockets.values()) {
+			socket.forEach((s) => {s.emit('errorManager', error)});
+		}
 	}
 }

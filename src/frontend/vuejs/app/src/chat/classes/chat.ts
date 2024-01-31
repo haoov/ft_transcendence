@@ -185,7 +185,7 @@ class Chat {
 		});
 	}
 
-	updateChannel(channel: Channel, updatedParams: ChannelParams): void {
+	async updateChannel(channel: Channel, updatedParams: ChannelParams): Promise<void> {
 		if (updatedParams.name === "" || updatedParams.name.length > 32)
 			return;
 		updatedParams.mode = channel.getMode();
@@ -193,7 +193,12 @@ class Chat {
 		updatedParams.messages = channel.getMessages();
 		updatedParams.admins = channel.getAdmins();
 		updatedParams.users.push(...channel.getUsers());
-		axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams).catch(() => {});
+		await axios.put(`${apiChat}/channel?id=${channel.getId()}`, updatedParams)
+		.catch((err) => {
+			notify.newNotification("error", {
+				message: err.response.data.message
+			});
+		});
 	}
 
 	joinChannel(channelId: number, user: User, password?: string) : void {

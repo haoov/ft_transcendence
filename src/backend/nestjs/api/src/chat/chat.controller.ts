@@ -73,15 +73,18 @@ export class ChatController {
 	}
 
 	@Put('/channel')
-	async updateChannel(@Query('id') channelId: number, @Body() channelDTO: ChannelDTO) {
+	async updateChannel(@Req() request: Request, @Query('id') channelId: number, @Body() channelDTO: ChannelDTO) {
 		try {
 			if (channelDTO.mode === 'Protected')
 				channelDTO.password = await ft_encode(channelDTO.password);
-			const channel: Channel = await this.chatService.updateChannel(channelId, channelDTO);
-			this.chatGateway.channelUpdate(channel);
+			const channels = await this.chatService.updateChannel(channelId, channelDTO);
+			const newUsers: User[] = channels.updatedChannel.users.filter((u) => {
+					return !channels.channel.users.find((user) => user.id === u.id);
+			})
+			this.chatGateway.channelUpdate(channels.updatedChannel, newUsers);
 		}
 		catch (err) {
-			console.log(err);
+			throw err;
 		}
 	}
 
