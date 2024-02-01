@@ -20,7 +20,7 @@
 	const me = ref<User>(socketManager.getUser());
 
 	socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
-		if (user.id == props.user.id || user.id == me.value.id) {
+		if (user &&( user.id == props.user.id || user.id == me.value.id)) {
 			if (chat.checkChannel(props.channel)) 
 				userRef.value = (await chat.getChannelRelations(props.channel)).filter((relation) => relation.id == userRef.value.id)[0];
 			me.value = socketManager.getUser();

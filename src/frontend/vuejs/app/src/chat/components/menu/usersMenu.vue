@@ -24,7 +24,7 @@
 	});
 
 	socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
-		if (props.channel && chat.checkChannel(props.channel))
+		if (user && props.channel && chat.checkChannel(props.channel))
 			userRelations.value = await chat.getChannelRelations(props.channel);
 	});
 </script>
