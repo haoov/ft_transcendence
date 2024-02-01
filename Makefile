@@ -18,15 +18,14 @@ set_local_addr :
 		echo "No ip address found"; \
 		exit 1; \
 	else \
-		echo "Setting server ip address..."; \
+		/bin/echo "Setting server ip address..."; \
 		/bin/sed -i 's/\(LOCAL_ADDRESS\).*/\1=$(LOCAL_ADDR)/g' .env; \
 		/bin/sed -i 's/\(VITE_HOSTNAME\).*/\1=$(LOCAL_ADDR)/g' $(PATH)/frontend/vuejs/app/.env; \
 		/bin/sed -i 's/.*\(3000:80\)/      - $(LOCAL_ADDR):3000:80/g' docker-compose.yml; \
-
+		/bin/echo "Server ip address set to $(LOCAL_ADDR)";\
+	fi
 #		sed -i 's/\(VITE_HOSTNAME\).*/\1=$(LOCAL_ADDRESS)/g' $(SRC)/frontend/vuejs/app/.env; \
 #		sed -i 's/.*\(3000:80\)/      - $(LOCAL_ADDR):3000:80/g' $(SRC)/docker-compose.yml; \
-	fi
-	@echo "Server ip address set to $(LOCAL_ADDR)"
 
 set_localhost :
 	@/bin/sed -i 's/\(LOCAL_ADDRESS\).*/\1=localhost/g' .env
