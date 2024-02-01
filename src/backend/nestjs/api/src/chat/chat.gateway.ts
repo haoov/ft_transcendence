@@ -37,9 +37,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	handleDisconnect(@ConnectedSocket() client: Socket) {
 		this.userSockets.delete(client.data.userId);
-		if (!this.userSockets.has(client.data.userId)) {
-			console.log("chat disconnection");
-		}
 	}
 
 	@SubscribeMessage('joinChannel')

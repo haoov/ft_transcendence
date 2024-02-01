@@ -29,7 +29,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.usersSockets.set(user.id, [client]);
 		const updatedUser = await this.userService.updateUserStatus(user, userStatus.online);
 		this.dataChanged(updatedUser);
-		console.log("user connection: " + user.username);
 	}
 
 	async handleDisconnect(client: Socket) {
@@ -44,7 +43,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					await this.userService.updateUserStatus(client.data.user, userStatus.offline);
 					this.dataChanged(client.data.user);
 				}
-				console.log("user disconnection: " + client.data.user.username);
 			}
 		}
 	}

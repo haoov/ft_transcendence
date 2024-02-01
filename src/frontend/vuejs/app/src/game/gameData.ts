@@ -67,7 +67,6 @@ class GameData {
 	}
 
 	startGame(users: User[], params: any) {
-		console.log("game started");
 		this.player1.value.username = users[0].username;
 		this.player1.value.avatar = users[0].avatar;
 		if (users.length > 1) {
@@ -101,8 +100,8 @@ class GameData {
 	};
 
 	finishGame(winnerUsername: string) {
-		console.log("game finished");
-		console.log("game finished");
+		this.player1.value.score = 0;
+		this.player2.value.score = 0;
 		this.displayMenu.value = true;
 		this.winner = winnerUsername;
 		this.gameState.value = "finished";

@@ -182,7 +182,6 @@ class Chat {
 				this.removeChannel(channel.getId());
 			})
 		.catch((err) => {
-			console.log(err.response.data);
 			notify.newNotification("error", {
 				message: err.response.data.message
 			});

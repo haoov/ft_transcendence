@@ -29,9 +29,9 @@
 	});
 
 	function moveEvents(event: KeyboardEvent) {
-		if (event.key == "w" || event.key == "W")
+		if (event.key == "ArrowUp")
 			socketManager.move("up");
-		if (event.key == "s" || event.key == "S")
+		if (event.key == "ArrowDown")
 			socketManager.move("down");
 		if (event.key == "1")
 			socketManager.useSpell("fire");
@@ -45,7 +45,6 @@
 
 	function animate() {
 		if (gameData.started()) {
-			console.log("animate");
 			socketManager.emit("game", "needUpdate");
 			socketManager.update();
 			gameData.render();
@@ -54,7 +53,6 @@
 	}
 
 	onMounted(async () => {
-		
 		await gameData.createRenderer("game", width.value, height.value);
 		document.addEventListener("keydown", moveEvents);
 		socketManager.checkGame();

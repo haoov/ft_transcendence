@@ -42,10 +42,7 @@ export class GameService {
 			this.gameRepository.create(game as GameEntity);
 			return await this.gameRepository.save(game as GameEntity);
 		}
-		catch (err) {
-			// Cas d'erreurs
-			console.log("Cannot create game")
-		}
+		catch (err) {}
 		return null;
 	}
 

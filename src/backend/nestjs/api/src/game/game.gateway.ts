@@ -35,7 +35,6 @@ export class GameGateway
 
 	@SubscribeMessage('userConnected')
 	onUserConnected(@ConnectedSocket() client: Socket, @MessageBody() user: User) {
-		console.log("game connection: " + user.username);
 		//store user data in socket
 		client.data.user = user;
 		//check if user is already in a room
@@ -52,7 +51,6 @@ export class GameGateway
 	 */
 	async handleDisconnect(client: Socket) {
 		if (client.data.user) {
-			console.log("game disconnection: " + client.data.user.username);
 			const room: Room = this.findRoom(client);
 			if (room) {
 				if (room.isFull()) {
@@ -72,7 +70,6 @@ export class GameGateway
 
 	@SubscribeMessage(clientEvents.checkGame)
 	checkGame(client: Socket) {
-		console.log("checking game: " + client.data.user.username);
 		//check if user is already in a room
 		const room: Room = this.findRoom(client);
 		if (room) {
@@ -104,7 +101,6 @@ export class GameGateway
 				client.emit(serverEvents.gameReady);
 				//wait for opponent to be ready
 				setTimeout(() => {
-					console.log("[AFTER TIMEOUT PARAMS SELECTED]")
 					if (openRoom.isOpen()) {
 						openRoom.quitGame(openRoom.getUsers()[0]);
 						this.endGame(openRoom);
@@ -159,7 +155,6 @@ export class GameGateway
 
 	@SubscribeMessage(clientEvents.stopWaiting)
 	async stopWaiting(client: Socket) {
-		console.log("[STOP WAITING]");
 		const room = this.findRoom(client);
 		if (room) {
 			if (room.isClosed()) {
@@ -179,7 +174,6 @@ export class GameGateway
 
 	@SubscribeMessage(clientEvents.gameForfeit)
 	gameForfeit(client: Socket) {
-		console.log("[FORFEIT]");
 		const room: Room = this.findRoom(client);
 		if (room) {
 			room.quitGame(client.data.user);
@@ -204,7 +198,6 @@ export class GameGateway
 			this.userGateway.gameReady(room, client.data.user);
 			setTimeout(() => {
 				if (room.isOpen() && room.isFull()) {
-					console.log("[AFTER TIMEOUT GAME RESPONSE]")
 					room.quitGame(room.getUsers()[0]);
 					this.endGame(room);
 					this.deleteRoom(room);
@@ -271,7 +264,6 @@ export class GameGateway
 	 * @returns the new room
 	 */
 	createRoom(params: GameParams, client: Socket) {
-		console.log("creating room: " + this.roomId);
 		const newRoom = new Room(this.roomId.toString(), {gameParams: params});
 		++this.roomId;
 		newRoom.addUser(client.data.user);
@@ -281,7 +273,6 @@ export class GameGateway
 	}
 
 	createPrivateRoom(user: User, opponent: User) {
-		console.log("creating private room: " + this.roomId);
 		const params: GameParams = {
 			mode: "super",
 			type: "multiplayer",
@@ -313,7 +304,6 @@ export class GameGateway
 		}
 		else {
 			if (room.isFull()) {
-				console.log("room is full: " + room.getName());
 				//if room is full start game
 				this.closeRoom(room);
 			}
@@ -330,7 +320,6 @@ export class GameGateway
 	 * @param room 
 	 */
 	closeRoom(room: Room) {
-		console.log("closing room: " + room.getName());
 		room.getUsers().forEach(async (user) => {
 			user = await this.userService.updateUserStatus(user, userStatus.playing);
 			this.userGateway.dataChanged(user);
@@ -344,7 +333,6 @@ export class GameGateway
 	 * @param room 
 	 */
 	deleteRoom(room: Room) {
-		console.log("deleting room: " + room.getName());
 		this.rooms.splice(this.rooms.indexOf(room), 1);
 		room.getSockets().forEach(async (socket) => {
 			socket.data.user = await this.userService.updateUserStatus(socket.data.user, userStatus.online);

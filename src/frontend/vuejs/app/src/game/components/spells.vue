@@ -6,12 +6,18 @@
 		const username: string = socketManager.getUser().username;
 		return gameData.getCurrentPlayer(username).value.spells;
 	}
+
+	const key: string[] = ["1", "2", "3", "4"];
 </script>
 
 <template>
 	<div class="spells">
 		<div class="spellBar">
 			<div class="spellElem" v-for="spell in getSpells()">
+				<span class="spellText"
+				style="position: absolute; display: flex; align-items: center; color: var(--c-grey); z-index: 1;">
+					{{ key[getSpells().findIndex((s) => spell.type == s.type)] }}
+				</span>
 				<img
 					v-if="spell.on"
 					class="spellImg"

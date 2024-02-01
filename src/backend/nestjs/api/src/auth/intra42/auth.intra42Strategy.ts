@@ -19,7 +19,6 @@ export class Auth42Strategy extends PassportStrategy(Strategy, '42') {
 	}
 
 	handleRequest(err: any, user: any, info: any, context: any, status: any) {
-		console.log('errorGuard', err);
 		if (err || !user) {
 		  throw new HttpException(err.message, err.status);
 		}

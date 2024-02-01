@@ -61,10 +61,8 @@ export class Room {
 
 	addSocket(socket: Socket): void {
 		if (this.sockets.find((s) => {return (s.id == socket.id);})) {
-			console.log("socket " + socket.id + " already in room: " + this.name);
 			return;
 		}
-		console.log("adding socket " + socket.id + " to room: " + this.name);
 		socket.data.room = this.name;
 		this.sockets.push(socket);
 		socket.join(this.name);
@@ -73,7 +71,6 @@ export class Room {
 
 	removeSocket(socket: Socket): void {
 		if (this.sockets.find((s) => {return (s.id == socket.id);})) {
-			console.log("removing socket " + socket.id + " from room: " + this.name);
 			this.sockets.splice(this.sockets.indexOf(socket), 1);
 			socket.leave(this.name);
 		}
@@ -81,7 +78,6 @@ export class Room {
 
 	addUser(user: User): void {
 		if (!this.isFull()) {
-			console.log("adding user " + user.username + " to room: " + this.name);
 			this.users.push(user);
 			this.checkFull();
 		}
@@ -166,7 +162,6 @@ export class Room {
 	}
 
 	quitGame(user: User): void {
-		console.log(user.username + " quitGame");
 		if (user.id == this.users[0].id)
 			this.game.getPlayers()[1].topScore();
 		else

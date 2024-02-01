@@ -22,7 +22,6 @@ class GameSocket {
 			this.socket.emit(ClientEvents.connected, response.data);
 		}).catch(err => {});
 		this.socket.on(ServerEvents.updateStatus, (status: string) => {
-			console.log("update status: " + status);
 			if (this.userStatus.value != "finished")
 				this.userStatus.value = status;
 		})

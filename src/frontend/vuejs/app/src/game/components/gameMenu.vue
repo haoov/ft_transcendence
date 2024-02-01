@@ -245,6 +245,7 @@
 		display: flex;
 		width: 100%;
 		justify-content: center;
+		gap: 10px;
 	}
 
 	.v-button {

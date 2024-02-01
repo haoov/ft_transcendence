@@ -112,9 +112,7 @@ export class ChatService {
 			.leftJoinAndSelect("message.sender", "sender").getMany();
 			channel = channels.find((c) => c.id == channelId);
 		}
-		catch (err) {
-			console.log(err);
-		}
+		catch (err) {}
 		return channel;
 	}
 
@@ -248,9 +246,7 @@ export class ChatService {
 			})
 			channels = channels.filter((c) => c.users.find((u) => u.id == userId));
 		}
-		catch (err) {
-			console.log(err);
-		}
+		catch (err) {}
 		return channels;
 	}
 
