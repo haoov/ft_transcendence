@@ -4,12 +4,13 @@
 	import { socketManager } from '@/SocketManager';
 	import v_addUsers from '@/chat/components/menu/addUsers.vue';
 	import { computed, reactive } from 'vue';
+	import v_selector from '@/components/selector.vue';
 
 	const props = defineProps<{channel: Channel | undefined}>();
 
 	const updatedParams: ChannelParams = reactive({
 		name: props.channel?.getTitle(socketManager.getUser()) || '',
-		mode: 'Public',
+		mode: props.channel?.getMode() || 'Public',
 		creatorId: 0,
 		users: [],
 		admins: [],
@@ -18,7 +19,10 @@
 	const disableButton = computed(() => {
 		if (!updatedParams.name)
 			return true;
-		if (updatedParams.name == props.channel?.getTitle(socketManager.getUser()) && !updatedParams.users.length)
+		if (updatedParams.mode == 'Protected' && props.channel?.getMode() != "Protected" && !updatedParams.password)
+			return true;
+		if (updatedParams.name == props.channel?.getTitle(socketManager.getUser()) && !updatedParams.users.length
+			&& updatedParams.mode == props.channel?.getMode())
 			return true;
 		return false;
 	})
@@ -42,6 +46,12 @@
 			</div>
 		</div>
 		<div id="body">
+			<v_selector
+				label="Channel mode :"
+				:values="['Public', 'Protected', 'Secret']"
+				:preSelected="channel?.getMode()"
+				@select="(mode) => {updatedParams.mode = mode}">
+			</v_selector>
 			<label class="inputLabel">
 				Channel Name :
 				<input id="channelName"
@@ -50,6 +60,16 @@
 					autocomplete="off"
 					:placeholder="channel?.getTitle(socketManager.getUser())"
 					v-model="updatedParams.name">
+			</label>
+			<label class="inputLabel"
+				v-if="updatedParams.mode == 'Protected'">
+				New Password :
+				<input id="channelPassword"
+					class="channelInput"
+					type="password"
+					autocomplete="off"
+					placeholder="New Password"
+					v-model="updatedParams.password">
 			</label>
 			<Suspense>
 				<v_addUsers

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Req, Put, Query, Body, ValidationPipe, UseGuards, Delete } from "@nestjs/common";
+import { Controller, Get, Post, Param, Req, Put, Query, Body, ValidationPipe, UseGuards, Delete, ForbiddenException } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { UserService } from "../user/user.service";
 import { Message, Channel } from "./chat.interface";
@@ -75,8 +75,15 @@ export class ChatController {
 	@Put('/channel')
 	async updateChannel(@Req() request: Request, @Query('id') channelId: number, @Body() channelDTO: ChannelDTO) {
 		try {
+			if (request.user['id'] != channelDTO.creatorId)
+				throw new ForbiddenException("You are not the owner");
 			const channel: Channel = await this.chatService.getChannel(channelId);
-			channelDTO.password = channel.password;
+			if (channelDTO.mode == 'Protected' && channelDTO.password)
+				channelDTO.password = await ft_encode(channelDTO.password);
+			else if (channelDTO.mode == 'Protected')
+				channelDTO.password = channel.password;
+			else
+				channelDTO.password = null;
 			const channels = await this.chatService.updateChannel(channelId, channelDTO);
 			const newUsers: User[] = channels.updatedChannel.users.filter((u) => {
 					return !channels.channel.users.find((user) => user.id === u.id);

@@ -192,7 +192,6 @@ class Chat {
 	async updateChannel(channel: Channel, updatedParams: ChannelParams): Promise<void> {
 		if (updatedParams.name === "" || updatedParams.name.length > 32)
 			return;
-		updatedParams.mode = channel.getMode();
 		updatedParams.creatorId = channel.getCreatorId();
 		updatedParams.messages = channel.getMessages();
 		updatedParams.admins = channel.getAdmins();

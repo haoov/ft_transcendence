@@ -137,7 +137,8 @@
 						Users
 					</div>
 					<div id="editButton"
-						v-on:click="setMenu('settings')">
+						v-on:click="setMenu('settings')"
+						v-if="channel.getCreatorId() == socketManager.getUser().id">
 						Edit
 					</div>
 					<div
