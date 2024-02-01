@@ -17,14 +17,12 @@ volumes:
       type: none
   
   postgresql_data:
-  #!comment this when using at 42
-    # name: postgresql_data
-    # driver: local
-    # driver_opts:
-    #   device: ./src/backend/postgresql/data
-    #   o: bind
-    #   type: none
-  #!comment end
+    name: postgresql_data
+    driver: local
+    driver_opts:
+      device: ./src/backend/postgresql/data
+      o: bind
+      type: none
 
   pgadmin_data:
 
@@ -99,7 +97,7 @@ services:
       dockerfile: ./Dockerfile
     image: vuejs
     ports:
-      - 10.14.6.5:3000:80
+      - 10.14.5.9:3000:80
     networks:
       - ft_transcendence
     environment:
@@ -113,8 +111,8 @@ services:
     image: dpage/pgadmin4
     restart: always
     environment:
-      - PGADMIN_DEFAULT_EMAIL={PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD={PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - 5050:80
     networks:

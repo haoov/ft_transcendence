@@ -10,4 +10,4 @@ WORKDIR /api
 
 COPY ./api .
 
-ENTRYPOINT npm install && npm run start:dev
+ENTRYPOINT npm install && npm run build && npm run start:prod

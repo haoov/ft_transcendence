@@ -9,6 +9,4 @@ export const databaseConfig: TypeOrmModuleOptions = {
 	password: process.env.POSTGRES_PASSWORD,
 	database: process.env.POSTGRES_DB,
 	entities: [UserEntity, GameEntity, MessageEntity, ChannelEntity],
-	//!Do not use in production use migrations instead
-	synchronize: true,
 };
