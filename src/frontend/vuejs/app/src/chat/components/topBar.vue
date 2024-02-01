@@ -38,7 +38,8 @@
 	socketManager.addEventListener("user", ServerEvents.dataChanged, async (user: User) => {
 		const userConcerned = userRelations.value.map((relation) => relation.id);
 		if (userConcerned.includes(user.id)) {
-			userRelations.value = await chat.getChannelRelations(props.channel);
+			if (chat.checkChannel(props.channel))
+				userRelations.value = await chat.getChannelRelations(props.channel);
 		}
 	});
 

@@ -74,15 +74,16 @@
 				</div>
 		</div>
 		<div v-if="result.mode == 'Protected'" class="passwordDiv">
-			<label class="inputLabel" for="password" id="inputLabel"> Password :</label>
-			<input id="passwordInput"
-				name="password"
-				class="channelInput"
-				type="password"
-				autocomplete="off"
-				placeholder="password"
-				v-model="password"
-			>
+			<label class="inputLabel" id="inputLabel"> Password :
+				<input id="passwordInput"
+					name="password"
+					class="channelInput"
+					type="password"
+					autocomplete="off"
+					placeholder="password"
+					v-model="password"
+				>
+			</label>
 		</div>
 	</div>
 		<button id="submitButton"

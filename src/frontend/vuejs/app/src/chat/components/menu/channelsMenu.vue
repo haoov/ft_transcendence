@@ -91,7 +91,7 @@
 				<label class="inputLabel"
 					v-if="channelParams.mode == 'Protected'">
 					Password :
-					<input id="channelName"
+					<input id="channelPassword"
 						class="channelInput"
 						type="password"
 						autocomplete="off"

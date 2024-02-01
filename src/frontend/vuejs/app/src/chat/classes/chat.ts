@@ -53,6 +53,10 @@ class Chat {
 		return this.userChannels;
 	}
 
+	checkChannel(channel: Channel): Channel | undefined {
+		return this.userChannels.find((c) => c.getId() == channel.getId());
+	}
+
 	addActiveChannel(channel: Channel) {
 		this.activeChannels.push(channel);
 	}

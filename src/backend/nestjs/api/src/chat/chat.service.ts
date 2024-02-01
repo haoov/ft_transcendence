@@ -281,10 +281,12 @@ export class ChatService {
 							blockedList: number[],
 							friendList: number[]): Promise<UserRelation[]> {
 
-		const channel: Channel = await this.channelRepository.findOneOrFail({
+		const channel: Channel = await this.channelRepository.findOne({
 			where: { id: channelId },
 			relations: ["users"]
 		});
+		if (!channel)
+			throw new ForbiddenException("Channel not found");
 		const userRelation = channel.users.map((user) => {
 			return {
 				id: user.id,

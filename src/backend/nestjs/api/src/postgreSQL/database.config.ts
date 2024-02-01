@@ -9,4 +9,5 @@ export const databaseConfig: TypeOrmModuleOptions = {
 	password: process.env.POSTGRES_PASSWORD,
 	database: process.env.POSTGRES_DB,
 	entities: [UserEntity, GameEntity, MessageEntity, ChannelEntity],
+	synchronize: true,
 };
