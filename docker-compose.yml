@@ -20,7 +20,7 @@ volumes:
     name: postgresql_data
     driver: local
     driver_opts:
-      device: ./src/backend/postgresql/data
+      device: /home/jopadova/postgresql/data
       o: bind
       type: none
 

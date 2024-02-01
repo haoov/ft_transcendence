@@ -51,7 +51,7 @@ clean:
 re: clean all
 
 fclean : clean
-    @$(SUDO) /bin/rm -rf src/backend/postgresql/data/*
+    @$(SUDO) /bin/rm -rf /home/jopadova/postgresql/data/*
     @$(SUDO) /bin/rm -rf src/backend/nestjs/api/dist/*
 
 .PHONY : set_localhost set_local_addr build run clean fclean re
